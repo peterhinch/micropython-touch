@@ -10,24 +10,21 @@ _SCALE = const(18)  # 12 bits ADC -> 30 bit small int. Subclasses must be limite
 # For a portrait mode display transpose would be set True: in this case .poll
 # returns long axis measurements as the 1st (col) result
 class ABCTouch:
-    def __init__(self, height, width, r0, c0, rmax, cmax):
+    def __init__(self, height, width, xmin, ymin, xmax, ymax):
         # Scaling and translation. Default is landscape mode
         self._width = width  # max(width, height)  # long axis is width/cols
         self._height = height  # min(width, height)  # short axis is height/rows
-        if height > width:
-            rmax, cmax = cmax, rmax
-            r0, c0 = c0, r0
-        self._r0 = r0  # Returned value for row 0
-        self._c0 = c0  # Returned value for col 0
-        self._rh = (height << _SCALE) // (rmax - r0)
-        self._ch = (width << _SCALE) // (cmax - c0)
+        self._x0 = xmin  # Returned value for row 0
+        self._y0 = ymin  # Returned value for col 0
+        self._xw = (width << _SCALE) // (xmax - xmin)
+        self._yh = (height << _SCALE) // (ymax - ymin)
         # Mapping
         self._rr = False  # Reflection
         self._rc = False
         self._trans = False  # Transposition
         # Raw coordinates from subclass.
-        self._rrow = 0
-        self._rcol = 0
+        self._x = 0
+        self._y = 0
         # Screen referenced coordinates
         self.row = 0
         self.col = 0
@@ -37,14 +34,40 @@ class ABCTouch:
         self._rc = col_reflect
         self._trans = transpose
 
+    def cal(self):
+        from time import sleep_ms
+
+        print("Running calibration - ctrl-c to stop.")
+        print("Please note whether the long axis of the display is x or y.")
+        xmin, xmax, ymin, ymax = 4096, 0, 4096, 0
+        try:
+            while True:
+                if res := self.acquire():
+                    print(f"x = {self._x:04d} y = {self._y:04d}", end="\r")
+                    xmin = min(xmin, self._x)
+                    ymin = min(ymin, self._y)
+                    xmax = max(xmax, self._x)
+                    ymax = max(ymax, self._y)
+                    sleep_ms(200)
+        except KeyboardInterrupt:
+            pass
+        long = max(self._height, self._width)
+        short = min(self._height, self._width)
+        print("If x is long axis args are:")
+        print(f"Args: {short}, {long}, {xmin}, {ymin}, {xmax}, {ymax}")
+        print("If y is long axis args are:")
+        print(f"Args: {long}, {short}, {xmin}, {ymin}, {xmax}, {ymax}")
+
     # API: GUI calls poll which returns True if touched. .row, .col hold Screen
     # referenced coordinates.
     # Subclass has method .acquire: returns True if touched and populates
     # ._row and ._col with raw data, otherwise returns False
     def poll(self):
         if res := self.acquire():
-            row = ((self._rrow - self._r0) * self._rh) >> _SCALE
-            col = ((self._rcol - self._c0) * self._ch) >> _SCALE
+            col = ((self._x - self._x0) * self._xw) >> _SCALE
+            row = ((self._y - self._y0) * self._yh) >> _SCALE
+            col = max(0, min(col, self._width - 1))
+            row = max(0, min(row, self._height - 1))
             if self._rr:  # Reflection
                 row = self._height - row
             if self._rc:

@@ -15,8 +15,8 @@ from .touch import ABCTouch
 
 
 class TSC2007(ABCTouch):
-    def __init__(self, i2c, height, width, r0=0, c0=0, rmax=4095, cmax=4095, addr=0x48):
-        super().__init__(height, width, r0, c0, rmax, cmax)
+    def __init__(self, i2c, height, width, xmin=0, ymin=0, xmax=4095, ymax=4095, addr=0x48):
+        super().__init__(height, width, xmin, ymin, xmax, ymax)
         self._i2c = i2c
         self._addr = addr
         i2c.writeto(addr, b"\x00")  # Low power/read temp
@@ -32,8 +32,8 @@ class TSC2007(ABCTouch):
         self._i2c.writeto(addr, b"\xE4")  # Z
         if t := (self._value() > 100):  # Touched
             self._i2c.writeto(addr, b"\xC4")  # X
-            self._rcol = self._value()
+            self._x = self._value()
             self._i2c.writeto(addr, b"\xD4")  # Y
-            self._rrow = self._value()
+            self._y = self._value()
         self._i2c.writeto(addr, b"\x00")  # Low power/read temp
         return t
