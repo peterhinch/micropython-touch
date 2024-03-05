@@ -9,7 +9,6 @@
 
 
 import asyncio
-from gui.primitives import Delay_ms
 from math import log10
 
 from gui.core.tgui import LinearIO, display
@@ -41,7 +40,6 @@ class ScaleLog(LinearIO):
         callback=lambda *_: None,
         args=[],
         value=1.0,
-        delta=0.01,
         active=False
     ):
         # For correct text rendering inside control must explicitly set bgcolor
@@ -50,7 +48,6 @@ class ScaleLog(LinearIO):
             raise ValueError("decades must be >= 3")
         self.mval = 10 ** decades  # Max value
         self.tickcb = tickcb
-        self.delta = delta  # Min multiplier = 1 + delta
 
         def lcb(f):
             return "{:<1.0f}".format(f)
@@ -97,7 +94,6 @@ class ScaleLog(LinearIO):
         self.draw = True  # Ensure a redraw on next refresh
         # Run callback (e.g. to set dynamic colors)
         self.callback(self, *self.args)
-        self.timer = Delay_ms(duration=500)
 
     # Pre calculated log10(x) for x in range(1, 10)
     def show(self, logs=(0.0, 0.3010, 0.4771, 0.6021, 0.6990, 0.7782, 0.8451, 0.9031, 0.9542)):
@@ -166,16 +162,14 @@ class ScaleLog(LinearIO):
                 self.callback(self, *self.args)
         return self._value
 
-    async def adjust(self, rate):  # -1.0 <= rate <= 1.0
-        t = self.timer
-        delta = self.delta * rate
+    async def adjust(self):
+        # 1.0 <= .delta <= 1.0
         maxdelta = 0.64
-        smul = (1 + delta) if rate > 0 else (1 / (1 + delta))
-        self.value(self.value() * smul)
-        while True:  # Cancelled by touch release
-            t.clear()
-            t.trigger()
-            await t.wait()
-            delta = min(maxdelta, delta * 2)
+        while True:
+            await self.touch.wait()
+            self.touch.clear()
+            delta = min(self.delta ** 2, maxdelta)
+            up = self.delta > 0
             smul = (1 + delta) if up else (1 / (1 + delta))
             self.value(self.value() * smul)
+            await asyncio.sleep_ms(100)

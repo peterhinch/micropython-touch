@@ -48,5 +48,5 @@ class Checkbox(Widget):
                 display.line(x, y, x1, y1, self.fgcolor)
                 display.line(x, y1, x1, y, self.fgcolor)
 
-    def do_sel(self):  # Select was pushed
+    def _touched(self, rr, rc):
         self.value(not self._value)  # Upddate and refresh

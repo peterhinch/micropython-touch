@@ -28,13 +28,12 @@ class Knob(LinearIO):
         bgcolor=None,
         color=None,
         bdcolor=None,
-        prcolor=None,
         callback=dolittle,
         args=[],
         active=True
     ):
         super().__init__(
-            writer, row, col, height, height, fgcolor, bgcolor, bdcolor, value, active, prcolor
+            writer, row, col, height, height, fgcolor, bgcolor, bdcolor, value, active, 0.1
         )
         super()._set_callbacks(callback, args)
         radius = height / 2

@@ -593,29 +593,33 @@ class LinearIO(Widget):
         bdcolor,
         value,
         active,
-        delta_v=0.1,
+        delta_v=0.02,
     ):
         self.delta_v = delta_v
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
         self.horiz = width > height
         self.mid = width >> 1 if self.horiz else height >> 1  # Midpoint for touch
-        self.task = None
+        self.touch = asyncio.Event()
+        self.task = asyncio.create_task(self.adjust())
+        self.can_drag = True  # Allow reated calls to ._touched
+        self.delta = 0
 
     def _touched(self, rrow, rcol):  # Given a touch, adjust according to position
-        mid = self.mid  # Midpoint
-        dv = (rcol - mid) / mid if self.horiz else (mid - rrow) / mid  # -1.0 <= dv <= 1.0
-        d = self.delta_v * dv
-        self.task = asyncio.create_task(self.adjust(d))
+        # 1.0 <= .delta <= 1.0
+        mid = self.mid
+        self.delta = (rcol - mid) / mid if self.horiz else (mid - rrow) / mid
+        self.touch.set()
 
     # Handle long touch. Redefined by textbox.py, scale_log.py
-    async def adjust(self, d):
+    async def adjust(self):
         while True:
+            await self.touch.wait()
+            self.touch.clear()
+            s = 1 if self.delta > 0 else -1
+            d = s * self.delta_v * self.delta ** 2
             self.value(self.value() + d)
             await asyncio.sleep_ms(100)
 
     def _untouched(self):  # Default if not defined in subclass
-        if self.task is not None:
-            self.task.cancel()
-            self.task = None
         self.cb_end(self, *self.cbe_args)
         # Callback not a bound method so pass self

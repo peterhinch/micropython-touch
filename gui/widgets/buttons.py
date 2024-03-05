@@ -209,7 +209,6 @@ class ButtonList:
         self.current = new
         old.visible = False
         new.visible = True
-        Screen.select(new)  # Move currency and redisplay
         # Callback context is button just pressed, not the new one
         self.user_callback(old, *old.callback_args)
 
