@@ -6,7 +6,7 @@
 # Usage:
 # from gui.widgets.scale import Scale
 
-from gui.core.ugui import LinearIO, display
+from gui.core.tgui import LinearIO, display
 from hardware_setup import ssd  # Display driver for Writer
 from gui.core.writer import Writer
 from gui.core.colors import *

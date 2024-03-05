@@ -5,9 +5,6 @@
 
 
 import asyncio
-
-# from time import ticks_diff, ticks_ms
-from gui.primitives import Delay_ms
 import gc
 from array import array
 import sys
@@ -39,6 +36,16 @@ def quiet():
     _vb = False
 
 
+# Allow Display instantiation without a touch interface for setup.
+class DummyTouch:
+    def __init__(self):
+        self.row = 0
+        self.col = 0
+
+    def poll(self):
+        return False
+
+
 # Wrapper for global ssd object providing framebuf compatible methods.
 # Populates globals display, touch and ssd.
 class Display:
@@ -68,11 +75,11 @@ class Display:
             ),
         )
 
-    def __init__(self, objssd, objtouch):
+    def __init__(self, objssd, objtouch=None):
         global display, ssd, touch
         ssd = objssd
         display = self
-        touch = objtouch
+        touch = objtouch if objtouch is not None else DummyTouch()
         self.height = ssd.height
         self.width = ssd.width
         self._is_grey = False  # Not greyed-out
@@ -246,9 +253,11 @@ class Screen:
             await asyncio.sleep_ms(0)
             tl = cls.current_screen.lstactive  # Active (touchable) widgets
             ids = id(cls.current_screen)
-            if touch.poll():  # Deisplay is touched.
+            if touch.poll():  # Display is touched.
                 for obj in (a for a in tl if a.visible and not a.greyed_out()):
-                    obj._trytouch(touch.row, touch.col)  # Run user "on press" callback if touched
+                    if obj._trytouch(touch.row, touch.col):
+                        # Run user "on press" callback if touched
+                        break  # No need to check other objects
                     if ids != id(Screen.current_screen):  # cb may have changed screen
                         break  # get new touchlist
             else:
@@ -550,6 +559,8 @@ class Widget:
             if not self.busy or self.can_drag:
                 self._touched(rr, rc)  # Called repeatedly for draggable objects
                 self.busy = True  # otherwise once only
+                return True
+        return False
 
     def _untouched(self):  # Default if not defined in subclass
         self.cb_end(self, *self.cbe_args)
@@ -589,22 +600,18 @@ class LinearIO(Widget):
         self.horiz = width > height
         self.mid = width >> 1 if self.horiz else height >> 1  # Midpoint for touch
         self.task = None
-        self.timer = Delay_ms(duration=500)
 
     def _touched(self, rrow, rcol):  # Given a touch, adjust according to position
         mid = self.mid  # Midpoint
-        dv = (rcol - mid) / mid if self.horiz else (rrow - mid) / mid  # -1.0 <= dv <= 1.0
+        dv = (rcol - mid) / mid if self.horiz else (mid - rrow) / mid  # -1.0 <= dv <= 1.0
         d = self.delta_v * dv
         self.task = asyncio.create_task(self.adjust(d))
 
     # Handle long touch. Redefined by textbox.py, scale_log.py
-    async def adjust(d):
-        t = self.timer
+    async def adjust(self, d):
         while True:
-            t.clear()
-            t.trigger()
-            await t.wait()
             self.value(self.value() + d)
+            await asyncio.sleep_ms(100)
 
     def _untouched(self):  # Default if not defined in subclass
         if self.task is not None:

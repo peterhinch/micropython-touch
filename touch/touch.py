@@ -34,30 +34,6 @@ class ABCTouch:
         self._rc = col_reflect
         self._trans = transpose
 
-    def cal(self):
-        from time import sleep_ms
-
-        print("Running calibration - ctrl-c to stop.")
-        print("Please note whether the long axis of the display is x or y.")
-        xmin, xmax, ymin, ymax = 4096, 0, 4096, 0
-        try:
-            while True:
-                if res := self.acquire():
-                    print(f"x = {self._x:04d} y = {self._y:04d}", end="\r")
-                    xmin = min(xmin, self._x)
-                    ymin = min(ymin, self._y)
-                    xmax = max(xmax, self._x)
-                    ymax = max(ymax, self._y)
-                    sleep_ms(200)
-        except KeyboardInterrupt:
-            pass
-        long = max(self._height, self._width)
-        short = min(self._height, self._width)
-        print("If x is long axis args are:")
-        print(f"Args: {short}, {long}, {xmin}, {ymin}, {xmax}, {ymax}")
-        print("If y is long axis args are:")
-        print(f"Args: {long}, {short}, {xmin}, {ymin}, {xmax}, {ymax}")
-
     # API: GUI calls poll which returns True if touched. .row, .col hold Screen
     # referenced coordinates.
     # Subclass has method .acquire: returns True if touched and populates

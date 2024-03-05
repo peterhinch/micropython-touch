@@ -12,7 +12,7 @@ import asyncio
 from gui.primitives import Delay_ms
 from math import log10
 
-from gui.core.ugui import LinearIO, display
+from gui.core.tgui import LinearIO, display
 from hardware_setup import ssd  # Display driver for Writer
 from gui.core.writer import Writer
 from gui.core.colors import *

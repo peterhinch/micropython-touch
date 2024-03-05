@@ -1,6 +1,4 @@
 _attrs = {
-    "Adjuster": "adjuster",
-    "FloatAdj": "adjuster",
     "Button": "buttons",
     "CloseButton": "buttons",
     "ButtonList": "buttons",
@@ -26,12 +24,13 @@ _attrs = {
     "BitMap": "bitmap",
     "QRMap": "qrcode",
     "Grid": "grid",
-    }
+}
 
 # Lazy loader, effectively does:
 #   global attr
 #   from .mod import attr
 # Filched from uasyncio.__init__.py
+
 
 def __getattr__(attr):
     mod = _attrs.get(attr, None)
