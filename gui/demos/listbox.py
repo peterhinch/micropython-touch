@@ -33,7 +33,7 @@ class BaseScreen(Screen):
             ("Plutonium", cb_radon, ("Pu",)),
             ("Actinium", cb_radon, ("Ac",)),
         )
-        Listbox(wri, 2, 2, elements=els, dlines=5, bdcolor=RED, value=1, also=Listbox.ON_LEAVE)
+        Listbox(wri, 2, 2, elements=els, dlines=5, bdcolor=RED, value=1)
         # bdcolor = RED, fgcolor=RED, fontcolor = YELLOW, select_color=BLUE, value=1)
         CloseButton(wri)
 

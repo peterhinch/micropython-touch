@@ -1,7 +1,7 @@
-# tbox.py Test/demo of Textbox widget for micro-gui
+# tbox.py Test/demo of Textbox widget for micropython-touch
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Usage:
 # import gui.demos.tbox
@@ -12,7 +12,7 @@ import hardware_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 from gui.core.writer import CWriter
 
-import uasyncio as asyncio
+import asyncio
 from gui.core.colors import *
 import gui.fonts.arial10 as arial10
 from gui.widgets import Label, Textbox, Button, CloseButton
@@ -20,13 +20,11 @@ from gui.widgets import Label, Textbox, Button, CloseButton
 wri = CWriter(ssd, arial10)  # verbose = True
 
 
-def fwdbutton(wri, row, col, cls_screen, text="Next"):
+def fwdbutton(wri, row, col, cls_screen, text, bgc):
     def fwd(button):
         Screen.change(cls_screen)
 
-    b = Button(
-        wri, row, col, callback=fwd, fgcolor=BLACK, bgcolor=GREEN, text=text, shape=RECTANGLE
-    )
+    b = Button(wri, row, col, callback=fwd, fgcolor=BLACK, bgcolor=bgc, text=text)
     return b.mrow
 
 
@@ -99,7 +97,7 @@ Text may be clipped to the width of the control or may be word-wrapped. If the n
 of lines of text exceeds the height available, scrolling may be performed \
 by calling a method.
 
-Please use the increase and decrease buttons (or encoder) to scroll this text.
+Please touch the screen to scroll this text.
 """
 
 
@@ -117,9 +115,9 @@ class MainScreen(Screen):
         Label(wri, 2, 2, "Select test to run")
         col = 2
         row = 20
-        row = fwdbutton(wri, row, col, TBWScreen, "Wrap") + 2
-        row = fwdbutton(wri, row, col, TBCScreen, "Clip") + 2
-        fwdbutton(wri, row, col, TBUScreen, "Scroll")
+        row = fwdbutton(wri, row, col, TBWScreen, "Wrap", YELLOW) + 2
+        row = fwdbutton(wri, row, col, TBCScreen, "Clip", BLUE) + 2
+        fwdbutton(wri, row, col, TBUScreen, "Scroll", GREEN)
         CloseButton(wri)
 
 

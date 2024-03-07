@@ -594,10 +594,12 @@ class LinearIO(Widget):
         value,
         active,
         delta_v=0.02,
+        horiz=None,
     ):
         self.delta_v = delta_v
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
-        self.horiz = width > height
+        # Subclass can force a touch orientation by passing a bool
+        self.horiz = width > height if horiz is None else horiz
         self.mid = width >> 1 if self.horiz else height >> 1  # Midpoint for touch
         self.touch = asyncio.Event()
         self.task = asyncio.create_task(self.adjust())
@@ -616,6 +618,7 @@ class LinearIO(Widget):
             await self.touch.wait()
             self.touch.clear()
             s = 1 if self.delta > 0 else -1
+            # Square law improves ability to make small changes.
             d = s * self.delta_v * self.delta ** 2
             self.value(self.value() + d)
             await asyncio.sleep_ms(100)

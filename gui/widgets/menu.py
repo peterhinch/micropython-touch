@@ -46,13 +46,11 @@ class SubMenu(Window):
         )
 
     def callback(self, lbox):
-        display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
         el = self.elements[lbox.value()]  # (text, cb, args)
         if len(el) == 2:  # Recurse into submenu
             args = (self.menu, self.button, el[1])
             Screen.change(SubMenu, args=args)
-            display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
         else:
             el[1](lbox, *el[2])
 
@@ -96,4 +94,3 @@ class Menu:
     def cb(self, button, txt, elements):  # Button pushed which calls submenu
         args = (self, button, elements)
         Screen.change(SubMenu, args=args)
-        display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode

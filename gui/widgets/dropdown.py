@@ -33,7 +33,7 @@ class _ListDialog(Window):
             width=lb_width,
             fgcolor=dd.fgcolor,
             bgcolor=dd.bgcolor,
-            bdcolor=False,
+            bdcolor=dd.bdcolor,
             fontcolor=dd.fontcolor,
             select_color=dd.select_color,
             value=dd.value(),
@@ -42,7 +42,6 @@ class _ListDialog(Window):
         self.dd = dd
 
     def callback(self, obj_listbox):
-        display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
         self.dd.value(obj_listbox.value())  # Update it
 
@@ -136,11 +135,13 @@ class Dropdown(Widget):
                 self.fgcolor,
             )
 
-    def do_sel(self):  # Select was pushed
+    def _touched(self, rrow, _):
         if len(self.elements) > 1:
             args = (self.writer, self.row - 2, self.col - 2, self)
             Screen.change(_ListDialog, args=args)
-            display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
+
+    # def _untouched(self):
+    #     self.touched = False
 
     def _despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]

@@ -5,19 +5,14 @@
 
 # 12 Sep 21 Support for scrolling.
 
+import asyncio
 from gui.core.tgui import Widget, display
 from gui.core.colors import *
 
 dolittle = lambda *_: None
 
-# Behaviour has issues compared to touch displays because movement between
-# entries is sequential. This can affect the choice in when the callback runs.
-# It always runs when select is pressed. See 'also' ctor arg.
-
 
 class Listbox(Widget):
-    ON_MOVE = 1  # Also run whenever the currency moves.
-    ON_LEAVE = 2  # Also run on exit from the control.
 
     # This is used by dropdown.py and menu.py
     @staticmethod
@@ -43,12 +38,11 @@ class Listbox(Widget):
         value=0,
         fgcolor=None,
         bgcolor=None,
-        bdcolor=False,
+        bdcolor=None,
         fontcolor=None,
         select_color=DARKBLUE,
         callback=dolittle,
-        args=[],
-        also=0
+        args=[]
     ):
 
         e0 = elements[0]
@@ -69,7 +63,6 @@ class Listbox(Widget):
         if width is None:
             width = tw  # Text width
 
-        self.also = also
         self.ntop = 0  # Top visible line
         if not isinstance(value, int):
             value = 0  # Or ValueError?
@@ -77,12 +70,16 @@ class Listbox(Widget):
             value = min(value, len(elements) - 1)
             self.ntop = value - self.dlines + 1
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, True)
-        self.adjustable = True  # Can show adjustable border
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor
-        self._value = value  # No callback until user selects
+        self._value = value  # No callback until user touches
         self.ev = value  # Value change detection
+        self.scroll = None
+
+    def despatch(self, _):  # Run the callback specified in elements
+        x = self.els[self()]
+        x[1](self, *x[2])
 
     def show(self):
         if not super().show(False):  # Clear to self.bgcolor
@@ -141,11 +138,11 @@ class Listbox(Widget):
             self.ntop = vnew - self.dlines + 1
         elif vnew < self.ntop:
             self.ntop = vnew
+        self._value = -1
         self.value(vnew)
-        if self.also & Listbox.ON_MOVE:  # Treat as if select pressed
-            self.do_sel()
+        self.ev = vnew
 
-    def do_adj(self, _, val):
+    def do_adj(self, val):  # ugui: called on up/down
         v = self._value
         if val > 0:
             if v:
@@ -154,21 +151,25 @@ class Listbox(Widget):
             if v < len(self.elements) - 1:
                 self._vchange(v + 1)
 
-    # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes
-    # list currency and then moves off the control. Otherwise if we have a
-    # callback that refreshes another control, that second control does not
-    # track currency.
-    def do_sel(self):  # Select was pushed
-        self.ev = self._value
-        self.cb(self, *self.cb_args)
+    async def do_scroll(self, up):
+        await asyncio.sleep(1)
+        while True:
+            self.do_adj(1 if up else -1)
+            await asyncio.sleep_ms(300)
 
-    def enter(self):
-        self.ev = self._value  # Value change detection
+    def _touched(self, rrow, _):
+        self.ev = min(rrow // self.entry_height, len(self.elements) - 1) + self.ntop
+        if rrow > self.height - self.entry_height:
+            self.scroll = asyncio.create_task(self.do_scroll(False))
+        elif rrow < self.entry_height:
+            self.scroll = asyncio.create_task(self.do_scroll(True))
 
-    def leave(self):
-        if (self.also & Listbox.ON_LEAVE) and self._value != self.ev:
-            self.do_sel()
-
-    def despatch(self, _):  # Run the callback specified in elements
-        x = self.els[self()]
-        x[1](self, *x[2])
+    def _untouched(self):
+        if self.scroll is not None:
+            self.scroll.cancel()
+            self.scroll = None
+        if self.ev is not None:
+            self._value = -1  # Force update on every touch
+            self.value(self.ev)
+            self.cb(self, *self.cb_args)
+            self.ev = None

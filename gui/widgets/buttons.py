@@ -182,6 +182,7 @@ class ButtonList:
             new = button
             self.current = new
             old.visible = False
+            old.draw = True
             new.visible = True
             new.draw = True  # Redisplay without changing currency
             # Args for user callback: button instance followed by any specified.
@@ -209,6 +210,7 @@ class ButtonList:
         self.current = new
         old.visible = False
         new.visible = True
+        new.draw = True
         # Callback context is button just pressed, not the new one
         self.user_callback(old, *old.callback_args)
 

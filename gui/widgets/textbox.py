@@ -29,14 +29,16 @@ class Textbox(LinearIO):
         fgcolor=None,
         bgcolor=None,
         clip=True,
-        active=False
+        active=False,
     ):
         height = nlines * writer.height
         devht = writer.device.height
         devwd = writer.device.width
         if ((row + height + 2) > devht) or ((col + width + 2) > devwd):
             raise ValueError("Textbox extends beyond physical screen.")
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, 0, active)
+        super().__init__(
+            writer, row, col, height, width, fgcolor, bgcolor, bdcolor, 0, active, 5, False
+        )
         self.nlines = nlines
         self.clip = clip
         self.lines = []
@@ -140,19 +142,16 @@ class Textbox(LinearIO):
             self.start = max(0, min(line, len(self.lines) - self.nlines))
         self.draw = True  # Cause a refresh
 
-    def do_adj(self, button, val):
-        if isinstance(button, int):  # Using an encoder
-            self.scroll(val)
-        else:
-            asyncio.create_task(self.btn_handler(button, val))
-
-    async def btn_handler(self, button, up):  # Only runs if not using encoder
-        self.scroll(-up)
-        t = ticks_ms()
-        d = 1
-        while not button():
-            await asyncio.sleep_ms(0)  # Quit fast on button release
-            if ticks_diff(ticks_ms(), t) > 500:  # Button was held down
-                d = min(16, d * 2)
-                self.scroll(-up * d)
-                t = ticks_ms()
+    # Handle long touch. Redefined by textbox.py, scale_log.py
+    async def adjust(self):
+        d = 0
+        while True:
+            await self.touch.wait()
+            self.touch.clear()
+            s = 1 if self.delta > 0 else -1
+            # Square law improves ability to make small changes.
+            d += s * self.delta_v * self.delta ** 2
+            if abs(dd := round(d)):
+                self.scroll(-dd)
+                d = 0
+            await asyncio.sleep_ms(100)

@@ -11,7 +11,7 @@ from gui.widgets import Label, CloseButton, Dropdown
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as font
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -33,7 +33,7 @@ class BaseScreen(Screen):
             bdcolor=GREEN,
             callback=self.ddcb,
         )
-        row += 30
+        row += 50
         self.lbl = Label(wri, row, col, self.dd.width, bdcolor=RED)
         CloseButton(wri)  # Quit the application
 
