@@ -19,8 +19,6 @@ from gui.core.colors import *
 
 # Start value is 1.0. User applies scaling to value and ticks callback.
 class ScaleLog(LinearIO):
-    encoder_rate = 5
-
     def __init__(
         self,
         writer,
@@ -164,12 +162,8 @@ class ScaleLog(LinearIO):
 
     async def adjust(self):
         # 1.0 <= .delta <= 1.0
-        maxdelta = 0.64
         while True:
             await self.touch.wait()
             self.touch.clear()
-            delta = min(self.delta ** 2, maxdelta)
-            up = self.delta > 0
-            smul = (1 + delta) if up else (1 / (1 + delta))
-            self.value(self.value() * smul)
+            self.value(self.value() * (1 + self.delta ** 3))
             await asyncio.sleep_ms(100)

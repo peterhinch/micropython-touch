@@ -5,7 +5,6 @@
 
 import asyncio
 from gui.core.tgui import Screen, Widget, display
-from gui.primitives import Delay_ms
 from gui.core.colors import *
 
 dolittle = lambda *_: None
@@ -54,8 +53,6 @@ class Button(Widget):
         self.lp_callback = lp_callback
         self.lp_args = lp_args
         self.lp_task = None  # Long press not in progress
-        if self.litcolor is not None:
-            self.delay = Delay_ms(self.shownormal)
 
     def show(self):
         if self.screen is not Screen.current_screen:
@@ -95,6 +92,7 @@ class Button(Widget):
                     )
 
     async def shownormal(self):
+        await asyncio.sleep_ms(Button.lit_time)
         # Handle case where screen changed while timer was active: delay repaint
         # until screen is current. Pathological app behaviour where another
         # control caused a screen change while timer running.
@@ -103,18 +101,11 @@ class Button(Widget):
         self.bgcolor = self.def_bgcolor
         self.draw = True  # Redisplay
 
-    def do_sel(self):  # Select was pushed
-        self.callback(self, *self.callback_args)  # CB takes self as 1st arg.
-        if self.litcolor is not None and self.has_focus():  # CB may have changed focus
-            self.bgcolor = self.litcolor
-            self.draw = True  # Redisplay
-            self.delay.trigger(Button.lit_time)
-
     def _touched(self, row, col):  # Process touch
         if self.litcolor is not None:
             self.bgcolor = self.litcolor
             self.draw = True
-            self.delay.trigger(Button.lit_time)
+            asyncio.create_task(self.shownormal())
         if self.lp_callback is not None:
             self.lp_task = asyncio.create_task(self.longpress())
         if not self.onrelease:

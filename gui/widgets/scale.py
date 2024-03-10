@@ -55,9 +55,7 @@ class Scale(LinearIO):
         else:
             ctrl_ht = height - min_ht  # adjust ticks for greater height
         width &= 0xFFFE  # Make divisible by 2: avoid 1 pixel pointer offset
-        super().__init__(
-            writer, row, col, height, width, fgcolor, bgcolor, bdcolor, self._to_int(value), active
-        )
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
         super()._set_callbacks(callback, args)
         self.minval = -1.0  # By default scales run from -1.0 to +1.0
         self.fontcolor = fontcolor if fontcolor is not None else self.fgcolor
@@ -87,7 +85,8 @@ class Scale(LinearIO):
         y1: int = self.y1
         if super().show():
             # Scale is drawn using ints. Each division is 10 units.
-            val: int = self._value  # 0..ticks*10
+            # val: int = self._value  # 0..ticks*10
+            val: int = round((self() + 1.0) * self.ticks * 5)  # 0..ticks*10
             # iv increments for each tick. Its value modulo N determines tick length
             iv: int  # val / 10 at a tick position
             d: int  # val % 10: offset relative to a tick position
@@ -136,18 +135,6 @@ class Scale(LinearIO):
 
             display.vline(x0 + (x1 - x0) // 2, y0, y1 - y0, self.ptrcolor)  # Draw pointer
 
-    def _to_int(self, v):
-        return round((v + 1.0) * self.ticks * 5)  # 0..self.ticks*10
-
+    # Convert internal int to float for callbacks
     def _fvalue(self, v=None):
         return v / (5 * self.ticks) - 1.0
-
-    def value(self, val=None):  # User method to get or set value
-        if val is not None:
-            val = min(max(val, -1.0), 1.0)
-            v = self._to_int(val)
-            if v != self._value:
-                self._value = v
-                self.draw = True  # Ensure a redraw on next refresh
-                self.callback(self, *self.args)
-        return self._fvalue(self._value)

@@ -16,6 +16,7 @@ _attrs = {
     "Menu": "menu",
     "Meter": "meter",
     "Region": "region",
+    "Pad": "pad",
     "ScaleLog": "scale_log",
     "Scale": "scale",
     "Slider": "sliders",

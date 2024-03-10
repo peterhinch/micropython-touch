@@ -42,9 +42,6 @@ gc.collect()  # Precaution before instantiating framebuf
 time.sleep_ms(100)
 prst(1)
 ssd = SSD(spi, pcs, pdc, prst, usd=True)  # 240x320 default
-# prst(0)
-# time.sleep(1)
-# prst(1)
 from touch.tsc2007 import TSC2007
 from gui.core.tgui import Display
 

@@ -14,23 +14,17 @@ a substantial superset of `nano-gui` widgets.
 
 It is compatible with all display drivers for
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
-to a wide range of displays. It is also portable between hosts.
+to a wide range of displays. It is also portable between hosts. Support for
+e-paper is theoretically possible if any exist with touch controllers.
 
 ![Image](./images/rp2_test_fixture.JPG)  
 Raspberry Pico with an ILI9341 from eBay.
 
-![Image](./images/ttgo.JPG)  
-TTGO T-Display. A joystick switch and an SIL resistor make a simple inexpensive
-and WiFi-capable system.
-
-![Image](./images/epaper.JPG)  
-micro_gui now has limited support for ePaper.
-
 # Rationale
 
 This was developed from [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main)
-with the aim of supporting a variety of touch controllers via a common abstract
-base class.
+with the aim of supporting a variety of touch controllers. Touch drivers share
+an API via a common abstract base class.
 
 The following are similar GUI repos with differing objectives.
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) Extremely low
@@ -60,7 +54,7 @@ March 2024: Initial port from micro-gui.
  1.1 [Coordinates](./README.md#11-coordinates) The GUI's coordinate system.  
  1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects) Basic GUI classes.  
  1.3 [Fonts](./README.md#13-fonts)  
- 1.4 [Navigation](./README.md#14-navigation) Options for hardware. How the GUI navigates between widgets.  
+ 1.4 [Widget control](./README.md#14-widget-control) Operation of variable controls.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
  1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config. Please do this first.  
  1.7 [Installation](./README.md#17-installation) Installing the library.  
@@ -114,6 +108,7 @@ March 2024: Initial port from micro-gui.
  6.17 [Menu class](./README.md#617-menu-class)  
  6.18 [BitMap widget](./README.md#618-bitmap-widget) Draw bitmaps from files.  
  6.19 [QRMap widget](./README.md#619-qrmap-widget) Draw QR codes created by uQR.  
+ 6.20 [Pad widget](./README.md#620-pad-widget) Invisible region sensitive to touch.
 7. [Graph plotting](./README.md#7-graph-plotting) Widgets for Cartesian and polar graphs.  
  7.1 [Concepts](./README.md#71-concepts)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.1.1 [Graph classes](./README.md#711-graph-classes)  
@@ -134,14 +129,14 @@ March 2024: Initial port from micro-gui.
 
 # 1. Basic concepts
 
-Internally `micro-gui` uses `asyncio`. It presents a conventional callback
-based interface; knowledge of `asyncio` is not required for its use. Display
-refresh is handled automatically. Widgets are drawn using graphics primitives
-rather than icons. This makes them efficiently scalable and minimises RAM usage
-compared to icon-based graphics. It also facilitates the provision of extra
-visual information. For example the color of all or part of a widget may be
-changed programmatically, for example to highlight an overrange condition.
-There is limited support for
+Internally `micropython-touch` uses `asyncio`. The interface is callback-based;
+knowledge of `asyncio` is not required for its use. Display refresh is handled
+automatically. Widgets are drawn using graphics primitives rather than icons.
+This makes them efficiently scalable and minimises RAM usage compared to
+icon-based graphics. It also facilitates the provision of extra visual
+information. For example the color of all or part of a widget may be changed
+programmatically, for example to highlight an overrange condition. There is
+limited support for
 [icons](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#3-icons)
 in pushbuttons via icon fonts, also via the [BitMap widget](./README.md#619-bitmap-widget).
 
@@ -216,6 +211,11 @@ data input: such a widget is defined as `active`. A `passive` widget can only
 display data. An `active` widget can respond to touch. `Widget` objects have
 dimensions defined by bound variables `height` and `width`.
 
+The GUI design is based on overlapping windows. When a window is closed, that
+below it is revealed. This is RAM-efficient: memory used by the closed window is
+retrieved. I'm told it is possible to write applications which subvert this
+design but it is unsupported.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 1.3 Fonts
@@ -242,92 +242,57 @@ The directory `gui/fonts/bitmaps` is only required for the `bitmap.py` demo.
 
 ###### [Contents](./README.md#0-contents)
 
-## 1.4 Navigation
+## 1.4 Widget control
 
-The GUI requires from 2 to 5 pushbuttons for control. These are:
- 1. `Next` Move to the next widget.
- 2. `Select` Operate the currently selected widget.
- 3. `Prev` Move to the previous widget.
- 4. `Increase` Move within the widget (i.e. adjust its value).
- 5. `Decrease` Move within the widget.
-
-An alternative is to replace buttons 4 and 5 with a quadrature encoder knob
-such as [this one](https://www.adafruit.com/product/377). That device has a
-switch which operates when the knob is pressed: this may be wired for the
-`Select` button. This provides the most intuitive operation.
-
-Many widgets such as `Pushbutton` or `Checkbox` objects require only the
-`Select` button to operate: it is possible to design an interface with a subset
-of `micro-gui` widgets which requires only the first two buttons. With three
-buttons all widgets may be used without restriction.
-
-Widgets such as `Listbox` objects, dropdown lists (`Dropdown`), and those for
-floating point data entry can use the `Increase` and `Decrease` buttons (or an
-encoder) to select a data item or to adjust the linear value. If three buttons
-are provided, the GUI will enter "adjust" mode in response to a double-click
-of `Select`. In this mode `Prev` and `Next` act to decrease and increase the
-widget's value. A further double-click restores normal navigation. This is
-discussed in [Floating Point Widgets](./README.md#112-floating-point-widgets).
-
-The currently selected `Widget` is identified by a white border: the `focus`
-moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
-(those that can accept input) can receive the `focus`.  Widgets are defined as
-`active` or `passive` in the constructor, and this status cannot be changed. In
-some cases the state can be specified as a constructor arg, but other widgets
-have a predefined state. An `active` widget can be disabled and re-enabled at
-runtime. A disabled `active` widget is shown "greyed-out" and cannot accept the
-`focus` until re-enabled.
+Some widgets support the entry of floating point values, for example slider
+controls. These operate as follows. A touch near one end of the control causes
+the value to increase, touching near the other end causes it to decrease. The
+rate of change depends on the distance between the touch and the widget centre.
+This enables rapid change, but also slow and extremely precise adjustment.
 
 ###### [Contents](./README.md#0-contents)
 
 ## 1.5 Hardware definition
 
 A file `hardware_setup.py` must exist in the GUI root directory. This defines
-the connections to the display, the display driver, and pins used for the
-pushbuttons. Example files may be found in the `setup_examples` directory.
-Further examples (without pin definitions) are in this
+the connections to the display and the display driver. It also defines the touch
+driver and the pins used for its interface. Example files may be found in the
+`setup_examples` directory.
+
+Further examples (without touch controller definitions) are in this
 [nano-gui directory](https://github.com/peterhinch/micropython-nano-gui/tree/master/setup_examples).
 
 The following is a typical example for a Raspberry Pi Pico driving an ILI9341
-display:
+display with TSC2007 touch controller:
 
 ```python
-from machine import Pin, SPI, freq
+from machine import Pin, SoftI2C, SPI, freq
 import gc
+import time
 
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
+
 freq(250_000_000)  # RP2 overclock
 # Create and export an SSD instance
-pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
-prst = Pin(9, Pin.OUT, value=1)
+prst = Pin(8, Pin.OUT, value=0)
+pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
 pcs = Pin(10, Pin.OUT, value=1)
-spi = SPI(0, baudrate=30_000_000)
+spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-# Instantiate display and assign to ssd. For args see display drivers doc.
-ssd = SSD(spi, pcs, pdc, prst, usd=True)
-# The following import must occur after ssd is instantiated.
-from gui.core.ugui import Display, quiet
+time.sleep_ms(100)
+prst(1)
+ssd = SSD(spi, pcs, pdc, prst, usd=True)  # 240x320 default
+from touch.tsc2007 import TSC2007
+from gui.core.tgui import Display, quiet
 # quiet()
-# Define control buttons
-nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
-sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
-prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
-increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
-# Create a Display instance and assign to display.
-display = Display(ssd, nxt, sel, prev, increase, decrease)
-```
-Where an encoder replaces the `increase` and `decrease` buttons, only the final
-line needs to be changed to provide an extra arg:
-```python
-display = Display(ssd, nxt, sel, prev, increase, decrease, 4)
-```
-The final arg specifies the sensitivity of the attached encoder, the higher the
-value the more the knob has to be turned for a desired effect. A value of 1
-provides the highest sensitivity, being the native rate of the encoder. Many
-encoders have mechanical detents: a value of 4 matches the click rate of most
-devices.
 
+# Can also use hard I2C
+i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
+tpad = TSC2007(i2c, 320, 240)
+tpad.mapping(transpose=True, row_reflect=True)
+
+display = Display(ssd, tpad)
+```
 The commented-out `quiet()` line provides a means of suppressing diagnostic
 messages.
 
@@ -402,11 +367,11 @@ ST7789):
 ```python
 >>> mip.install("github:peterhinch/micropython-nano-gui/drivers/st7789")
 ```
-The last part of the addresss (`st7789`) is the name of the directory holding
+The last part of the address (`st7789`) is the name of the directory holding
 drivers for the display in use. In cases where the directory holds more than
 one driver all will be installed. Unused drivers may be deleted.
 
-Install using mpremote on the PC as follows:
+Install using `mpremote` on the PC as follows:
 ```bash
 $ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
 ```
@@ -431,15 +396,15 @@ This installs a subset adequate to run the `simple.py` demo. It comprises:
 Note that `mip` and `mpremote mip` install to `/lib/` which therefore becomes
 the root of the above tree. The subset is installed with (on the device):
 ```python
->>> mip.install("github:peterhinch/micropython-micro-gui")
+>>> mip.install("github:peterhinch/micropython-touch")
 ```
 or (on the PC):
 ```bash
-$ mpremote mip install "github:peterhinch/micropython-micro-gui"
+$ mpremote mip install "github:peterhinch/micropython-touch"
 ```
 In both cases the edited `hardware_setup.py` must be copied from the PC:
 ```bash
-$ cd micropython-micro-gui
+$ cd micropython-touch
 $ mpremote cp hardware_setup.py :
 ```
 When adding components the directory structure must be maintained. For example,
@@ -1495,14 +1460,15 @@ from gui.widgets import Listbox  # File: listbox.py
 ```
 ![Image](./images/listbox.JPG)
 
-A `listbox` with the second item highlighted. Pressing the physical `select`
-button will cause the callback to run.
+A `listbox` with the second item highlighted. Touching an entry will cause the
+callback to run.
 
 A `Listbox` is an active widget. By default its height is determined by the
 number of entries in it and the font in use. It may be reduced by specifying
-`dlines` in which case scrolling will occur. When the widget has focus the
-currently selected element may be changed using `increase` and `decrease`
-buttons or by turning the encoder. On pressing `select` a callback runs.
+`dlines` in which case scrolling will occur. A short vertical line is visible
+in the top right if scrolling down is possible, likewise in the bottom right if
+the contents may be scrolled up. A long touch on the top or bottom entry
+initiates scrolling.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1537,11 +1503,6 @@ Optional keyword only arguments:
  * `select_color=DARKBLUE` Background color for selected item in list.
  * `callback=dolittle` Callback function which runs when `select` is pressed.
  * `args=[]` A list/tuple of arguments for above callback.
- * `also=0` Options are `Listbox.ON_MOVE` or `Listbox.ON_LEAVE`. By default the
- callback runs only when the `select` button is pressed. The `ON_LEAVE` value
- causes it also to run when the focus moves from the control if the currently
- selected element has changed. The `ON_MOVE` arg causes the callback to run
- every time the highlighted element is changed.
 
 Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
@@ -2076,7 +2037,7 @@ provides for user input of such values. It is modelled on old radios where a
 large scale scrolls past a small window having a fixed pointer. This enables a
 scale with (say) 200 graduations (ticks) to readily be visible on a small
 display, with sufficient resolution to enable the user to interpolate between
-ticks. Default settings enable estimation of a value to within about +-0.1%.
+ticks.
 
 The `Scale` may be `active` or `passive`. A description of the user interface
 in the `active` case may be found in
@@ -2709,6 +2670,37 @@ See `gui/demos/qrcode.py` for a usage example. The demo expects `uQR.py` to be
 located in the root directory of the target.
 
 ###### [Contents](./README.md#0-contents)
+
+## 6.20 Pad widget
+
+This rectangular active widget is invisible. It can be used to enable passive
+widgets or objects drawn with display primitives to respond to touch.
+
+Constructor mandatory positional arguments:
+1. `writer` A `Writer` instance.
+2. `row` Location on screen.
+3. `col`
+
+Optional keyword only arguments:
+ * `height=20`
+ * `width=50`
+ * `onrelease=True` If True the callback will occur when the pad is released
+ otherwise it will occur when pressed.
+ * `callback=None` Callback function - response to touch or release.
+ * `args=[]` Args for above.
+ * `lp_callback=None` Callback for a long press.
+ * `lp_args=[]` Args for above.
+
+Method:
+ * `greyed_out=None` Optional boolean argument or `None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it;
+ this determines whether the control responds to touch - there is no visible
+ effect.
+
+Class variable:
+* `long_press_time = 1000` Press duration (ms) for a long press to be registered.
+
+The demo `primitives.py` illustrates this widget.
 
 # 7. Graph Plotting
 

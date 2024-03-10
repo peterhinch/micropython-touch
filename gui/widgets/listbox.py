@@ -75,7 +75,8 @@ class Listbox(Widget):
         self.fontcolor = fontcolor
         self._value = value  # No callback until user touches
         self.ev = value  # Value change detection
-        self.scroll = None
+        self.can_scroll = len(self.elements) > self.dlines
+        self.scroll = None  # Scroll task
 
     def despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]
@@ -142,27 +143,29 @@ class Listbox(Widget):
         self.value(vnew)
         self.ev = vnew
 
-    def do_adj(self, val):  # ugui: called on up/down
+    def do_adj(self, up):
         v = self._value
-        if val > 0:
+        if up:
             if v:
                 self._vchange(v - 1)
-        elif val < 0:
+        else:
             if v < len(self.elements) - 1:
                 self._vchange(v + 1)
 
     async def do_scroll(self, up):
         await asyncio.sleep(1)
         while True:
-            self.do_adj(1 if up else -1)
+            self.do_adj(up)
             await asyncio.sleep_ms(300)
 
     def _touched(self, rrow, _):
         self.ev = min(rrow // self.entry_height, len(self.elements) - 1) + self.ntop
-        if rrow > self.height - self.entry_height:
-            self.scroll = asyncio.create_task(self.do_scroll(False))
-        elif rrow < self.entry_height:
-            self.scroll = asyncio.create_task(self.do_scroll(True))
+        if self.can_scroll:  # Scrolling is possible
+            # If touching top or bottom element, initiate scrolling
+            if rrow > self.height - self.entry_height:
+                self.scroll = asyncio.create_task(self.do_scroll(False))
+            elif rrow < self.entry_height:
+                self.scroll = asyncio.create_task(self.do_scroll(True))
 
     def _untouched(self):
         if self.scroll is not None:

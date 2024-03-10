@@ -7,12 +7,16 @@
 import hardware_setup  # Create a display instance
 from gui.core.tgui import Screen, Window, ssd, display
 
-from gui.widgets import Label, CloseButton
+from gui.widgets import Label, CloseButton, Pad
 from gui.core.writer import CWriter
 
 # Font for CWriter
 import gui.fonts.font10 as font
 from gui.core.colors import *
+
+
+def cb(obj, txt):
+    print(f"Pad callback: text {txt}")
 
 
 class BaseScreen(Screen):
@@ -24,6 +28,20 @@ class BaseScreen(Screen):
         col = 2
         row = 2
         Label(wri, row, col, "Primitives")
+        text = "Touch me."
+        row = 135
+        Label(wri, row, col, text, fgcolor=YELLOW)
+        sl = wri.stringlen(text)
+        Pad(
+            wri,
+            row,
+            col,
+            width=sl,
+            callback=cb,
+            args=("release",),
+            lp_callback=cb,
+            lp_args=("long",),
+        )
         CloseButton(wri)  # Quit the application
 
     def after_open(self):

@@ -440,6 +440,7 @@ class Widget:
         self.visible = True  # Used by ButtonList class for invisible buttons
         self.draw = True  # Signals that obect must be redrawn
         self._value = value
+        self.minval = 0  # FP value: self.minval <= value <= 1.0
 
         # Set colors. Writer colors cannot be None:
         #  bg == 0, fg == 1 are ultimate (monochrome) defaults.
@@ -464,9 +465,9 @@ class Widget:
         # touch
         self.cb_end = lambda *_: None  # Touch release callbacks
         self.cbe_args = []
-        self.was_touched = False
-        self.busy = False
-        self.can_drag = False  # TODO
+        self.was_touched = False  # Direct untouched to last touched widget
+        self.busy = False  # Currently touched
+        self.can_drag = False  # Accept multiple touches
 
     def warning(self):
         obj = self.__class__.__name__
@@ -474,8 +475,8 @@ class Widget:
 
     def value(self, val=None):  # User method to get or set value
         if val is not None:
-            if type(val) is float:
-                val = min(max(val, 0.0), 1.0)
+            if isinstance(val, float):
+                val = min(max(val, self.minval), 1.0)
             if val != self._value:
                 self._value = val
                 self.draw = True  # Ensure a redraw on next refresh
@@ -612,15 +613,14 @@ class LinearIO(Widget):
         self.delta = (rcol - mid) / mid if self.horiz else (mid - rrow) / mid
         self.touch.set()
 
-    # Handle long touch. Redefined by textbox.py, scale_log.py
+    # Handle long touch. Redefined by textbox.py, scale_log.py. Task runs forever
+    # but spends most of the time waiting on an Event.
     async def adjust(self):
         while True:
             await self.touch.wait()
             self.touch.clear()
-            s = 1 if self.delta > 0 else -1
-            # Square law improves ability to make small changes.
-            d = s * self.delta_v * self.delta ** 2
-            self.value(self.value() + d)
+            # Cube law improves ability to make small changes, preserves sign.
+            self.value(self.value() + self.delta_v * self.delta ** 3)
             await asyncio.sleep_ms(100)
 
     def _untouched(self):  # Default if not defined in subclass
