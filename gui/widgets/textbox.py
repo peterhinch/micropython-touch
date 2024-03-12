@@ -148,10 +148,9 @@ class Textbox(LinearIO):
         while True:
             await self.touch.wait()
             self.touch.clear()
-            s = 1 if self.delta > 0 else -1
-            # Square law improves ability to make small changes.
-            d += s * self.delta_v * self.delta ** 2
-            if abs(dd := round(d)):
-                self.scroll(-dd)
+            # Cube law improves ability to make small changes.
+            d -= self.delta_v * self.delta ** 3
+            if dd := round(d):  # Scroll by integers
+                self.scroll(dd)
                 d = 0
             await asyncio.sleep_ms(100)

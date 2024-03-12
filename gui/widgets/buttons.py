@@ -30,10 +30,10 @@ class Button(Widget):
         litcolor=None,
         text="",
         callback=dolittle,
-        args=[],
+        args=(),
         onrelease=True,
         lp_callback=None,
-        lp_args=[]
+        lp_args=()
     ):
         sl = writer.stringlen(text)
         if shape == CIRCLE:  # Only height need be specified

@@ -23,12 +23,12 @@ class BaseScreen(Screen):
         row = 25
         self.graphic = BitMap(wri, row, col, 99, 99, fgcolor=WHITE, bgcolor=BLACK)
         col = 120
-        Button(wri, row, col, text="Next", callback=self.cb)
+        Button(wri, row, col, text="Next", litcolor=LIGHTGREEN, callback=self.cb)
         CloseButton(wri)  # Quit the application
         self.image = 0
 
     def cb(self, _):
-        self.graphic.value(f"/gui/fonts/bitmaps/m{self.image:02d}")
+        self.graphic.value(f"gui/fonts/bitmaps/m{self.image:02d}")
         self.image += 1
         self.image %= 4
         if self.image == 3:

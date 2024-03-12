@@ -1,10 +1,11 @@
 # micropython-touch
 
 This is a lightweight, portable, MicroPython GUI library for displays having
-a touch interface with drivers subclassed from `framebuf`. Written in Python it
-runs under a standard MicroPython firmware build. Input is by touch. The design
-is intended to support a range of touch controllers. Initially only the TSC2007
-is supported, as on [this breakout board](https://learn.adafruit.com/adafruit-tsc2007-i2c-resistive-touch-screen-controller).
+a touch interface and with drivers subclassed from `framebuf`. Written in Python
+it runs under a standard MicroPython firmware build. Input is by touch. The
+design is intended to support a range of touch controllers. Initially only the
+TSC2007 is supported, as on
+[this breakout board](https://learn.adafruit.com/adafruit-tsc2007-i2c-resistive-touch-screen-controller).
 
 It is larger and more complex than `nano-gui` owing to the support for input.
 It enables switching between screens and launching modal windows. Widgets are
@@ -24,7 +25,7 @@ Raspberry Pico with an ILI9341 from eBay.
 
 This was developed from [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main)
 with the aim of supporting a variety of touch controllers. Touch drivers share
-an API via a common abstract base class.
+a common API via a common abstract base class.
 
 The following are similar GUI repos with differing objectives.
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) Extremely low
@@ -143,8 +144,8 @@ in pushbuttons via icon fonts, also via the [BitMap widget](./README.md#619-bitm
 The following, taken from `gui.demos.simple.py`, is a complete application. It
 shows a message and has "Yes" and "No" buttons which trigger a callback.
 ```python
-import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen, ssd
+import hardware_setup  # Create a display instance linked to touch controller
+from gui.core.tgui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton
 # from gui.core.writer import Writer  # Monochrome display
@@ -264,7 +265,6 @@ Further examples (without touch controller definitions) are in this
 
 The following is a typical example for a Raspberry Pi Pico driving an ILI9341
 display with TSC2007 touch controller:
-
 ```python
 from machine import Pin, SoftI2C, SPI, freq
 import gc
@@ -318,6 +318,16 @@ ssd.rect(0, 0, 15, 15, RED)  # Red square at top left
 ssd.rect(ssd.width -15, ssd.height -15, 15, 15, BLUE)  # Blue square at bottom right
 ssd.show()
 ```
+Before configuring the touch controller ensure that the display is oriented as
+required by the application: the touch controller must be set up to match
+portrait or landscape mode and any more specialised modes (upside down or
+reflected). Setting up a touch controller involves running two test scripts, the
+outcome being suitable args for these two lines in `hardware_setup.py`:
+```python
+tpad = TSC2007(i2c, 320, 240)
+tpad.mapping(transpose=True, row_reflect=True)
+```
+The procedure is described [here](./TOUCHPAD.md).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -348,8 +358,8 @@ There are several options for installation
 
 The easy way to start is to use `mpremote` which allows a directory on your PC
 to be mounted on the host. In this way the filesystem on the host is left
-unchanged. This is at some cost in loading speed, especially on ESP32. In the
-`micropython-micro-gui` directory run:
+unchanged. This is at some cost in loading speed, especially on ESP32. Clone the
+repo to the PC and, in the `micropython-touch` directory run:
 ```bash
 $ mpremote mount .
 ```
@@ -357,7 +367,8 @@ This should provide a REPL. Run the minimal demo:
 ```python
 >>> import gui.demos.simple
 ```
-If this runs the hardware is correctly configured and other demos should run.
+If this runs and the buttons respond to touch the hardware is correctly
+configured. Other demos should run.
 
 ### Installing a display driver
 
@@ -380,7 +391,7 @@ $ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
 The entire GUI is large. It is possible to install it all from the PC clone by
 issuing:
 ```bash
-$ cd micropython-micro-gui
+$ cd micropython-touch
 $ mpremote cp -r gui :
 $ mpremote cp hardware_setup.py :
 ```
@@ -408,7 +419,7 @@ $ cd micropython-touch
 $ mpremote cp hardware_setup.py :
 ```
 When adding components the directory structure must be maintained. For example,
-in the `micropython-micro-gui` directory:
+in the `micropython-touch` directory:
 ```bash
 $ mpremote cp gui/fonts/font10.py :/gui/fonts/
 $ mpremote cp gui/widgets/checkbox.py :/gui/widgets/
@@ -419,7 +430,7 @@ $ mpremote cp gui/widgets/checkbox.py :/gui/widgets/
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 The entire `gui` tree may be frozen but the directory structure must be
 maintained. For reasons that are unclear freezing display drivers may not
-work. For fexibility, consider keeping `hardware_setup.py` in the filesystem.
+work. For flexibility, consider keeping `hardware_setup.py` in the filesystem.
 See [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode).
 
 ###### [Contents](./README.md#0-contents)
@@ -444,27 +455,19 @@ compiling. If frozen bytecode is impractical, consider cross-compiling. See
 
 #### Speed
 
-The consequence of inadequate speed is that brief button presses can be missed.
-This is because display update blocks for tens of milliseconds, during which
-time the pushbuttons are not polled. This can be an issue in displays with a
-large number of pixels, multi-byte colors and/or slow SPI clock rates. In high
-resolution cases the device driver has specfic `asyncio` support whereby the
-driver yields to the scheduler a few times during the refresh.Currently this
-exists on ILI9486, ILI9341 and ST7789 (e.g. TTGO T-Display). By my calculations
-and measurements this should be unnecessary on other drivers, but please report
-any tendency to miss button presses and I will investigate.
-
-This may be mitigated by two approaches:
+Responsiveness may be enhanced by two approaches:
  1. Clocking the SPI bus as fast as possible. This is discussed in
  [the drivers doc](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
  2. Clocking the host fast (`machine.freq`).
 
-#### Platform notes
+#### Touchpad behaviour
 
-On ESP32 (including the TTGO T-Display) note that pins 36-39 are input-only and
-do not have pullup support: if these are used for pushbutton input, physical
-pullups to 3.3V should be used.
-[See ref](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/).
+Occasional instances were observed where invalid touch position values were
+returned by the TSC2007 controller. These were noted when running the test
+scripts and also manifested as rare incorrect behaviour of GUI applications.
+This will be investigated.
+
+#### Platform notes
 
 On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
 bytecode: in this configuration running the `various.py` demo there was 29K of
@@ -477,7 +480,7 @@ requires a 76,800 byte frame buffer.
 
 ## 1.9 Firmware and dependencies
 
-Firmware should be V1.17 or later. The source tree includes all dependencies.
+Firmware should be V1.22 or later. The source tree includes all dependencies.
 These are listed to enable users to check for newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
@@ -485,11 +488,6 @@ These are listed to enable users to check for newer versions or to read docs:
  * [SSD1306 driver](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/display/ssd1306).
  A copy of the official driver for OLED displays using the SSD1306 chip is
  provided. The link is to the official file.
- * [Synchronisation primitives](https://github.com/peterhinch/micropython-async/tree/master/v3/primitives).
- The link is to my `asyncio` support repo.
- * [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
- Displays based on the Nokia 5110 (PCD8544 chip) require this driver. It is not
- provided in this repo. The link is to its source.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -522,14 +520,13 @@ those in `nano-gui`, included for convenience. Note the file
 The system is organised as a Python package with the root being `gui`. Core
 files in `gui/core` are:  
  * `colors.py` Constants including colors and shapes.
- * `ugui.py` The main GUI code.
+ * `tgui.py` The main GUI code.
  * `writer.py` Supports the `Writer` and `CWriter` classes.
-
-The `gui/primitives` directory contains the following files:  
- * `pushbutton.py` Interface to physical pushbuttons and ESP32 touch pads.
- * `delay_ms.py` A software triggerable timer.
- * `encoder.py` Driver for a quadrature encoder. This offers an alternative
- interface - see [Appendix 1](./README.md#appendix-1-application-design).
+Touch support is in `touch`:
+* `touch.py` Common abstract base class.
+* `tsc2007.py` Driver for TSC2007 controller.
+* `xpt2046.py` Driver for XPT2046 controller (TBD).
+Other drivers will be added.
 
 The `gui/demos` directory contains a variety of demos and tests described
 below.
@@ -557,23 +554,17 @@ minimal and aim to demonstrate a single technique.
  * `dropdown.py` A dropdown list (with scrolling) updates a `Label`.
  * `listbox.py` A listbox with scrolling.
  * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
- * `screen_change.py` A `Pushbutton` causing a screen change using a re-usable
+ * `screen_change.py` A `Button` causing a screen change using a re-usable
  "forward" button.
- * `primitives.py` Use of graphics primitives.
+ * `primitives.py` Use of graphics primitives, also the `Pad` widget.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
  screen layout using widget metrics. Has a simple `asyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
- * `adjuster.py` Simple demo of the `Adjuster` control.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
  * `qrcode.py` Display a QR code. Requires the uQR module.
- * `calendar.py` Demo of grid widget.
- * `epaper.py` Warts-and-all demo for an ePaper display. Currently the only
- supported display is the
- [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
- with Pico or other host.
 
 ### 1.11.2 Test scripts
 
@@ -588,7 +579,7 @@ Some of these require larger screens. Required sizes are specified as
  (240x320).
  * `plot.py` Graph plotting (128x200).
  * `screens.py` Listbox, dropdown and dialog boxes (128x240).
- * `various.py` Assorted widgets including the different types of pushbutton
+ * `various.py` Assorted widgets including the different types of `Button`
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
@@ -597,33 +588,18 @@ Some of these require larger screens. Required sizes are specified as
 
 ## 1.12 Floating Point Widgets
 
-Some applications need to adjust a data value with an extremely large dynamic
-range. This is the ratio of the data value's total range to the smallest
-adjustment that can be made.
+The following widgets provide floating point input:
+* `Knob` Rotary control.
+* `Slider` (also `HorizSlider`) Linear controls modelled on audio mixing desks.
+* `Scale` A horizontal linear control that displays data to high precision.
+* `ScaleLog` Logarithmic linear control for values with high dynamic range.
 
-Floating point widgets respond to a brief press of the `increase` or `decrease`
-buttons by adjusting the value by a small amount. A continued press causes the
-value to be repeatedly adjusted, with the amount of the adjustment increasing
-with time. This enables the entire range of the control to be accessed quickly,
-while allowing small changes of 0.5%. This works well. In many cases the level
-of precision will suffice. An encoder provides similar performance.
-
-Fine adjustments may be achieved by pressing the `select` button for at least
-one second. The GUI will respond by changing the border color from white
-(i.e. has focus) to yellow. In this mode a brief press of `increase` or
-`decrease` or small movement of an encoder will have a reduced effect (0.05%).
-Fine mode may be cancelled by pressing `select` or by moving the focus to
-another control. This also works in three-button mode, with `Next` and `Prev`
-performing the adjustments.
-
-In the case of slider and knob controls the precision of fine mode exceeds that
-of the visual appearance of the widget: fine changes can be too small to see.
-Options are to use the [Scale widget](./README.md#18-scale-widget) or to have a
-linked `Label` showing the widget's exact value.
-
-The callback runs whenever the widget's value changes. This causes the callback
-to run repeatedly while the user adjusts the widget. This is required if there
-is a linked `Label` to update.
+Former iterations of touch GUIs used dragging. This provided rather coarse
+adjustment, even when the hardware interfaces were fast. The above controls use
+a different algorithm where a touch causes the control's value to change at a
+rate depending on the location of the touch. The closer the touch is to the  
+centreline of the control, the slower the rate of change. This allows very
+precise changes to be made by adjusting the location and duration of a touch.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -632,8 +608,8 @@ is a linked `Label` to update.
 ## 2.1 Program structure and operation
 
 The following is a minimal script (found in `gui.demos.simple.py`) which will
-run on a minimal system with a small display and two pushbuttons. Commented out
-code shows changes for monochrome displays.
+run on a minimal system with a small display. Commented out code shows changes
+for monochrome displays.
 
 The demo provides two `Button` widgets with "Yes" and "No" legends. It may be
 run by issuing at the REPL:
@@ -646,8 +622,7 @@ because the frame buffer is created here, with a need for a substantial block
 of contiguous RAM.
 ```python
 import hardware_setup  # Instantiate display, setup color LUT (if present)
-from gui.core.ugui import Screen, ssd
-
+from gui.core.tgui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton
 # from gui.core.writer import Writer  # Monochrome display
 from gui.core.writer import CWriter
@@ -678,16 +653,11 @@ class BaseScreen(Screen):
         CloseButton(wri)  # Quit the application
 
 def test():
-    print('Testing micro-gui...')
+    print('Testing touch-gui...')
     Screen.change(BaseScreen)
 
 test()
 ```
-Note how the `Next` pushbutton moves the focus between the two buttons and the
-"X" close button. The focus does not move to the "Simple Demo" widget because
-it is not `active`: a `Label` cannot accept user input. Pushing the `Select`
-pushbutton while the focus is on a `Pushbutton` causes the callback to run.
-
 Applications start by performing `Screen.change()` to a user-defined `Screen`
 object. This must be subclassed from the GUI's `Screen` class. Note that
 `Screen.change` accepts a class name, not a class instance.
@@ -695,7 +665,7 @@ object. This must be subclassed from the GUI's `Screen` class. Note that
 The user defined `BaseScreen` class constructor instantiates all widgets to be
 displayed and typically associates them with callback functions - which may be
 bound methods. Screens typically have a `CloseButton` widget. This is a special
-`Pushbutton` subclass which displays as an "X" at the top right corner of the
+`Button` subclass which displays as an "X" at the top right corner of the
 physical display and closes the current screen, showing the one below. If used
 on the bottom level `Screen` (as above) it closes the application.
 
@@ -764,15 +734,9 @@ variable may be used to refer to the color. An example of custom color
 definition may be found in
 [this nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/4ef0e20da27ef7c0b5c34136dcb372200f0e5e66/gui/demos/color15.py#L92).
 
-There are five default colors which are defined by a `color_map` list. These
-may be reassigned in user code. For example the following will cause the border
-of any control with the focus to be red:
-```python
-from colors import *
-color_map[FOCUS] = RED
-```
-The `color_map` index constants and default colors (defined in `colors.py`)
-are:
+There are three default colors which are defined by a `color_map` list. These
+may be reassigned in user code. The `color_map` index constants and default
+colors (defined in `colors.py`) are:
 
 | Index     | Color  | Purpose                                   |
 |:----------|:-------|:------------------------------------------|
@@ -787,15 +751,9 @@ are:
 Most widgets work on monochrome displays if color settings are left at default
 values. If a color is specified, drivers in this repo will convert it to black
 or white depending on its level of saturation. A low level will produce the
-background color, a high level the foreground.
-
-At the bit level `1` represents the foreground. This is white on an emitting
-display such as an OLED. On a Sharp display it indicates reflection.
-
-There is an issue regarding ePaper displays discussed
-[here](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#312-monochrome-displays).
-The driver for the [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
-renders colored objects as black on white.
+background color, a high level the foreground. At the bit level `1` represents
+the foreground. This is white on an emitting display such as an OLED. I am not
+aware of any non-emitting displays (e.g. ePaper) with touch controllers.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -805,11 +763,11 @@ The following code, issued as the first executable lines of an application,
 initialises the display.
 ```python
 import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen, ssd, display  # display symbol is seldom needed
+from gui.core.tgui import Screen, ssd, display  # display symbol is seldom needed
 ```
 The `hardware_setup` file creates singleton instances of `SSD` and `Display`
-classes. These instances are made available via `ugui`. Normal GUI applications
-only need to import `ssd`. This refererence to the display driver is used to
+classes. These instances are made available via `tgui`. Normal GUI applications
+only need to import `ssd`. This reference to the display driver is used to
 initialise `Writer` objects. Bound variables `ssd.height` and `ssd.width` may
 be read to determine the dimensions of the display hardware.
 
@@ -826,51 +784,16 @@ display hardware in use. Display drivers are documented
 ## 3.2 Display class
 
 This is instantiated in `hardware_setup.py`. It registers the `SSD` instance
-along with the `Pin` instances used for input; also whether an encoder is used.
-Pins are arbitrary, but should be defined as inputs with pullups. Pushbuttons
-are connected between `Gnd` and the relevant pin.
+along with the `touch` subclass instance used for input.
 
 The constructor takes the following positional args:  
  1. `objssd` The `SSD` instance. A reference to the display driver.
- 2. `nxt` A `Pin` instance for the `next` button.
- 3. `sel` A `Pin` instance for the `select` button.
- 4. `prev=None` A `Pin` instance for the `previous` button (if used).
- 5. `incr=None` A `Pin` instance for the `increase` button (if used).
- 6. `decr=None` A `Pin` instance for the `decrease` button (if used).
- 7. `encoder=False` If an encoder is used, an integer must be passed.
- 8. `touch=False` Supply an integer to use ESP32 `TouchPad` instances in place
- of all physical pushbuttons. See [ESP32 touch pads](./README.md#8-esp32-touch-pads).
+ 2. `objtouch=None` Touch controller instance. `None` allows the display to be
+ tested prior to implementing the touch interface.
 
 Class variables:  
  * `verbose=True` Causes a message to be printed indicating whether an encoder
  was specified.
-
-### 3.2.1 Encoder usage
-
-If an encoder is used, it should be connected to the pins assigned to
-`increase` and `decrease`. If the direction of movement is wrong, these pins
-should be transposed (physically or in code).
-
-To specify to the GUI that an encoder is in use an integer should be passed to
-the `Display` constructor `encoder` arg. Its value represents the division
-ratio. A value of 1 defines the native rate of the encoder; if the native rate
-is 32 pulses per revolution, a value of 4 would yield a virtual device with
-8 pulses per rev. A value of 4 matches most encoders with mechanical detents.
-
-If an encoder is used but the `encoder` arg is `False`, response to the encoder
-will be erratic.
-
-### 3.2.2 Encoder only mode
-
-This uses an encoder with an included pushbutton as the sole means of control.
-To use this mode, constructor args should be:
- 1. `objssd` The `SSD` instance. A reference to the display driver.
- 2. `nxt` A `Pin` instance attached to the encoder X pin.
- 3. `sel` A `Pin` instance attached to the encoder button.
- 4. `prev` A `Pin` instance attached to the encoder Y pin.
- 5. `incr=False`. Must set `False`.
- 6. `decr=None`.
- 7. `encoder` An `int` defining the division ratio as above.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -907,7 +830,7 @@ These are uncommon:
  are re-drawn. Explicit calls to this should never be needed.
 
 See `demos/plot.py` for an example of multi-screen design, or
-`screen_change.py` for a minimal example demostrating the coding technique.
+`screen_change.py` for a minimal example demonstrating the coding technique.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -944,17 +867,15 @@ explicitly in code.
 
  * `do_gc = True` By default a coroutine is launched to periodically perform
  garbage collection (GC). On most platforms this reduces latency by doing GC
- before too much garbage has accumulated. However on platforms with SPIRAM GC
- can take hundreds of ms, causing unacceptable latency. If `do_gc` is `False`
- the application can perform GC at times when fast response to user actions is
- not required. If turned off, the GC task cannot be re-started.
+ before too much garbage has accumulated. If `do_gc` is `False` the application
+ can control garbage collection. The GC task cannot be re-started if disabled.
 
 ## 4.6 Usage
 
 The `Screen.change()` classmethod returns immediately. This has implications
 where the new, top screen sets up data for use by the underlying screen. One
 approach is for the top screen to populate class variables. These can be
-acccessed by the bottom screen's `after_open` method which will run after the
+accessed by the bottom screen's `after_open` method which will run after the
 top screen has terminated.
 
 If a `Screen` throws an exception when instantiated, check that its constructor
@@ -1003,7 +924,7 @@ In general `Screen` and `Window` instances need at least one `active` widget.
 There is a special case of a popup window which typically displays status data,
 possibly with a progress meter. A popup has no user controls and is closed by
 user code. A popup is created by passing a `Writer` (or `CWriter`) to the
-constructor and is closed by issuing the `close()` static method.
+constructor and is closed by issuing the `Window.close()` static method.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1074,7 +995,7 @@ warning is printed at the console. The label may appear at an unexpected place.
 The following is a complete "Hello world" script.
 ```python
 from hardware_setup import ssd  # Create a display instance
-from gui.core.ugui import Screen
+from gui.core.tgui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
 
@@ -1198,7 +1119,7 @@ from gui.widgets import LED  # File: led.py
 
 This is a virtual LED whose color may be altered dynamically. An `LED` may be
 defined with a color and turned on or off by setting `.value` to a boolean. For
-more flexibility the `.color` method may be use to set it to any color.
+more flexibility the `.color` method may be used to set it to any color.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1282,13 +1203,12 @@ Using an
 
 ![Image](./images/iconbuttons.jpg)
 
-In these images `Button` "a"  and the "Forward" button have the focus. Pressing
-the physical `select` button will press the virtual `Button`.
-
 This emulates a pushbutton, with a callback being executed each time the button
-is pressed. Physically this consists of pressing the `select` button when the
-`Button` instance has focus. Buttons may be any one of three shapes: `CIRCLE`,
-`RECTANGLE` or `CLIPPED_RECT`.
+is pressed. Buttons may be any one of three shapes: `CIRCLE`, `RECTANGLE` or
+`CLIPPED_RECT`. By default the callback is triggered on release of the touch.
+Triggering on press carries a hazard if a button causes a screen change: this
+results if the new screen has an active widget at the same location, when that
+widget would inadvertently be triggered.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1315,18 +1235,21 @@ Optional keyword only arguments:
  for example media playback symbols.
  * `callback=dolittle` Callback function which runs when button is pressed.
  * `args=()` A list/tuple of arguments for the above callback.
+ * `onrelease=True` If set the callback runs when the button is released.
+ * `lp_callback=None` Callback for a long press (runs on press).
+ * `lp_args=()` Args for above.
 
 Method:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
 
-Class variable:
- * `lit_time=1` Period in seconds the `litcolor` is displayed.
+Class variables:
+ * `lit_time=1000` Period in ms the `litcolor` is displayed.
+ * `long_press_time=1000` Touch duration in ms to trigger long press callack.
 
 ### CloseButton
 ![Image](./images/closebutton.JPG)  
-This example has focus, as shown by white border.
 
 This `Button` subclass is a special case of a Button. Its constructor takes a
 single arg, being a `Writer` instance. It produces a red "X" button at the top
@@ -1376,16 +1299,15 @@ Methods:
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
  * `value` Optional args `button=None`, `new_cb=False`. The `button` arg, if
- provided, should be a button in the set. If supplied and the button is not
- active the currency changes to the supplied button, which is displayed. By
- default the callback of the previous button is run, otherwise the callback of
- the newly displayed button.
+ provided, should be a button in the set. If supplied the new button is
+ displayed. By default the callback of the previous button is run, otherwise the
+ callback of the newly displayed button.
 
 Always returns the active button.
 
 Counter intuitively, running the callback of the previous button is normal
 behaviour. Consider a `ButtonList` consisting of ON and OFF buttons. If ON is
-visible this implies that the machine under control is off. Pressing `select`
+visible this implies that the machine under control is off. Pressing the button
 causes the ON callback to run, starting the machine. The new button displayed
 now reads OFF.
 
@@ -1622,18 +1544,16 @@ Methods:
  string. If a provided arg did not match any list item, the control's state is
  not changed and `None` is returned.
 
-If `select` is pressed when the `Dropdown` has focus, the list is displayed.
-The `increase` and `decrease` buttons move the list currency. If `select` is
-pressed after changing the currency the callback is triggered, the list is
-closed and the control will display the newly selected entry. If `next` or
-`prev` are pressed while the list is open, focus will move to the next widget.
-In this event the list will close and no selection change will be recognised:
-the control will show the element which was visible at the start and the
-callback will not run. Moving the focus is a means of cancelling any changes.
+When the dropdown is touched the list is displayed. If an entry in the list is
+touched the callback is triggered, the list is closed and the control displays
+the newly selected entry. If the list contains more entries than can be shown,
+scrolling may be used. A short vertical line is visible in the top right if
+scrolling down is possible, likewise in the bottom right if the contents may be
+scrolled up. A long touch on the top or bottom entry initiates scrolling.
 
 The callback's first argument is the dropdown instance followed by any args
-specified to the constructor. The currently selected item may be retrieved by
-means of the instance's `value` or `textvalue` methods.
+specified to the constructor. The current item may be retrieved by means of the
+instance's `value` or `textvalue` methods.
 
 #### Alternative approach
 
@@ -1680,7 +1600,7 @@ from gui.widgets import DialogBox  # File: dialog.py
 ```
 ![Image](./images/dialog.JPG)
 
-An active dialog box. Auto generated dialogs contain only `pushbutton`
+An active dialog box. Auto generated dialogs contain only `Button`
 instances, but user created dialogs may contain any widget.
 
 This implements a modal dialog box based on a horizontal row of pushbuttons.
@@ -1697,7 +1617,7 @@ Constructor positional args:
 
 Mandatory keyword only arg:  
  * `elements` A list or tuple of 2-tuples. Each defines the text and color of
- a pushbutton, e.g. `(('Yes', RED), ('No', GREEN))`.
+ a `Button`, e.g. `(('Yes', RED), ('No', GREEN))`.
 
 Optional keyword only args:  
  * `label=None` Text for an optional label displayed in the centre of the
@@ -1721,7 +1641,7 @@ case of the `close` button. The outcome can therefore be tested by running
 constructor.
 
 Note that dialog boxes can also be constructed manually, enabling more flexible
-designs. For example these might have widgets other than pushbuttons. The
+designs. For example these might have widgets other than `Button`s. The
 approach is to write a user subclass of `Window`. Example code may be found
 in `gui/demos/screens.py`.
 
@@ -1738,9 +1658,10 @@ Displays multiple lines of text in a field of fixed dimensions. Text may be
 clipped to the width of the control or may be word-wrapped. If the number of
 lines of text exceeds the height available, scrolling will occur. Access to
 text that has scrolled out of view may be achieved by calling a method. If the
-widget is instantiated as `active` scrolling may be performed using the
-`increase` and `decrease` buttons. The widget supports fixed and variable pitch
-fonts.
+widget is instantiated as `active`, scrolling may be performed by touching near
+the top or bottom of the control. The rate of scrolling depends on the distance
+between the touch and the centreline of the control. The widget supports fixed
+and variable pitch fonts.
 
 Constructor mandatory positional arguments:
  1. `writer` The `Writer` instance (font and screen) to use.
@@ -1763,8 +1684,7 @@ Keyword only arguments:
  * `clip=True` By default lines too long to display are right clipped. If
  `False` is passed, word-wrap is attempted. If the line contains no spaces
  it will be wrapped at the right edge of the window.
- * `active=False` If `True` scrolling may be performed via the `increase` and
- `decrease` buttons.
+ * `active=False` If `True` scrolling may be performed by touch.
 
 Methods:
  * `append` Args `s, ntrim=None, line=None` Append the string `s` to the
@@ -1992,8 +1912,6 @@ Optional keyword only arguments:
  * `args=[]` A list/tuple of arguments for above callback.
  * `value=0.0` The initial value: slider will be at the bottom (v), left (h).
  * `active=True` Determines whether the control can accept user input.
- * `min_delta=0.01` Minimim value increment
- * `max_delta=0.1` Maximum value increment (long button presses)  
 
 Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
@@ -2006,10 +1924,7 @@ Methods:
  color. This supports dynamic color changes.
 
 If instantiated as `active`, the floating point widget behaves as per
-[section 1.12](./README.md#112-floating-point-widgets). When the widget has
-focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
-small changes, longer presses cause accelerating change. A long press of
-`select` invokes high precision mode.
+[section 1.12](./README.md#112-floating-point-widgets).
 
 ### Callback
 
@@ -2079,8 +1994,7 @@ Optional keyword only arguments:
  also runs on instantiation. Default is a null function.
  * `args=[]` A list/tuple of arguments for above callback.
  * `active=False` By default the widget is passive. By setting `active=True`
- the widget can acquire focus; its value can then be adjusted with the
- `increase` and `decrease` buttons.
+ the widget responds to touch.
 
 Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
@@ -2092,14 +2006,6 @@ Methods:
  reading the current value, but see note below on precision.
 
 For example code see `gui/demos/active.py`.
-
-### Control algorithm
-
-If instantiated as `active`, the floating point widget behaves as per
-[section 1.12](./README.md#112-floating-point-widgets). When the widget has
-focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
-small changes, longer presses cause accelerating change. A long press of
-`select` invokes high precision mode.
 
 ### Callback
 
@@ -2179,9 +2085,9 @@ The `Scale` may be `active` or `passive`. A description of the user interface
 in the `active` case may be found in
 [Floating Point Widgets](./README.md#112-floating-point-widgets). Owing to the
 logarithmic nature of the widget, the changes discussed in that reference are
-multiplicative rather than additive. Thus a long press of `increase` will
-multiply the widget's value by a progressively larger factor, enabling many
-decades to be traversed quickly.
+multiplicative rather than additive. Thus a long touch will multiply the widget's
+value by a progressively larger factor, enabling many decades to be traversed
+quickly.
 
 Legends for the scale are created dynamically as it scrolls past the window,
 with one legend for each decade. The user may control this by means of a
@@ -2190,12 +2096,12 @@ enables the scale's color to change over its length or in response to other
 circumstances.
 
 The scale displays floats in range `1.0 <= V <= 10**decades` where `decades` is
-a constructor arg. The user may readily scale these so that a control having a
-range of 1-10,000 controls a user value from 1e-6 to 1e-2 while displaying
+a constructor arg. The user may readily scale these. For example a control with
+a range of 1-10,000 controls a user value from 1e-6 to 1e-2 while displaying
 ticks labelled 1μs, 10μs, 100μs, 1ms and 10ms.
 
 Constructor mandatory positional args:  
- 1. `writer` The `Writer` instance (defines font) to use.
+ 1. `writer` The `Writer` instance defines font to use.
  2. `row` Location on screen.
  3. `col`  
 
@@ -2221,8 +2127,6 @@ Keyword only arguments (all optional):
  also runs on instantiation. Default is a null function.
  * `args=[]` A list/tuple of arguments for above callback. The callback's
  arguments are the `ScaleLog` instance, followed by any user supplied args.
- * `delta=0.01` This determines the smallest amount of change which can be
- achieved with a brief button press. See Control Algorithm below.
  * `active=False` Determines whether the widget accepts user input.
 
 Methods:
@@ -2234,28 +2138,7 @@ Methods:
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
 
-Class variable:
- * `encoder_rate=5` If the hardware uses an encoder, this determines the rate
- of change when the value is adjusted. Increase to raise the rate.
-
 For example code see `gui/demos/active.py`.
-
-### Control algorithm
-
-If instantiated as `active`, the floating point widget behaves as per
-[section 1.12](./README.md#112-floating-point-widgets). When the widget has
-focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
-small changes, longer presses cause accelerating change. A long press of
-`select` invokes high precision mode.
-
-In normal mode, the amount of change caused by a brief button press is
-controlled by the constructor arg `delta`; the choice of this value represents
-a compromise between precision and usability.
-
-Owing to the logarithmic nature of the control, a small positive change is
-defined by multiplication of the value by `(1 + delta)` and a negative change
-corresponds to division by `(1 + delta)`. In precision mode `delta` is
-reduced by a factor of 10.
 
 ### Callback
 
@@ -2376,9 +2259,9 @@ Methods:
 Typical usage:
 ```python
 from hardware_setup import ssd  # Create a display instance
-import uasyncio as asyncio
+import asyncio
 import cmath
-from gui.core.ugui import Screen
+from gui.core.tgui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
 
@@ -2613,7 +2496,8 @@ Beacuse of the use of file storage when an update occurs there will be a brief
 is displayed when a screen initialises, or if it changes in response to a user
 action. Use in animations is questionable.
 
-See `gui/demos/bitmap.py` for a usage example.
+See `gui/demos/bitmap.py` for a usage example (this demo is very slow if
+running via `mpremote mount` - a consequence of file retrieval over USB).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -2729,7 +2613,7 @@ common cases:
 
 A user program first instantiates a graph object (`PolarGraph` or
 `CartesianGraph`). This creates an empty graph image upon which one or more
-curves may be plotted. Graphs are passive widgets so cannot accept user input.
+curves may be plotted. Graphs are passive widgets so do not respond to touch.
 
 ### 7.1.2 Curve classes
 
@@ -2998,54 +2882,6 @@ The demo `gui/demos/audio.py` provides example usage.
 
 # Appendix 1 Application design
 
-## Tab order and button layout
-
-The "tab order" of widgets on a `Screen` is the order with which they acquire
-focus with successive presses of the `Next` button. It is determined by the
-order in which they are instantiated. Tab order is important for usability but
-instantiating in the best order can conflict with program logic. This happens
-if a widget's callback refers to others not yet instantiated. See demos
-`dropdown.py` and `linked_sliders.py` for one solution.
-
-The obvious layout for the physical buttons is as per a joystick:
-
-|      |          |      |
-|:----:|:--------:|:----:|
-|      | Increase |      |
-| Prev | Select   | Next |
-|      | Decrease |      |
-
-This works well with many screen layouts, if the tab order is considered in the
-layout of the screen. It works well with most widgets including vertical ones
-such as the `Slider`. With horizontal widgets such as `Scale` controls it can
-be counter intuitive because the horizontal layout does not match the position
-of the `increase` and `decrease` buttons. A different physical layout may be
-preferred.
-
-The apparently obvious solution of designing a vertical `Scale` is tricky owing
-to the fact that the length of the internal text can be substantial and
-variable.
-
-## Encoder interface
-
-This alternative interface comprises two buttons `Next` and `Prev` with an
-an encoder such as [this one](https://www.adafruit.com/product/377). Selection
-occurs when the knob is pressed, and movement when it is rotated. This can be
-more intuitive, particularly with horizontally oriented controls.
-
-This is the pinout of the Adafruit encoder as viewed from the top, with
-connections to pins passed to the `Display` constructor as `sel` (select), `up`
-(increase) and `down` (decrease).
-
-| Left     | Right  |
-|:--------:|:------:|
-| Increase | Gnd    |
-| Gnd      | No pin |
-| Decrease | Select |
-
-If an encoder operates in the wrong direction, `Increase` and `Decrease` pins
-should be transposed (physically or logically in `hardware_setup.py`).
-
 ## Screen layout
 
 Widgets are positioned using absolute `row` and `col` coordinates. These may
@@ -3060,12 +2896,12 @@ have the following bound variables, which should be considered read-only:
  * `mcol` Maximum absolute col occupied by the widget (including border).
 
 A further aid to metrics is the `Writer` method `.stringlen(s)`. This takes a
-string as its arg and returns its length in pixels when rendered using that
-`Writer` instance's font.
+string as its arg and returns its length in pixels when rendered using the font
+of that `Writer` instance.
 
 The `mrow` and `mcol` values enable other widgets to be positioned relative to
 the one previously instantiated. In the cases of sliders, `Dial` and `Meter`
-widgets these take account of space ocupied by legends or labels.
+widgets these take account of space occupied by legends or labels.
 
 The `aclock.py` and `linked_sliders.py` demos provide simple examples of this
 approach.
@@ -3081,7 +2917,7 @@ which is written to issue the display driver calls.
 The following code instantiates two classes:
 ```python
 import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen, ssd, display
+from gui.core.tgui import Screen, ssd, display
 ```
 The `ssd` object is an instance of the object defined in the display driver. It
 is a requirement that this is a subclass of `framebuf.FrameBuffer`. Hence `ssd`
@@ -3102,8 +2938,8 @@ There is little point in issuing `display.rect` as it confers no advantage over
 `ssd.rect`. However the `Display` class adds methods not currently available in
 `framebuf`. These are listed below.
 
- * `circle(self, x0, y0, r, color, width =1)` Width specifies the line width.
- * `fillcircle(self, x0, y0, r, color)`
+ * `circle(self, x0, y0, r, color)` Calls `framebuf.ellipse`.
+ * `fillcircle(self, x0, y0, r, color)` Calls `framebuf.ellipse`.
  * `clip_rect(self, x, y, w, h, color)` Rectangle with clipped corners.
  * `fill_clip_rect(self, x, y, w, h, color)`
  * `print_left(self, writer, x, y, txt, fgcolor=None, bgcolor=None, invert=False)`
@@ -3111,7 +2947,7 @@ There is little point in issuing `display.rect` as it confers no advantage over
 
 Hopefully these are self explanatory. The `Display` methods use the `framebuf`
 convention of `x, y` coordinates rather than the `row, col` system used by
-micro-gui.
+the GUI interface.
 
 The `primitives.py` demo provides a simple example.
 
@@ -3195,10 +3031,10 @@ cross compiler is documented [here](https://github.com/micropython/micropython/b
 
 Change to the directory `gui/core` and issue:
 ```bash
-$ /path/to/micropython/mpy-cross/mpy-cross ugui.py
+$ /path/to/micropython/mpy-cross/mpy-cross tgui.py
 ```
-This creates a file `ugui.mpy`. It is necessary to move, delete or rename
-`ugui.py` as MicroPython loads a `.py` file in preference to `.mpy`.
+This creates a file `tgui.mpy`. It is necessary to move, delete or rename
+`tgui.py` as MicroPython loads a `.py` file in preference to `.mpy`.
 
 If "incorrect mpy version" errors occur, the cross compiler should be
 recompiled.

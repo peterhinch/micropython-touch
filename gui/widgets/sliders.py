@@ -37,13 +37,10 @@ class Slider(LinearIO):
         callback=dolittle,
         args=[],
         value=0.0,
-        active=True,
-        delta=0.1
+        active=True
     ):
         width &= 0xFE  # ensure divisible by 2
-        super().__init__(
-            writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, delta
-        )
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
         super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends

@@ -11,12 +11,13 @@
 # It is minimal, providing only the required functionality for the touh GUI. See
 # the Adafruit driver for a more full-featured driver.
 
-from .touch import ABCTouch
+from .touch import ABCTouch, PreProcess
 
 
 class TSC2007(ABCTouch):
     def __init__(self, i2c, height, width, xmin=0, ymin=0, xmax=4095, ymax=4095, addr=0x48):
-        super().__init__(height, width, xmin, ymin, xmax, ymax)
+        prep = PreProcess(self)  # Instantiate a preprocessor
+        super().__init__(height, width, xmin, ymin, xmax, ymax, prep)
         self._i2c = i2c
         self._addr = addr
         i2c.writeto(addr, b"\x00")  # Low power/read temp
