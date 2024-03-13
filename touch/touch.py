@@ -42,19 +42,15 @@ class PreProcess:
         return True
 
 # Class is instantiated with calibration values
-# width is assumed to be the long axis with rows and columns treated accordingly.
-# For a portrait mode display transpose would be set True: in this case .poll
-# returns long axis measurements as the 1st (col) result
 class ABCTouch:
-    def __init__(self, height, width, xmin, ymin, xmax, ymax, prep):
+    def __init__(self, xpix, ypix, xmin, ymin, xmax, ymax, prep):
         self.prep = prep  # Preprocessor
-        # Scaling and translation. Default is landscape mode
-        self._width = width  # max(width, height)  # long axis is width/cols
-        self._height = height  # min(width, height)  # short axis is height/rows
+        self._xpix = xpix  # No of pixels on x axis
+        self._ypix = ypix  # Pixels on y axis
         self._x0 = xmin  # Returned value for row 0
         self._y0 = ymin  # Returned value for col 0
-        self._xw = (width << _SCALE) // (xmax - xmin)
-        self._yh = (height << _SCALE) // (ymax - ymin)
+        self._xw = (xpix << _SCALE) // (xmax - xmin)
+        self._yh = (ypix << _SCALE) // (ymax - ymin)
         # Mapping
         self._rr = False  # Reflection
         self._rc = False
@@ -76,14 +72,17 @@ class ABCTouch:
     # Preprocessor .get() calls touch subclass .acquire to get values
     def poll(self):
         if res := self.prep.get():
-            col = ((self._x - self._x0) * self._xw) >> _SCALE
-            row = ((self._y - self._y0) * self._yh) >> _SCALE
-            col = max(0, min(col, self._width - 1))
-            row = max(0, min(row, self._height - 1))
+            xpx = ((self._x - self._x0) * self._xw) >> _SCALE  # Convert to pixels
+            ypx = ((self._y - self._y0) * self._yh) >> _SCALE
+            xpx = max(0, min(xpx, self._xpix - 1))
+            ypx = max(0, min(ypx, self._ypix - 1))
+            # Map onto rows/cols
+            col = xpx
+            row = ypx
             if self._rr:  # Reflection
-                row = self._height - row
+                row = self._ypix - row
             if self._rc:
-                col = self._width - col
+                col = self._xpix - col
             if self._trans:
                 self.col = row
                 self.row = col

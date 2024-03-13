@@ -157,6 +157,8 @@ class Screen:
     # to a realtime process.
     rfsh_start = asyncio.Event()  # Refresh pauses until set (set by default).
     rfsh_done = asyncio.Event()  # Flag a user task that a refresh was done.
+    trow = 0  # Raw touch coordinates (in pixels) for debug and touch.check.py
+    tcol = 0
 
     @classmethod
     def show(cls, force):
@@ -254,6 +256,8 @@ class Screen:
             tl = cls.current_screen.lstactive  # Active (touchable) widgets
             ids = id(cls.current_screen)
             if touch.poll():  # Display is touched.
+                Screen.trow = touch.row
+                Screen.tcol = touch.col  # Raw values for debug/setup
                 for obj in (a for a in tl if a.visible and not a.greyed_out()):
                     if obj._trytouch(touch.row, touch.col):
                         # Run user "on press" callback if touched
@@ -340,6 +344,7 @@ class Screen:
         if isinstance(task, type_coro):
             task = asyncio.create_task(task)
         self.tasks.append((task, on_change))
+        return task
 
 
 # Very basic window class. Cuts a rectangular hole in a screen on which

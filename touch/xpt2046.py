@@ -16,9 +16,9 @@ from .touch import ABCTouch, PreProcess
 
 
 class XPT2046(ABCTouch):
-    def __init__(self, spi, height, width, xmin=0, ymin=0, xmax=4095, ymax=4095, *, cspin):
+    def __init__(self, spi, xpix, ypix, xmin=0, ymin=0, xmax=4095, ymax=4095, *, cspin):
         prep = PreProcess(self)  # Instantiate a preprocessor
-        super().__init__(height, width, xmin, ymin, xmax, ymax, prep)
+        super().__init__(xpix, ypix, xmin, ymin, xmax, ymax, prep)
         self.csn = cspin
         self.spi = spi
         self.wbuf = bytearray(3)

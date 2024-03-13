@@ -36,13 +36,17 @@ pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
 pcs = Pin(10, Pin.OUT, value=1)
 spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-ssd = SSD(spi, pcs, pdc, prst, usd=True)  # 240x320 default
-from touch.tsc2007 import TSC2007
-from gui.core.tgui import Display
+ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
 
+# Touch configuration
+from touch.tsc2007 import TSC2007
+
+landscape = False  # Orientation for setup.py
 # SoftI2C used for PCB: hard I2C(0) does not currently work on these pins.
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, 320, 240, 332, 343, 3754, 3835)
+tpad = TSC2007(i2c, 320, 240, 301, 434, 3896, 3102)
 tpad.mapping(transpose=True, row_reflect=True)
+# setup reports col_reflect: order of transpose/reflect?
+from gui.core.tgui import Display
 
 display = Display(ssd, tpad)
