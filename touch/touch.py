@@ -43,18 +43,20 @@ class PreProcess:
 
 # Class is instantiated with calibration values
 class ABCTouch:
-    def __init__(self, xpix, ypix, xmin, ymin, xmax, ymax, prep):
+    def __init__(self, prep):
         self.prep = prep  # Preprocessor
+
+    def init(self, xpix, ypix, xmin=0, ymin=0, xmax=4095, ymax=4095, trans=False, rr=False, rc=False):
         self._xpix = xpix  # No of pixels on x axis
         self._ypix = ypix  # Pixels on y axis
         self._x0 = xmin  # Returned value for row 0
         self._y0 = ymin  # Returned value for col 0
-        self._xw = (xpix << _SCALE) // (xmax - xmin)
-        self._yh = (ypix << _SCALE) // (ymax - ymin)
+        self._xl = (xpix << _SCALE) // (xmax - xmin)
+        self._yl = (ypix << _SCALE) // (ymax - ymin)
         # Mapping
-        self._rr = False  # Reflection
-        self._rc = False
-        self._trans = False  # Transposition
+        self._rr = rr  # Reflection
+        self._rc = rc
+        self._trans = trans  # Transposition
         # Raw coordinates from subclass.
         self._x = 0
         self._y = 0
@@ -72,18 +74,17 @@ class ABCTouch:
     # Preprocessor .get() calls touch subclass .acquire to get values
     def poll(self):
         if res := self.prep.get():
-            xpx = ((self._x - self._x0) * self._xw) >> _SCALE  # Convert to pixels
-            ypx = ((self._y - self._y0) * self._yh) >> _SCALE
+            xpx = ((self._x - self._x0) * self._xl) >> _SCALE  # Convert to pixels
+            ypx = ((self._y - self._y0) * self._yl) >> _SCALE
             xpx = max(0, min(xpx, self._xpix - 1))
             ypx = max(0, min(ypx, self._ypix - 1))
-            # Map onto rows/cols
             col = xpx
             row = ypx
             if self._rr:  # Reflection
                 row = self._ypix - row
             if self._rc:
                 col = self._xpix - col
-            if self._trans:
+            if self._trans:  # Transposition
                 self.col = row
                 self.row = col
             else:

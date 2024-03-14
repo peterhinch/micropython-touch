@@ -3,6 +3,7 @@
 # TODO get touch.row, touch.col for key points.
 # If transpose is required, mimic transposition.
 # Check for reflection.
+# Use low level routines rather than GUI?
 
 
 # Released under the MIT License (MIT). See LICENSE.
@@ -17,81 +18,54 @@
 import hardware_setup  # Create a display instance
 import asyncio
 from array import array
-from gui.core.tgui import Screen, ssd, display, touch, quiet
-
-from gui.widgets import Label
+from gui.core.tgui import ssd, display, touch
 from gui.core.writer import CWriter
-
-# Font for CWriter
 import gui.fonts.font10 as font
 from gui.core.colors import *
-quiet()
 
 def cross(row, col, length, color):
     display.hline(col - length // 2, row, length, color)
     display.vline(col, row - length // 2, length, color)
 
-# User must change this (can't use screen as touch not set up)
-landscape = hardware_setup.landscape
+landscape = ssd.width > ssd.height
+ax = array("I", 0 for _ in range(4))  # x
+ay = array("I", 0 for _ in range(4))  # y
+ar = array("I", 0 for _ in range(4))  # row
+ac = array("I", 0 for _ in range(4))  # col
+wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
-async def run():
-    ax = array("I", 0 for _ in range(4))  # x
-    ay = array("I", 0 for _ in range(4))  # y
-    ar = array("I", 0 for _ in range(4))  # row
-    ac = array("I", 0 for _ in range(4))  # col
+async def do_touch(n):
+    ssd.show()
+    while not touch.poll():
+        await asyncio.sleep(0)
+    while touch.poll():
+        await asyncio.sleep(0)
+    display.print_left(wri, 2, 50 + 30 * n, f"x = {touch._x:04d} y = {touch._y:04d}", YELLOW)
+    ax[n] = touch._x
+    ay[n] = touch._y
+    ar[n] = touch.row
+    ac[n] = touch.col
+
+async def main():
+    display.print_left(wri, 2, 2, "Touch each cross.")
+    ssd.show()
     h = ssd.height
     w = ssd.width
     dh = h // 8
     dw = w // 8
     cross(dh, dw, 10, GREEN)
-    while not touch.poll():
-        await asyncio.sleep(0)
-    while touch.poll():
-        await asyncio.sleep(0)
+    await do_touch(0)
 
-    print(touch._x, touch._y)
-    n = 0
-    ax[n] = touch._x
-    ay[n] = touch._y
-    ar[n] = touch.row
-    ac[n] = touch.col
     cross(dh, w - dw, 10, GREEN)
-    await asyncio.sleep(1)
-    while not touch.poll():
-        await asyncio.sleep(0)
-    while touch.poll():
-        await asyncio.sleep(0)
-    print(touch._x, touch._y)
-    n = 1
-    ax[n] = touch._x
-    ay[n] = touch._y
-    ar[n] = touch.row
-    ac[n] = touch.col
-    cross(h - dh, w - dw, 10, GREEN)
-    await asyncio.sleep(1)
-    while not touch.poll():
-        await asyncio.sleep(0)
-    while touch.poll():
-        await asyncio.sleep(0)
-    print(touch._x, touch._y)
-    n = 2
-    ax[n] = touch._x
-    ay[n] = touch._y
-    ar[n] = touch.row
-    ac[n] = touch.col
-    cross(h - dh, dw, 10, GREEN)
-    await asyncio.sleep(1)
-    while not touch.poll():
-        await asyncio.sleep(0)
-    while touch.poll():
-        await asyncio.sleep(0)
-    print(touch._x, touch._y)
+    await do_touch(1)
 
-    n = 3
-    ax[n] = touch._x
-    ay[n] = touch._y
-    ar[n] = touch.row
-    ac[n] = touch.col
+    cross(h - dh, w - dw, 10, GREEN)
+    await do_touch(2)
+
+    cross(h - dh, dw, 10, GREEN)
+    await do_touch(3)
+    ssd.show()
+
     # Extrapolate to boundary: calculate margin size
     dx = (max(ax) - min(ax)) // 6
     dy = (max(ay) - min(ay)) // 6
@@ -117,31 +91,12 @@ async def run():
     # to x and y: looking only at relative values
     # First two crosses should be on a similar row
     xpose = abs(ar[0] - ar[1]) > abs(ac[0] - ac[1])
-    if xpose:
-        ar, ac =  ac, ar
     rrefl = ar[0] > ar[3]
     crefl = ac[0] >  ac[1]
     if xpose or rrefl or crefl:
         print(f"tpad.mapping(transpose={xpose}, row_reflect={rrefl}, col_reflect={crefl})")
     else:
         print("Mapping is correct: no need to invoke tpad.mapping.")
-    Screen.back()
 
 
-class BaseScreen(Screen):
-    def __init__(self):
-
-        super().__init__()
-        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
-        col = 2
-        row = 2
-        self.lbl = Label(wri, row, col, "Touch each cross.")
-        self.reg_task(run())
-
-
-def test():
-    print("Touchpad setup: calibration.")
-    Screen.change(BaseScreen)
-
-
-test()
+asyncio.run(main())

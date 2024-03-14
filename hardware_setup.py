@@ -41,10 +41,11 @@ ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 defau
 # Touch configuration
 from touch.tsc2007 import TSC2007
 
-landscape = False  # Orientation for setup.py
 # SoftI2C used for PCB: hard I2C(0) does not currently work on these pins.
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, 320, 240, 301, 434, 3896, 3102)
+tpad = TSC2007(i2c)
+tpad.init(240, 320, 241, 292, 3866, 3887)  # TODO get rid of mapping, pass args
+# tpad.mapping(transpose=True, col_reflect=True)  # setup reports transpose=True only
 tpad.mapping(transpose=True, row_reflect=True)
 # setup reports col_reflect: order of transpose/reflect?
 from gui.core.tgui import Display
