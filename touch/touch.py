@@ -14,12 +14,14 @@ _SCALE = const(18)  # 12 bits ADC -> 30 bit small int. Subclasses must be limite
 # .get acquires a set of samples and modifies ._x and ._y to provide mean
 # values.
 class PreProcess:
-    def __init__(self, tpad, alen=10):
+    def __init__(self, tpad, *, alen=10, variance=50, verbose=True):
         self.tpad = tpad
         # Arrays for means
         self.ax = array("H", 0 for _ in range(alen))
         self.ay = array("H", 0 for _ in range(alen))
         self.alen = alen
+        self.var = variance
+        self.verbose = verbose
 
     def get(self):
         tpad = self.tpad
@@ -35,8 +37,10 @@ class PreProcess:
         ym = sum(self.ay) // alen
         xv = sum((x - xm) ** 2 for x in self.ax) // alen  # Variance
         yv = sum((y - ym) ** 2 for y in self.ay) // alen
-        if xv > 50 or yv > 50:
-            return False  # Variance too high
+        if xv > self.var or yv > self.var:
+            if self.verbose:
+                print(f"Excessive touch variance: x = {xv}  y = {yv}")
+            raise OSError  # Variance too high. tgui.py ignores reading
         tpad._x = xm
         tpad._y = ym
         return True
@@ -54,8 +58,8 @@ class ABCTouch:
         self._xl = (xpix << _SCALE) // (xmax - xmin)
         self._yl = (ypix << _SCALE) // (ymax - ymin)
         # Mapping
-        self._rr = rr  # Reflection
-        self._rc = rc
+        self._rr = rr  # Row reflect
+        self._rc = rc  # Col reflect
         self._trans = trans  # Transposition
         # Raw coordinates from subclass.
         self._x = 0
@@ -64,10 +68,6 @@ class ABCTouch:
         self.row = 0
         self.col = 0
 
-    def mapping(self, row_reflect=False, col_reflect=False, transpose=False):
-        self._rr = row_reflect
-        self._rc = col_reflect
-        self._trans = transpose
 
     # API: GUI calls poll which returns True if touched. .row, .col hold Screen
     # referenced coordinates.

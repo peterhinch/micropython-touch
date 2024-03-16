@@ -34,17 +34,25 @@ ar = array("I", 0 for _ in range(4))  # row
 ac = array("I", 0 for _ in range(4))  # col
 wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
+async def touch_state(s):
+    while True:  # Wait for touch state to match passed value
+        try:
+            if touch.poll() == s:
+                break
+        except OSError:  # Ignore high variance readings
+            pass
+        await asyncio.sleep(0)
+
 async def do_touch(n):
     ssd.show()
-    while not touch.poll():
-        await asyncio.sleep(0)
-    while touch.poll():
-        await asyncio.sleep(0)
+    await touch_state(True)  # Wait for a touch: may continue for a while
+    await touch_state(False)  # Wait for release
     display.print_left(wri, 2, 50 + 30 * n, f"x = {touch._x:04d} y = {touch._y:04d}", YELLOW)
     ax[n] = touch._x
     ay[n] = touch._y
     ar[n] = touch.row
     ac[n] = touch.col
+    await asyncio.sleep(1)  # Ensure touch has completed before drawing next cross
 
 async def main():
     display.print_left(wri, 2, 2, "Touch each cross.")
@@ -86,17 +94,32 @@ async def main():
         xpx = s if landscape else l
         ypx = l if landscape else s
 
-    print(f"Args: {xpx}, {ypx}, {xmin}, {ymin}, {xmax}, {ymax}")
+    # print(f"Args: {xpx}, {ypx}, {xmin}, {ymin}, {xmax}, {ymax}")
     # At this stage it doesn't matter if the correct max pixel values have been assigned
     # to x and y: looking only at relative values
     # First two crosses should be on a similar row
     xpose = abs(ar[0] - ar[1]) > abs(ac[0] - ac[1])
-    rrefl = ar[0] > ar[3]
-    crefl = ac[0] >  ac[1]
-    if xpose or rrefl or crefl:
-        print(f"tpad.mapping(transpose={xpose}, row_reflect={rrefl}, col_reflect={crefl})")
+    if xpose:
+        assert abs(ar[0] - ar[1]) > 50
+        rrefl = ar[0] > ar[1]
+        assert abs(ac[0] - ac[3]) > 50
+        crefl = ac[0] >  ac[3]
     else:
-        print("Mapping is correct: no need to invoke tpad.mapping.")
+        assert abs(ar[0] - ar[3]) > 50
+        rrefl = ar[0] > ar[3]
+        assert abs(ac[0] - ac[1]) > 50
+        crefl = ac[0] >  ac[1]
 
+    if max(xmin, ymin) > 1000 or min(xmax, ymax) < 3000:
+        print("WARNING: touches may not have been propoerly recorded. Please repeat setup.")
+    print("Please check the following (see TOUCHPAD.md):")
+    print(f"tpad.init({xpx}, {ypx}, {xmin}, {ymin}, {xmax}, {ymax}, {xpose}, {rrefl}, {crefl})")
+    print("Then paste it into hardware_setup.py, replacing the initial tpad.init line.")
+
+    # if xpose or rrefl or crefl:
+    #     print(f"tpad.mapping(transpose={xpose}, row_reflect={rrefl}, col_reflect={crefl})")
+    # else:
+    #     print("Mapping is correct: no need to invoke tpad.mapping.")
+    #
 
 asyncio.run(main())

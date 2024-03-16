@@ -37,6 +37,7 @@ pcs = Pin(10, Pin.OUT, value=1)
 spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
+from gui.core.tgui import Display
 
 # Touch configuration
 from touch.tsc2007 import TSC2007
@@ -44,10 +45,7 @@ from touch.tsc2007 import TSC2007
 # SoftI2C used for PCB: hard I2C(0) does not currently work on these pins.
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c)
-tpad.init(240, 320, 241, 292, 3866, 3887)  # TODO get rid of mapping, pass args
-# tpad.mapping(transpose=True, col_reflect=True)  # setup reports transpose=True only
-tpad.mapping(transpose=True, row_reflect=True)
-# setup reports col_reflect: order of transpose/reflect?
-from gui.core.tgui import Display
+# tpad.init(ssd.height, ssd.width)
+tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 
 display = Display(ssd, tpad)

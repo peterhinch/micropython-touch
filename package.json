@@ -10,7 +10,10 @@
     ["gui/widgets/buttons.py", "github:peterhinch/micropython-touch/gui/widgets/buttons.py"],
     ["gui/widgets/label.py", "github:peterhinch/micropython-touch/gui/widgets/label.py"],
     ["touch/touch.py", "github:peterhinch/micropython-touch/touch/touch.py"],
-    ["touch/tsc2007.py", "github:peterhinch/micropython-touch/touch/tsc2007.py"]
+    ["touch/tsc2007.py", "github:peterhinch/micropython-touch/touch/tsc2007.py"],
+    ["touch/xpt2046.py", "github:peterhinch/micropython-touch/touch/xpt2046.py"],
+    ["touch/check.py", "github:peterhinch/micropython-touch/touch/check.py"],
+    ["touch/setup.py", "github:peterhinch/micropython-touch/touch/setup.py"]
   ],
   "version": "0.1"
 }

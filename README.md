@@ -1,3 +1,5 @@
+# pre-release! Use at your peril.
+
 # micropython-touch
 
 This is a lightweight, portable, MicroPython GUI library for displays having

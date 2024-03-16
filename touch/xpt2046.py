@@ -16,8 +16,10 @@ from .touch import ABCTouch, PreProcess
 
 
 class XPT2046(ABCTouch):
-    def __init__(self, spi, cspin):
-        super().__init__(PreProcess(self))  # Instantiate a preprocessor
+    def __init__(self, spi, cspin, variance=500, verbose=True):
+        # Instantiate a preprocessor
+        pp = PreProcess(self, variance=variance, verbose=verbose)
+        super().__init__(pp)
         self.csn = cspin
         self.spi = spi
         self.wbuf = bytearray(3)
@@ -35,6 +37,6 @@ class XPT2046(ABCTouch):
             self._x = self._value(5)
             self._y = self._value(1)
         self.csn(1)
-        if self._y > 4070 or self._x < 10:  # Discard silly values
-            t = False
+        if t and (self._y > 4070 or self._x < 10):  # Discard silly values
+            raise OSError  # tgui.py ignores touch attempt
         return t

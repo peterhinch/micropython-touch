@@ -255,20 +255,23 @@ class Screen:
             await asyncio.sleep_ms(0)
             tl = cls.current_screen.lstactive  # Active (touchable) widgets
             ids = id(cls.current_screen)
-            if touch.poll():  # Display is touched.
-                Screen.trow = touch.row
-                Screen.tcol = touch.col  # Raw values for debug/setup
-                for obj in (a for a in tl if a.visible and not a.greyed_out()):
-                    if obj._trytouch(touch.row, touch.col):
-                        # Run user "on press" callback if touched
-                        break  # No need to check other objects
-                    if ids != id(Screen.current_screen):  # cb may have changed screen
-                        break  # get new touchlist
-            else:
-                for obj in (a for a in tl if a.was_touched):
-                    obj.was_touched = False  # Call _untouched once only
-                    obj.busy = False
-                    obj._untouched()  # Run "on release" callback
+            try:
+                if touch.poll():  # Display is touched.
+                    Screen.trow = touch.row
+                    Screen.tcol = touch.col  # Raw values for debug/setup
+                    for obj in (a for a in tl if a.visible and not a.greyed_out()):
+                        if obj._trytouch(touch.row, touch.col):
+                            # Run user "on press" callback if touched
+                            break  # No need to check other objects
+                        if ids != id(Screen.current_screen):  # cb may have changed screen
+                            break  # get new touchlist
+                else:
+                    for obj in (a for a in tl if a.was_touched):
+                        obj.was_touched = False  # Call _untouched once only
+                        obj.busy = False
+                        obj._untouched()  # Run "on release" callback
+            except OSError:  # Ignore indeterminate touch readings
+                pass
 
     @classmethod
     async def garbage_collect(cls):
