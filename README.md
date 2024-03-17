@@ -286,11 +286,11 @@ gc.collect()  # Precaution before instantiating framebuf
 time.sleep_ms(100)
 prst(1)
 ssd = SSD(spi, pcs, pdc, prst, usd=True)  # 240x320 default
-from touch.tsc2007 import TSC2007
 from gui.core.tgui import Display, quiet
 # quiet()
 
 # Can also use hard I2C
+from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c)
 tpad.init(ssd.height, ssd.width)
