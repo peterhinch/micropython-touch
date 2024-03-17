@@ -337,10 +337,10 @@ The procedure is described [here](./TOUCHPAD.md).
 
 Please ensure device firmware is up to date. Clone the repo to the PC with:
 ```bash
-$ git clone https://github.com/peterhinch/micropython-micro-gui
-$ cd micropython-micro-gui
+$ git clone https://github.com/peterhinch/micropython-touch
+$ cd micropython-touch
 ```
-In the `micropython-micro-gui` directory edit `hardware_setup.py` to match the
+In the `micropython-touch` directory edit `hardware_setup.py` to match the
 hardware in use.
 
 The official
@@ -1108,7 +1108,7 @@ del d["fgcolor"]  # Revert to default
 d["invert"] = True
 self.grid[17] = d
 ```
-See the example [calendar.py](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/calendar.py).
+See the example [calendar.py](https://github.com/peterhinch/micropython-touch/blob/main/gui/demos/calendar.py).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -3016,7 +3016,7 @@ include("$(MPY_DIR)/ports/rp2/boards/manifest.py")
 freeze('/mnt/qnap2/Scripts/modules/rp2_modules')
 ```
 The directory `/mnt/qnap2/Scripts/modules/rp2_modules` contains only a symlink
-to the `gui` directory of the `micropython-micro-gui` source tree. The freezing
+to the `gui` directory of the `micropython-touch` source tree. The freezing
 process follows symlinks and respects directory structures.
 
 It is usually best to keep `hardware_setup.py` unfrozen for ease of making
