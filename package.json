@@ -6,7 +6,6 @@
     ["gui/core/tgui.py", "github:peterhinch/micropython-touch/gui/core/tgui.py"],
     ["gui/core/writer.py", "github:peterhinch/micropython-touch/gui/core/writer.py"],
     ["gui/demos/simple.py", "github:peterhinch/micropython-touch/gui/demos/simple.py"],
-    ["gui/fonts/__init__.py", "github:peterhinch/micropython-touch/gui/fonts/__init__.py"],
     ["gui/fonts/arial10.py", "github:peterhinch/micropython-touch/gui/fonts/arial10.py"],
     ["gui/widgets/__init__.py", "github:peterhinch/micropython-touch/gui/widgets/__init__.py"],
     ["gui/widgets/buttons.py", "github:peterhinch/micropython-touch/gui/widgets/buttons.py"],
