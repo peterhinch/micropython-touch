@@ -3,7 +3,7 @@
     ["drivers/ili93xx/ili9341.py", "github:peterhinch/micropython-nano-gui/drivers/ili93xx/ili9341.py"],
     ["drivers/boolpalette.py", "github:peterhinch/micropython-nano-gui/drivers/boolpalette.py"],
     ["gui/core/colors.py", "github:peterhinch/micropython-touch/gui/core/colors.py"],
-    ["gui/core/ugui.py", "github:peterhinch/micropython-touch/gui/core/tgui.py"],
+    ["gui/core/tgui.py", "github:peterhinch/micropython-touch/gui/core/tgui.py"],
     ["gui/core/writer.py", "github:peterhinch/micropython-touch/gui/core/writer.py"],
     ["gui/demos/simple.py", "github:peterhinch/micropython-touch/gui/demos/simple.py"],
     ["gui/fonts/__init__.py", "github:peterhinch/micropython-touch/gui/fonts/__init__.py"],
