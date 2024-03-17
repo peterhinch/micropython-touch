@@ -1,5 +1,7 @@
 # pre-release! Use at your peril.
 
+Code works, but `TOUCHPAD.md` is far from being finished or even correct.
+
 # micropython-touch
 
 This is a lightweight, portable, MicroPython GUI library for displays having
@@ -59,8 +61,8 @@ March 2024: Initial port from micro-gui.
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Widget control](./README.md#14-widget-control) Operation of variable controls.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
- 1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config. Please do this first.  
- 1.7 [Installation](./README.md#17-installation) Installing the library.  
+ 1.6 [Quick start](./README.md#16-quick-start) Testing the hardware config. Please do this first.  
+ 1.7 [Application development](./README.md#17-application-development) Installation options.  
  1.8 [Performance and hardware notes](./README.md#18-performance-and-hardware-notes)  
  1.9 [Firmware and dependencies](./README.md#19-firmware-and-dependencies)  
  1.10 [Supported hosts and displays](./README.md#110-supported-hosts-and-displays)  
@@ -290,9 +292,8 @@ from gui.core.tgui import Display, quiet
 
 # Can also use hard I2C
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, 320, 240)
-tpad.mapping(transpose=True, row_reflect=True)
-
+tpad = TSC2007(i2c)
+tpad.init(ssd.height, ssd.width)
 display = Display(ssd, tpad)
 ```
 The commented-out `quiet()` line provides a means of suppressing diagnostic
@@ -306,11 +307,27 @@ Display drivers are
 
 ###### [Contents](./README.md#0-contents)
 
-## 1.6 Quick hardware check
+## 1.6 Quick start
 
-The following may be pasted at the REPL to verify correct connection to the
-display. It also confirms that `hardware_setup.py` is specifying a suitable
-display driver.
+Please ensure device firmware is up to date. Ensure you have the official
+[mpremote](http://docs.micropython.org/en/latest/reference/mpremote.html#mpremote)
+tool installed:
+```bash
+$ pip3 install mpremote
+```
+The following assumes a display based on ILI9341 (for displays other than
+ILI9341 an additional driver must be installed, see 1.7). A minimal installation
+may be performed with
+```bash
+$ mpremote mip install "github:peterhinch/micropython-touch"
+```
+At this stage the target filesystem is (under the `/lib` directory):  
+![Image](./images/filesystem.png)  
+The edited `hardware_setup.py` should be copied to the device, which now
+contains a minimal installation capable of running the `simple.py` demo. Prior
+to running this, the following may be pasted at the REPL to verify correct
+connection to the display. It also confirms that `hardware_setup.py` is
+specifying a suitable display driver.
 ```python
 from hardware_setup import ssd  # Create a display instance
 from gui.core.colors import *
@@ -323,19 +340,38 @@ ssd.show()
 Before configuring the touch controller ensure that the display is oriented as
 required by the application: the touch controller must be set up to match
 portrait or landscape mode and any more specialised modes (upside down or
-reflected). Setting up a touch controller involves running two test scripts, the
-outcome being suitable args for these two lines in `hardware_setup.py`:
+reflected). Setting up a touch controller involves running a test script, the
+outcome being a replacement for this line in `hardware_setup.py`:
 ```python
-tpad = TSC2007(i2c, 320, 240)
-tpad.mapping(transpose=True, row_reflect=True)
+tpad.init(ssd.height, ssd.width)
 ```
 The procedure is described [here](./TOUCHPAD.md).
 
+As a final check issue
+```python
+>>> import gui.demos.simple
+```
+If this runs correctly you have a properly configured touch GUI.
+
 ###### [Contents](./README.md#0-contents)
 
-## 1.7 Installation
+## 1.7 Application development
 
-Please ensure device firmware is up to date. Clone the repo to the PC with:
+There are two approaches to development. The first is to keep all files on a USB
+connected PC - `mpremote` can mount the directory on the device and run the
+application code from there. Files are only copied to the device when the
+application is ready for deployment. The GUI was developed in this manner. One
+advantage is that the device's filesystem may be wiped, ensuring that each file
+exists in only a single version. It also obviates the need to install a display
+driver, as all drivers exist on the PC. The main drawback is that loading can be
+slow on some platforms (ESP32 I'm looking at you).
+
+The other option is the traditional one of copying files to the device. The GUI
+is large but modular: only those resources that are used need to be copied. A
+refinement of this approach is to freeze resources as bytecode. This can save a
+large amount of RAM. On some platforms the entire GUI can be frozen.
+
+In all cases the repo should be cloned to the PC:
 ```bash
 $ git clone https://github.com/peterhinch/micropython-touch
 $ cd micropython-touch
@@ -343,25 +379,9 @@ $ cd micropython-touch
 In the `micropython-touch` directory edit `hardware_setup.py` to match the
 hardware in use.
 
-The official
-[mpremote](http://docs.micropython.org/en/latest/reference/mpremote.html#mpremote)
-tool is recommended. Install with:
-```bash
-$ pip3 install mpremote
-```
-There are several options for installation
- 1. Using mpremote to run the GUI demos via the PC without installing.
- 2. Subtractive. Installing the entire GUI, then (optionally) removing unused
- components.
- 3. Additive. Installing a minimal subset and manually adding extra components.
- 4. Using frozen bytecode.
+### Developing without installing
 
-### Testing without installing
-
-The easy way to start is to use `mpremote` which allows a directory on your PC
-to be mounted on the host. In this way the filesystem on the host is left
-unchanged. This is at some cost in loading speed, especially on ESP32. Clone the
-repo to the PC and, in the `micropython-touch` directory run:
+In the `micropython-touch` directory run:
 ```bash
 $ mpremote mount .
 ```
@@ -369,25 +389,9 @@ This should provide a REPL. Run the minimal demo:
 ```python
 >>> import gui.demos.simple
 ```
-If this runs and the buttons respond to touch the hardware is correctly
-configured. Other demos should run.
+If this runs and responds to touch the hardware is correctly configured. Other
+demos should run.
 
-### Installing a display driver
-
-It is necessary to install a display driver prior to any GUI installation. On
-networked hardware a display driver may be installed as follows (example is for
-ST7789):
-```python
->>> mip.install("github:peterhinch/micropython-nano-gui/drivers/st7789")
-```
-The last part of the address (`st7789`) is the name of the directory holding
-drivers for the display in use. In cases where the directory holds more than
-one driver all will be installed. Unused drivers may be deleted.
-
-Install using `mpremote` on the PC as follows:
-```bash
-$ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
-```
 ### Full installation (subtractive)
 
 The entire GUI is large. It is possible to install it all from the PC clone by
@@ -400,28 +404,28 @@ $ mpremote cp hardware_setup.py :
 This is rather profligate with Flash storage. There is great scope for
 discarding unused fonts, demos and widgets. As an alternative to installing
 everything and pruning, an additive approach may be used where a minimal subset
-is installed with extra fonts and widgets being added as required.
+is installed (by [quick start](./README.md#16-quick-start)) with extra fonts and
+widgets being added as required.
+
+### Installing a display driver
+
+If the ILI9341 driver installed by [Quick start](./README.md#16-quick-start)
+does not match the display driver an alternative must be installed. For an
+ST7789 this would be done with:
+```bash
+$ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
+```
+The last part of the address (`st7789`) is the name of the directory holding
+drivers for the display in use. In cases where the directory holds more than
+one driver all will be installed. Unused drivers may be deleted. Note that the
+`boolpalette.py` file in the `drivers` directory is essential.
 
 ### Minimal installation (additive)
 
-This installs a subset adequate to run the `simple.py` demo. It comprises:  
-![Image](./images/filesystem.png)  
-Note that `mip` and `mpremote mip` install to `/lib/` which therefore becomes
-the root of the above tree. The subset is installed with (on the device):
-```python
->>> mip.install("github:peterhinch/micropython-touch")
-```
-or (on the PC):
-```bash
-$ mpremote mip install "github:peterhinch/micropython-touch"
-```
-In both cases the edited `hardware_setup.py` must be copied from the PC:
-```bash
-$ cd micropython-touch
-$ mpremote cp hardware_setup.py :
-```
-When adding components the directory structure must be maintained. For example,
-in the `micropython-touch` directory:
+With the setup created by [Quick start](./README.md#16-quick-start) as a
+starting point, further fonts and widgets may be copeied from the PC. When
+adding components the directory structure must be maintained. For example, in
+the `micropython-touch` directory:
 ```bash
 $ mpremote cp gui/fonts/font10.py :/gui/fonts/
 $ mpremote cp gui/widgets/checkbox.py :/gui/widgets/
@@ -441,15 +445,8 @@ See [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode).
 
 #### RAM usage
 
-Running the `linked_sliders` demo, the code uses about 23,000 bytes with frozen
-bytecode and 55,000 bytes without. To this must be added the size of the frame
-buffer. This can readily be calculated. For example in the case of the ILI9341
-(a 240x320 pixel unit whose driver uses 4-bit color) the buffer size is  
-`240x320/2 = 38,400` bytes.
-
 A Pico shows ~182000 bytes free with no code running. With `linked_sliders`
-running on an ILI9341 display, it shows 120,896 bytes free with frozen
-bytecode and 88,640 bytes free without.
+running on an ILI9341 display and no frozen bytecode it shows 101K free.
 
 With multi-pixel displays the size of the frame buffer can prevent the GUI from
 compiling. If frozen bytecode is impractical, consider cross-compiling. See
@@ -462,22 +459,6 @@ Responsiveness may be enhanced by two approaches:
  [the drivers doc](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
  2. Clocking the host fast (`machine.freq`).
 
-#### Touchpad behaviour
-
-Occasional instances were observed where invalid touch position values were
-returned by the TSC2007 controller. These were noted when running the test
-scripts and also manifested as rare incorrect behaviour of GUI applications.
-This will be investigated.
-
-#### Platform notes
-
-On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
-bytecode: in this configuration running the `various.py` demo there was 29K of
-free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
-RAM usage. A smaller display or a Pyboard D would offer more headroom. Frozen
-bytecode was also necessary on an RP2 running an ILI9486: a 480x320 display
-requires a 76,800 byte frame buffer.
-
 ###### [Contents](./README.md#0-contents)
 
 ## 1.9 Firmware and dependencies
@@ -487,9 +468,6 @@ These are listed to enable users to check for newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
- * [SSD1306 driver](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/display/ssd1306).
- A copy of the official driver for OLED displays using the SSD1306 chip is
- provided. The link is to the official file.
 
 ###### [Contents](./README.md#0-contents)
 
