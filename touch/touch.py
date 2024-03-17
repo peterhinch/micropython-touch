@@ -14,7 +14,7 @@ _SCALE = const(18)  # 12 bits ADC -> 30 bit small int. Subclasses must be limite
 # .get acquires a set of samples and modifies ._x and ._y to provide mean
 # values.
 class PreProcess:
-    def __init__(self, tpad, *, alen=10, variance=50, verbose=True):
+    def __init__(self, tpad, alen, variance, verbose):
         self.tpad = tpad
         # Arrays for means
         self.ax = array("H", 0 for _ in range(alen))
@@ -45,11 +45,12 @@ class PreProcess:
         tpad._y = ym
         return True
 
-# Class is instantiated with calibration values
+# Class is instantiated with a configured preprocessor.
 class ABCTouch:
     def __init__(self, prep):
         self.prep = prep  # Preprocessor
 
+    # Assign orientation and calibration values.
     def init(self, xpix, ypix, xmin=0, ymin=0, xmax=4095, ymax=4095, trans=False, rr=False, rc=False):
         self._xpix = xpix  # No of pixels on x axis
         self._ypix = ypix  # Pixels on y axis

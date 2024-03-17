@@ -4,8 +4,9 @@
 # Copyright (c) 2024 Peter Hinch
 
 # It is minimal, providing only the required functionality for the touh GUI.
-# Sources: datasheet. The following were studied for noise reduction approach,
-# mainly implemented in base class:
+# Sources: datasheet.
+# The following were studied for noise reduction approach, # mainly implemented
+# in base class:
 # https://github.com/dmquirozc/XPT2046_driver_STM32/blob/main/xpt2046.c
 # https://github.com/PaulStoffregen/XPT2046_Touchscreen/blob/master/XPT2046_Touchscreen.cpp
 # https://github.com/robert-hh/micropython-ili9341/blob/master/xpt2046.py
@@ -16,9 +17,9 @@ from .touch import ABCTouch, PreProcess
 
 
 class XPT2046(ABCTouch):
-    def __init__(self, spi, cspin, variance=500, verbose=True):
+    def __init__(self, spi, cspin, *, alen=10, variance=500, verbose=True):
         # Instantiate a preprocessor
-        pp = PreProcess(self, variance=variance, verbose=verbose)
+        pp = PreProcess(self, alen, variance, verbose)
         super().__init__(pp)
         self.csn = cspin
         self.spi = spi

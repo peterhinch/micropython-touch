@@ -1,5 +1,7 @@
 {
   "urls": [
+    ["drivers/ili93xx/ili9341.py", "github:peterhinch/micropython-nano-gui/drivers/ili93xx/ili9341.py"],
+    ["drivers/boolpalette.py", "github:peterhinch/micropython-nano-gui/drivers/boolpalette.py"],
     ["gui/core/colors.py", "github:peterhinch/micropython-touch/gui/core/colors.py"],
     ["gui/core/ugui.py", "github:peterhinch/micropython-touch/gui/core/ugui.py"],
     ["gui/core/writer.py", "github:peterhinch/micropython-touch/gui/core/writer.py"],

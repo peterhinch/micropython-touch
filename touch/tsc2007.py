@@ -8,6 +8,11 @@
 
 # Reference sources: the TSC2007 datasheet plus Adafruit driver
 # https://github.com/adafruit/Adafruit_CircuitPython_TSC2007
+# The following were studied for noise reduction approach, # mainly implemented
+# in base class:
+# https://github.com/dmquirozc/XPT2046_driver_STM32/blob/main/xpt2046.c
+# https://github.com/PaulStoffregen/XPT2046_Touchscreen/blob/master/XPT2046_Touchscreen.cpp
+# https://github.com/robert-hh/micropython-ili9341/blob/master/xpt2046.py
 # It is minimal, providing only the required functionality for the touh GUI. See
 # the Adafruit driver for a more full-featured driver.
 
@@ -15,9 +20,9 @@ from .touch import ABCTouch, PreProcess
 
 
 class TSC2007(ABCTouch):
-    def __init__(self, i2c, addr=0x48):
+    def __init__(self, i2c, addr=0x48, *, alen=10, variance=50, verbose=True):
         # Instantiate a preprocessor
-        super().__init__(PreProcess(self))
+        super().__init__(PreProcess(self, alen, variance, verbose))
         self._i2c = i2c
         self._addr = addr
         i2c.writeto(addr, b"\x00")  # Low power/read temp
