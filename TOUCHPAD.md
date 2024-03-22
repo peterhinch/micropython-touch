@@ -1,5 +1,12 @@
 # Introduction
 
+This doc serves two purposes:
+1. Documenting specific touch drivers.
+2. Providing an explanation of the touch calibration process and general design
+information.
+
+For setup instructions please see [setup](./SETUP.md).
+
 Touch screens vary considerably in quality. Manufacturers such as Adafruit make
 good quality displays: a sustained touch at a fixed location produces readings
 with a high level of consistency. Further, they produce consistent results over
@@ -9,71 +16,33 @@ one axis of touch only showed variation over about a third of its length. The
 other unit could be calibrated but produced inaccurate readings close to one
 edge.
 
-# Configuring a touchpad
+[This Adafruit screen](https://www.adafruit.com/product/1743) was
+used in development with [this touch controller](http://www.adafruit.com/products/5423)
+with good results.
 
-The first step is to set up the display as described in the main README. Ensure
-that the orientation is as required by the project. It is strongly advised to
-run the [Quick hardware check](./README.md#16-quick-hardware-check).
+# Calibration
 
-Setup involves running `touch.setup.py`, following on-screen instructions, and
-pasting the output into `hardware_setup.py`. Setup has the following objectives:
+To understand calibration, note the coordinate naming convention. Values
+returned by the hardware driver are referred to as `x` and `y`, while pixel
+values are `row` and `col`. The `xy` values have nominal 12-bit resolution but
+owing to hardware tolerances typically have a range less than the nominal. The
+range of `row/col` values is precisely that of the display size in pixels.
+
+Calibration has the following objectives:
 1. If a display has NxP pixels, ensuring that the larger number is associated
 with the long axis of the touch panel.
 2. Calibrating the touch panel to allow for the fact that the actual range of
-the hardware may be smaller than its theoretical 0-4095 bits.
+the hardware may be smaller than its theoretical 0-4095 bits. Thus if one axis
+returns values in the range 189-3800, after calibration these will be mapped to
+0-4095.
 3. Mapping `(x,y)` touch coordinates onto `(row,col)` screen coordinates. This
-must allow for landscape/portrait or upside down orientation.
+must allow for landscape/portrait or upside down orientation. For example, if a
+display has 240x320 pixels and is mounted in portrait mode, a touch near the top
+left corner will issue something close to `row=0, col=0`. A touch near the
+bottom right will issue something close to `row=319, col=239`.
 
-A minimal `hardware_setup.py` to run the display may look like this:
-```python
-from machine import Pin, SoftI2C, SPI, freq
-import gc
-from drivers.ili93xx.ili9341 import ILI9341 as SSD
-
-freq(250_000_000)  # RP2 overclock
-# Create and export an SSD instance
-prst = Pin(8, Pin.OUT, value=1)
-pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
-pcs = Pin(10, Pin.OUT, value=1)
-spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
-gc.collect()  # Precaution before instantiating framebuf
-ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)
-
-from gui.core.tgui import Display
-# Touch panel code will be inserted here
-display = Display(ssd)  # No reference to a touchpnel
-```
-
-To add touch panel data this is adapted as follows (example is for TSC2007):
-```python
-from gui.core.tgui import Display
-from touch.tsc2007 import TSC2007
-
-i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c)
-tpad.init(ssd.height, ssd.width)
-
-display = Display(ssd, tpad)  # Now includes touch
-```
-Calibration is performed by issuing
-```python
-import touch.setup
-```
-The script displays a cross at the top left of the screen. Touch it firmly with
-a stylus. Repeat for the following three crosses as they appear. The script will
-issue a line of code like
-```python
-tpad.init(240, 320, 120, 314, 3923, 3878, True, True, False)
-```
-It is suggested that calibration be repeated a few times as touch hardware can
-be inconsistent. The last four numeric args should be studied: there should be
-two fairly low values followed by two similar large ones. Once a fairly
-consistent response has been achieved, the line of code should be pasted into
-`hardware_setup.py` in place of the existing `tpad.init` line.
-
-After a reboot the touch interface should work. A script `touch.check` provides
-optional confirmation: reported `row` and `col` coordinates should increase as
-touch is moved from the top left hand corner, downwards and to the right.
+The output of the calibration process is a line of code defining values for the
+touchpad driver's `init` method. This is documented below.
 
 # TSC2007
 
@@ -165,12 +134,10 @@ development of further drivers. Currently two drivers are provided:
 * TSC2007 [e.g. Adafruit](http://www.adafruit.com/products/5423)
 * XPT2046 Used on many Chinese resistive touchscreens.
 
-## Coordinates
+## Mapping
 
-To avoid confusion, values returned by the hardware driver are referred to as `x`
-and `y`, while pixel values are `row` and `col`. Typically `x` and `y` values
-might have 12 bit resolution and, due to hardware tolerances, may span less than
-their nominal range with minimum values > 0 and the maximum < 4095. The ABC
+The `x` and `y` values have 12 bit resolution but
+due to hardware tolerances typically span less than their nominal range. with minimum values > 0 and the maximum < 4095. The ABC
 compensates for these limitations and performs mapping from `(x, y)` to
 `(row, col)` in accordance to the display orientation (e.g. landscape/portrait,
 usd, etc.).

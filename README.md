@@ -1,7 +1,3 @@
-# pre-release! Use at your peril.
-
-Code works, but `TOUCHPAD.md` is far from being finished or even correct.
-
 # micropython-touch
 
 This is a lightweight, portable, MicroPython GUI library for displays having
@@ -61,15 +57,11 @@ March 2024: Initial port from micro-gui.
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Widget control](./README.md#14-widget-control) Operation of variable controls.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
- 1.6 [Quick start](./README.md#16-quick-start) Testing the hardware config. Please do this first.  
- 1.7 [Application development](./README.md#17-application-development) Installation options.  
- 1.8 [Performance and hardware notes](./README.md#18-performance-and-hardware-notes)  
- 1.9 [Firmware and dependencies](./README.md#19-firmware-and-dependencies)  
- 1.10 [Supported hosts and displays](./README.md#110-supported-hosts-and-displays)  
- 1.11 [Files](./README.md#111-files) Discussion of the files in the library.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.11.1 [Demos](./README.md#1111-demos) Simple demos showing coding techniques.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.11.2 [Test scripts](./README.md#1112-test-scripts) GUI tests, some needing larger displays  
- 1.12 [Floating Point Widgets](./README.md#112-floating-point-widgets) How to input floating point data.  
+ 1.6 [Quick start](./README.md#16-quick-start)    
+ 1.7 [Files](./README.md#111-files) Discussion of the files in the library.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.1 [Demos](./README.md#1111-demos) Simple demos showing coding techniques.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.2 [Test scripts](./README.md#1112-test-scripts) GUI tests, some needing larger displays  
+ 1.8 [Floating Point Widgets](./README.md#112-floating-point-widgets) How to input floating point data.  
 2. [Usage](./README.md#2-usage) Application design.  
  2.1 [Program structure and operation](./README.md#21-program-structure-and-operation) A simple demo of navigation and use.  
  2.2 [Callbacks](./README.md#22-callbacks)  
@@ -128,7 +120,7 @@ March 2024: Initial port from micro-gui.
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
 8. [Realtime applications](./README.md#8-realtime-applications) Accommodating tasks requiring fast RT performance.  
 
-[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives, more on callbacks.
+[Appendix 1 Application design](./README.md#appendix-1-application-design) Useful hints.  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 
@@ -261,10 +253,10 @@ This enables rapid change, but also slow and extremely precise adjustment.
 
 A file `hardware_setup.py` must exist in the GUI root directory. This defines
 the connections to the display and the display driver. It also defines the touch
-driver and the pins used for its interface. Example files may be found in the
-`setup_examples` directory.
-
-Further examples (without touch controller definitions) are in this
+driver and the pins used for its interface. The doc referenced in the next
+section describes the creation of a `hardware_setup.py` in detail. Example files
+may be found in the `setup_examples` directory. Further examples (without touch
+controller definitions) are in this
 [nano-gui directory](https://github.com/peterhinch/micropython-nano-gui/tree/master/setup_examples).
 
 The following is a typical example for a Raspberry Pi Pico driving an ILI9341
@@ -272,226 +264,36 @@ display with TSC2007 touch controller:
 ```python
 from machine import Pin, SoftI2C, SPI, freq
 import gc
-import time
-
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
 
 freq(250_000_000)  # RP2 overclock
 # Create and export an SSD instance
-prst = Pin(8, Pin.OUT, value=0)
+prst = Pin(8, Pin.OUT, value=1)
 pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
 pcs = Pin(10, Pin.OUT, value=1)
 spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-time.sleep_ms(100)
-prst(1)
-ssd = SSD(spi, pcs, pdc, prst, usd=True)  # 240x320 default
-from gui.core.tgui import Display, quiet
-# quiet()
+ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
+from gui.core.tgui import Display
 
-# Can also use hard I2C
+# Touch configuration
 from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c)
-tpad.init(ssd.height, ssd.width)
+tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 display = Display(ssd, tpad)
 ```
-The commented-out `quiet()` line provides a means of suppressing diagnostic
-messages.
-
-Instantiation of `SSD` and `Display` classes is detailed in
-[section 3](./README.md#3-the-ssd-and-display-objects).
-
-Display drivers are
-[documented here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
-
 ###### [Contents](./README.md#0-contents)
 
 ## 1.6 Quick start
 
-Please ensure device firmware is up to date. Ensure you have the official
-[mpremote](http://docs.micropython.org/en/latest/reference/mpremote.html#mpremote)
-tool installed:
-```bash
-$ pip3 install mpremote
-```
-The following assumes a display based on ILI9341 (for displays other than
-ILI9341 an additional driver must be installed, see 1.7). A minimal installation
-may be performed with
-```bash
-$ mpremote mip install "github:peterhinch/micropython-touch"
-```
-At this stage the target filesystem is (under the `/lib` directory):  
-![Image](./images/filesystem.png)  
-The edited `hardware_setup.py` should be copied to the device, which now
-contains a minimal installation capable of running the `simple.py` demo. Prior
-to running this, the following may be pasted at the REPL to verify correct
-connection to the display. It also confirms that `hardware_setup.py` is
-specifying a suitable display driver.
-```python
-from hardware_setup import ssd  # Create a display instance
-from gui.core.colors import *
-ssd.fill(0)
-ssd.line(0, 0, ssd.width - 1, ssd.height - 1, GREEN)  # Green diagonal corner-to-corner
-ssd.rect(0, 0, 15, 15, RED)  # Red square at top left
-ssd.rect(ssd.width -15, ssd.height -15, 15, 15, BLUE)  # Blue square at bottom right
-ssd.show()
-```
-Before configuring the touch controller ensure that the display is oriented as
-required by the application: the touch controller must be set up to match
-portrait or landscape mode and any more specialised modes (upside down or
-reflected). Setting up a touch controller involves running a test script, the
-outcome being a replacement for this line in `hardware_setup.py`:
-```python
-tpad.init(ssd.height, ssd.width)
-```
-The procedure is described [here](./TOUCHPAD.md).
-
-As a final check issue
-```python
->>> import gui.demos.simple
-```
-If this runs correctly you have a properly configured touch GUI.
+Please ensure device firmware is up to date. [SETUP.md](./SETUP.md) describes
+how to configure, calibrate and test a touchscreen so that the demos below may
+be run. It includes ideas on application development.
 
 ###### [Contents](./README.md#0-contents)
 
-## 1.7 Application development
-
-There are two approaches to development. The first is to keep all files on a USB
-connected PC - `mpremote` can mount the directory on the device and run the
-application code from there. Files are only copied to the device when the
-application is ready for deployment. The GUI was developed in this manner. One
-advantage is that the device's filesystem may be wiped, ensuring that each file
-exists in only a single version. It also obviates the need to install a display
-driver, as all drivers exist on the PC. The main drawback is that loading can be
-slow on some platforms (ESP32 I'm looking at you).
-
-The other option is the traditional one of copying files to the device. The GUI
-is large but modular: only those resources that are used need to be copied. A
-refinement of this approach is to freeze resources as bytecode. This can save a
-large amount of RAM. On some platforms the entire GUI can be frozen.
-
-In all cases the repo should be cloned to the PC:
-```bash
-$ git clone https://github.com/peterhinch/micropython-touch
-$ cd micropython-touch
-```
-In the `micropython-touch` directory edit `hardware_setup.py` to match the
-hardware in use.
-
-### Developing without installing
-
-In the `micropython-touch` directory run:
-```bash
-$ mpremote mount .
-```
-This should provide a REPL. Run the minimal demo:
-```python
->>> import gui.demos.simple
-```
-If this runs and responds to touch the hardware is correctly configured. Other
-demos should run.
-
-### Full installation (subtractive)
-
-The entire GUI is large. It is possible to install it all from the PC clone by
-issuing:
-```bash
-$ cd micropython-touch
-$ mpremote cp -r gui :
-$ mpremote cp hardware_setup.py :
-```
-This is rather profligate with Flash storage. There is great scope for
-discarding unused fonts, demos and widgets. As an alternative to installing
-everything and pruning, an additive approach may be used where a minimal subset
-is installed (by [quick start](./README.md#16-quick-start)) with extra fonts and
-widgets being added as required.
-
-### Installing a display driver
-
-If the ILI9341 driver installed by [Quick start](./README.md#16-quick-start)
-does not match the display driver an alternative must be installed. For an
-ST7789 this would be done with:
-```bash
-$ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
-```
-The last part of the address (`st7789`) is the name of the directory holding
-drivers for the display in use. In cases where the directory holds more than
-one driver all will be installed. Unused drivers may be deleted. Note that the
-`boolpalette.py` file in the `drivers` directory is essential.
-
-### Minimal installation (additive)
-
-With the setup created by [Quick start](./README.md#16-quick-start) as a
-starting point, further fonts and widgets may be copeied from the PC. When
-adding components the directory structure must be maintained. For example, in
-the `micropython-touch` directory:
-```bash
-$ mpremote cp gui/fonts/font10.py :/gui/fonts/
-$ mpremote cp gui/widgets/checkbox.py :/gui/widgets/
-```
-
-### Freezing bytecode
-
-There is scope for speeding loading and saving RAM by using frozen bytecode.
-The entire `gui` tree may be frozen but the directory structure must be
-maintained. For reasons that are unclear freezing display drivers may not
-work. For flexibility, consider keeping `hardware_setup.py` in the filesystem.
-See [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode).
-
-###### [Contents](./README.md#0-contents)
-
-## 1.8 Performance and hardware notes
-
-#### RAM usage
-
-A Pico shows ~182000 bytes free with no code running. With `linked_sliders`
-running on an ILI9341 display and no frozen bytecode it shows 101K free.
-
-With multi-pixel displays the size of the frame buffer can prevent the GUI from
-compiling. If frozen bytecode is impractical, consider cross-compiling. See
-[Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling).
-
-#### Speed
-
-Responsiveness may be enhanced by two approaches:
- 1. Clocking the SPI bus as fast as possible. This is discussed in
- [the drivers doc](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
- 2. Clocking the host fast (`machine.freq`).
-
-###### [Contents](./README.md#0-contents)
-
-## 1.9 Firmware and dependencies
-
-Firmware should be V1.22 or later. The source tree includes all dependencies.
-These are listed to enable users to check for newer versions or to read docs:
-
- * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
- Provides text rendering of Python font files.
-
-###### [Contents](./README.md#0-contents)
-
-## 1.10 Supported hosts and displays
-
-Development was done using a Raspberry Pi Pico connected to a cheap ILI9341
-320x240 display. I have also tested a TTGO T-Display (an ESP32 host) and a
-Pyboard. Code is written with portability as an aim, but MicroPython configs
-vary between platforms and I can't guarantee that every widget will work on
-every platform. For example, some use the `cmath` module which may be absent on
-some builds.
-
-Supported displays are as per
-[the nano-gui list](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#12-description).
-In general ePaper and Sharp displays are unlikely to yield good results because
-of slow and visually intrusive refreshing. However there is an exception: the
-[Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm). See
-[10. ePaper displays](./README.md#10-epaper-displays).
-
-Display drivers are documented [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
-
-###### [Contents](./README.md#0-contents)
-
-## 1.11 Files
+## 1.7 Files
 
 Display drivers may be found in the `drivers` directory. These are copies of
 those in `nano-gui`, included for convenience. Note the file
@@ -505,13 +307,13 @@ files in `gui/core` are:
 Touch support is in `touch`:
 * `touch.py` Common abstract base class.
 * `tsc2007.py` Driver for TSC2007 controller.
-* `xpt2046.py` Driver for XPT2046 controller (TBD).
+* `xpt2046.py` Driver for XPT2046 controller.
 Other drivers will be added.
 
 The `gui/demos` directory contains a variety of demos and tests described
 below.
 
-### 1.11.1 Demos
+### 1.7.1 Demos
 
 Demos are run by issuing (for example):
 ```python
@@ -546,7 +348,7 @@ minimal and aim to demonstrate a single technique.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
  * `qrcode.py` Display a QR code. Requires the uQR module.
 
-### 1.11.2 Test scripts
+### 1.7.2 Test scripts
 
 These more complex demos are run in the same way by issuing (for example):
 ```python
@@ -566,7 +368,7 @@ Some of these require larger screens. Required sizes are specified as
 
 ###### [Contents](./README.md#0-contents)
 
-## 1.12 Floating Point Widgets
+## 1.8 Floating Point Widgets
 
 The following widgets provide floating point input:
 * `Knob` Rotary control.
