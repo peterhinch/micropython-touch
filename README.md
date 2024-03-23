@@ -19,7 +19,10 @@ to a wide range of displays. It is also portable between hosts. Support for
 e-paper is theoretically possible if any exist with touch controllers.
 
 ![Image](./images/rp2_test_fixture.JPG)  
-Raspberry Pico with an ILI9341 from eBay.
+Raspberry Pico with an ILI9341 from eBay (XPT2046 touch controller).
+
+![Image](./images/rp2_tsc2007.JPG)  
+Raspberry Pico with Adafruit 3.2" display and TSC2007 touch controller.
 
 # Rationale
 
