@@ -31,7 +31,7 @@ class TSC2007(ABCTouch):
         self._i2c.readfrom_into(self._addr, buf)
         return (buf[0] << 4) | (buf[1] >> 4)
 
-    # If touched, populate .row and .col with raw data. Return True.
+    # If touched, populate ._x and ._y with raw data. Return True.
     # If not touched return False.
     def acquire(self):
         addr = self._addr

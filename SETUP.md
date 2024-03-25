@@ -128,7 +128,8 @@ passing through the squares. This should be pixel perfect.
 ## 2.4 Add the touch overlay
 
 Exit the REPL with `ctrl-x`. Edit `hardware_setup.py` to add the touch
-controller. Replace the last line (`display = Display(ssd)`) with:
+controller. In the case of TSC2007 replace the last line
+(`display = Display(ssd)`) with the following (pin numbers may be adapted):
 ```python
 from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
@@ -137,6 +138,9 @@ tpad.init(ssd.height, ssd.width)
 display = Display(ssd, tpad)
 ```
 See [touchpad doc](./TOUCHPAD.md) for other touch controllers.
+
+Hard or soft I2C may be used. Note that I2C interfaces require pullup resistors.
+In many cases these are installed on the target hardware.
 
 ## 2.5 Touch calibration
 
@@ -171,7 +175,8 @@ At the REPL reset the hardware (with `ctrl-d`) and issue:
 ```python
 >>> import gui.demos.simple
 ```
-When the buttons are pressed, output should appear at the REPL.
+This should show two `Button` widgets labelled "Yes" and "No". When they are
+touched, output should appear at the REPL.
 
 # 3. Deployment
 
