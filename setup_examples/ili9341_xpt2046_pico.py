@@ -1,4 +1,4 @@
-# ili9341_tsc2007_pico.py Customise for your hardware config
+# ili9341_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
@@ -25,7 +25,7 @@
 # IO26 31   Touch SDA
 # IO27 32   Touch SCL
 
-from machine import Pin, SoftI2C, SPI, freq
+from machine import Pin, SoftSPI, SPI, freq
 import gc
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
 
@@ -40,11 +40,8 @@ ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 defau
 from gui.core.tgui import Display
 
 # Touch configuration
-from touch.tsc2007 import TSC2007
-
-# SoftI2C used for PCB: hard I2C(0) does not currently work on these pins.
-i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, ssd)
-tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
-
+from touch.xpt2046 import XPT2046
+spi = SoftSPI(mosi=Pin(1), miso=Pin(2), sck=Pin(3))  # 2.5MHz max
+tpad = XPT2046(spi, cspin=Pin(0), ssd)
+tpad.init(240, 320, 157, 150, 3863, 4095, True, True, True)
 display = Display(ssd, tpad)

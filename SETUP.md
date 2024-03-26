@@ -133,8 +133,7 @@ controller. In the case of TSC2007 replace the last line
 ```python
 from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c)
-tpad.init(ssd.height, ssd.width)
+tpad = TSC2007(i2c, ssd)
 display = Display(ssd, tpad)
 ```
 See [touchpad doc](./TOUCHPAD.md) for other touch controllers.
@@ -158,7 +157,14 @@ It is suggested that calibration be repeated a few times as touch hardware can
 be inconsistent. The last four numeric args should be studied: there should be
 two fairly low values followed by two similar large ones. Once a fairly
 consistent response has been achieved, the line of code should be pasted into
-`hardware_setup.py` in place of the existing `tpad.init` line.
+`hardware_setup.py` as below:
+```python
+from touch.tsc2007 import TSC2007
+i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
+tpad = TSC2007(i2c, ssd)
+tpad.init(240, 320, 120, 314, 3923, 3878, True, True, False)  # Extra line
+display = Display(ssd, tpad)
+```
 
 After a reboot the touch interface should work. A script `touch.check` provides
 optional confirmation. At the REPL issue:

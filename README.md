@@ -1,22 +1,19 @@
 # micropython-touch
 
 This is a lightweight, portable, MicroPython GUI library for displays having
-a touch interface and with drivers subclassed from `framebuf`. Written in Python
-it runs under a standard MicroPython firmware build. Input is by touch. The
-design is intended to support a range of touch controllers. Initially only the
-TSC2007 is supported, as on
-[this breakout board](https://learn.adafruit.com/adafruit-tsc2007-i2c-resistive-touch-screen-controller).
+a touch interface and with drivers subclassed from
+[framebuf](https://docs.micropython.org/en/latest/library/framebuf.html).
+Written in Python it runs under a standard MicroPython firmware build. Input is
+by touch. The design is intended to support a range of touch controllers.
+Initially the TSC2007 and XPT2046 are supported.
 
-It is larger and more complex than `nano-gui` owing to the support for input.
-It enables switching between screens and launching modal windows. Widgets are
-a substantial superset of `nano-gui` widgets.
-
-#### [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
-
-It is compatible with all display drivers for
-[nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
-to a wide range of displays. It is also portable between hosts. Support for
-e-paper is theoretically possible if any exist with touch controllers.
+It is larger and more complex than
+[nano-gui](https://github.com/peterhinch/micropython-nano-gui) owing to its
+support for input. The GUI enables switching between screens and launching modal
+windows. Widgets are a substantial superset of `nano-gui` widgets. It is
+compatible with all `nano-gui` display drivers so is portable to a wide range of
+displays. Support for e-paper is theoretically possible if any exist with touch
+controllers. The GUI is also portable between hosts.
 
 ![Image](./images/rp2_test_fixture.JPG)  
 Raspberry Pico with an ILI9341 from eBay (XPT2046 touch controller).
@@ -24,7 +21,17 @@ Raspberry Pico with an ILI9341 from eBay (XPT2046 touch controller).
 ![Image](./images/rp2_tsc2007.JPG)  
 Raspberry Pico with Adafruit 3.2" display and TSC2007 touch controller.
 
-# Rationale
+# Documents
+
+[Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md).  
+[Setup guide](./SETUP.md) Calibration and a guide to application development.  
+[Touchpad drivers](./TOUCHPAD.md) Details of supported drivers and technical notes.  
+Commercial links to hardware that produced excellent results:  
+[TSC2007 breakout](http://www.adafruit.com/products/5423) Interface to displays
+that bring out analog touch signals, such as:  
+[Adafruit 3.2" touchscreen](https://www.adafruit.com/product/1743)
+
+# Alternative GUIs for MicroPython
 
 This was developed from [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main)
 with the aim of supporting a variety of touch controllers. Touch drivers share
@@ -35,9 +42,10 @@ The following are similar GUI repos with differing objectives.
  RAM usage but display-only with no provision for input.
  * [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main) A
  similar GUI with input provided by various configurations of pushbuttons and/or
- an encoder.
+ an encoder. Ideal for displays lacking touch overlays.
  * [LCD160cr](https://github.com/peterhinch/micropython-lcd160cr-gui) Touch GUI
- for the official display.
+ for the official display. Alas this is hewn from the purest, weapons grade
+ unobtanium.
  * [RA8875](https://github.com/peterhinch/micropython_ra8875) Touch GUI for
  displays with RA8875 controller. Supports large displays, e.g. from Adafruit.
  * [SSD1963](https://github.com/peterhinch/micropython-tft-gui) Touch GUI for

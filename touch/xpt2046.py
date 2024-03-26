@@ -17,10 +17,10 @@ from .touch import ABCTouch, PreProcess
 
 
 class XPT2046(ABCTouch):
-    def __init__(self, spi, cspin, *, alen=10, variance=500, verbose=True):
+    def __init__(self, spi, cspin, ssd, *, alen=10, variance=500, verbose=True):
         # Instantiate a preprocessor
         pp = PreProcess(self, alen, variance, verbose)
-        super().__init__(pp)
+        super().__init__(pp, ssd)
         self.csn = cspin
         self.spi = spi
         self.wbuf = bytearray(3)

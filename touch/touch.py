@@ -17,8 +17,8 @@ class PreProcess:
     def __init__(self, tpad, alen, variance, verbose):
         self.tpad = tpad
         # Arrays for means
-        self.ax = array("H", 0 for _ in range(alen))
-        self.ay = array("H", 0 for _ in range(alen))
+        self.ax = array("H", (0 for _ in range(alen)))
+        self.ay = array("H", (0 for _ in range(alen)))
         self.alen = alen
         self.var = variance
         self.verbose = verbose
@@ -45,13 +45,15 @@ class PreProcess:
         tpad._y = ym
         return True
 
+
 # Class is instantiated with a configured preprocessor.
 class ABCTouch:
-    def __init__(self, prep):
+    def __init__(self, prep, ssd):
         self.prep = prep  # Preprocessor
+        self.init(ssd.height, ssd.width, 0, 0, 4095, 4095, False, False, False)
 
     # Assign orientation and calibration values.
-    def init(self, xpix, ypix, xmin=0, ymin=0, xmax=4095, ymax=4095, trans=False, rr=False, rc=False):
+    def init(self, xpix, ypix, xmin, ymin, xmax, ymax, trans, rr, rc):
         self._xpix = xpix  # No of pixels on x axis
         self._ypix = ypix  # Pixels on y axis
         self._x0 = xmin  # Returned value for row 0
@@ -68,7 +70,6 @@ class ABCTouch:
         # Screen referenced coordinates
         self.row = 0
         self.col = 0
-
 
     # API: GUI calls poll which returns True if touched. .row, .col hold Screen
     # referenced coordinates.

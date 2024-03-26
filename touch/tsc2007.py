@@ -20,9 +20,9 @@ from .touch import ABCTouch, PreProcess
 
 
 class TSC2007(ABCTouch):
-    def __init__(self, i2c, addr=0x48, *, alen=10, variance=50, verbose=True):
+    def __init__(self, i2c, ssd, addr=0x48, *, alen=10, variance=50, verbose=True):
         # Instantiate a preprocessor
-        super().__init__(PreProcess(self, alen, variance, verbose))
+        super().__init__(PreProcess(self, alen, variance, verbose), ssd)
         self._i2c = i2c
         self._addr = addr
         i2c.writeto(addr, b"\x00")  # Low power/read temp
