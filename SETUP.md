@@ -11,7 +11,7 @@
 Touch screens vary considerably in quality. Manufacturers such as Adafruit make
 good quality displays: a sustained touch at a fixed location produces readings
 with a high level of consistency. Further, they produce consistent results over
-the entire surface with no dead zones.Chinese units can be cheap but produce
+the entire surface with no dead zones. Chinese units can be cheap but produce
 noisy outputs. [This Adafruit screen](https://www.adafruit.com/product/1743) was
 used in development with [this touch controller](http://www.adafruit.com/products/5423)
 with good results.
@@ -72,7 +72,7 @@ ILI9341 display and TSC2007 touch controller.
 
 Choose a working directory on the PC and issue:
 ```bash
-$ git clone https://github.com/peterhinch/micropython-touch/tree/master
+$ git clone https://github.com/peterhinch/micropython-touch/
 ```
 Change to the `micropython-touch` directory.
 
@@ -105,8 +105,9 @@ The `Pin` instances are arbitrary, but the SPI instance should be hard SPI with
 the maximum baudrate permitted by the display driver chip. The bus should not be
 shared with any other device.
 
-Args to `SSD` should be chosen to match the display dimensions in pixels and the required
-orientation (landcsape/portrait etc.) See
+Args to `SSD` should be chosen to match the display dimensions in pixels and the
+required orientation (landcsape/portrait etc.) Options depend on the specific
+display driver. See the
 [display drivers doc.](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
 ## 2.3 Test the display
@@ -199,7 +200,7 @@ on the uncalibrated screen. Comment out any `tpad.init` line in
 The `x` and `y` values should vary smoothly as a touch is moved across the
 display. Values should start around 0 to the low hundreds and end within a few
 hundred of 4095. If there are dead zones where the value of an axis barely
-changes as the touch is moved, the touch overlay is not usable. 
+changes as the touch is moved, the touch overlay is not usable.
 
 # 3. Deployment
 
@@ -207,6 +208,22 @@ This is for two scenarios:
 * A completed application is to be deployed to the hardware.
 * The developer has opted to locate files on the hardware rather than mounting
 the PC directory with `mpremote`.
+
+Two approaches are possible. One is simply to copy everything: this occupies
+about 950KB of Flash space. The other is to copy a subset to match actual usage.
+
+## 3.1 Copying everything
+
+In the root directory of the clone issue:
+```bash
+$ mpremote cp -r touch :
+$ mpremote cp -r gui :
+$ mpremote cp -r drivers :
+$ mpremote cp hardware_setup.py :
+$ mpremote cp uQR.py :
+```
+
+## 3.2 Minimal deployment
 
 Move to the `micropython-touch` directory on the PC. Issue
 ```bash
