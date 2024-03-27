@@ -78,6 +78,8 @@ Change to the `micropython-touch` directory.
 
 ## 2.2 Edit hardware_setup.py
 
+See examples in the `setup_examples` directory.
+
 Edit this file to match your hardware. Initially the aim is to configure the
 display, so there is no reference to the touch panel. Typical contents are as
 follows:
@@ -188,6 +190,16 @@ At the REPL reset the hardware (with `ctrl-d`) and issue:
 ```
 This should show two `Button` widgets labelled "Yes" and "No". When they are
 touched, output should appear at the REPL.
+
+## 2.7 Troubleshooting
+
+If a screen proves hard to calibrate it can be informative to run `touch.check`
+on the uncalibrated screen. Comment out any `tpad.init` line in
+`hardware_setup.py`, reboot and run the test. Ignore the `row` and `col` values.
+The `x` and `y` values should vary smoothly as a touch is moved across the
+display. Values should start around 0 to the low hundreds and end within a few
+hundred of 4095. If there are dead zones where the value of an axis barely
+changes as the touch is moved, the touch overlay is not usable. 
 
 # 3. Deployment
 
