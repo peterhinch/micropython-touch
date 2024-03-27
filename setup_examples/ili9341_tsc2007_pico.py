@@ -25,7 +25,7 @@
 # IO26 31   Touch SDA
 # IO27 32   Touch SCL
 
-from machine import Pin, SoftI2C, SPI, freq
+from machine import Pin, I2C, SPI, freq
 import gc
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
 
@@ -42,8 +42,7 @@ from gui.core.tgui import Display
 # Touch configuration
 from touch.tsc2007 import TSC2007
 
-# SoftI2C used for PCB: hard I2C(0) does not currently work on these pins.
-i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
+i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c, ssd)
 tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 

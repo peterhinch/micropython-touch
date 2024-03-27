@@ -100,9 +100,11 @@ quiet()  # Suppress free RAM messages (optional)
 display = Display(ssd)
 ```
 The `Pin` instances are arbitrary, but the SPI instance should be hard SPI with
-the maximum baudrate permitted by the display driver chip. Args to `SSD` should
-be chosen to match the display dimensions in pixels and the required orientation
-(landcsape/portrait etc.). See
+the maximum baudrate permitted by the display driver chip. The bus should not be
+shared with any other device.
+
+Args to `SSD` should be chosen to match the display dimensions in pixels and the required
+orientation (landcsape/portrait etc.) See
 [display drivers doc.](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
 ## 2.3 Test the display
@@ -140,6 +142,9 @@ See [touchpad doc](./TOUCHPAD.md) for other touch controllers.
 
 Hard or soft I2C may be used. Note that I2C interfaces require pullup resistors.
 In many cases these are installed on the target hardware.
+
+Touch controllers such as XPT2046 use an SPI bus. This may be hard or soft and
+speed is not critical. The SPI bus may not be shared with that of the display.
 
 ## 2.5 Touch calibration
 
