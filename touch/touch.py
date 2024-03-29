@@ -46,6 +46,15 @@ class PreProcess:
         return True
 
 
+# Dummy preprocessor for pre-calibrated touch panels
+class NoPreProcess:
+    def __init__(self, tpad):
+        self.tpad = tpad
+
+    def get(self):
+        return self.tpad.acquire()
+
+
 # Class is instantiated with a configured preprocessor.
 class ABCTouch:
     def __init__(self, prep, ssd):
@@ -76,12 +85,17 @@ class ABCTouch:
     # Preprocessor .get() calls touch subclass .acquire to get values
     def poll(self):
         if res := self.prep.get():
-            xpx = ((self._x - self._x0) * self._xl) >> _SCALE  # Convert to pixels
-            ypx = ((self._y - self._y0) * self._yl) >> _SCALE
-            xpx = max(0, min(xpx, self._xpix - 1))
-            ypx = max(0, min(ypx, self._ypix - 1))
-            col = xpx
-            row = ypx
+            if isinstance(self.prep, NoPreProcess):
+                col = self._y
+                row = self._x
+                print(f"x {self._x} y {self._y}")
+            else:
+                xpx = ((self._x - self._x0) * self._xl) >> _SCALE  # Convert to pixels
+                ypx = ((self._y - self._y0) * self._yl) >> _SCALE
+                xpx = max(0, min(xpx, self._xpix - 1))
+                ypx = max(0, min(ypx, self._ypix - 1))
+                col = xpx
+                row = ypx
             if self._rr:  # Reflection
                 row = self._ypix - row
             if self._rc:

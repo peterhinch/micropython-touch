@@ -1,11 +1,11 @@
-# ili9341_pico.py Customise for your hardware config
+# ili9341_xpt2046_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
 # As written, supports:
 # ili9341 240x320 displays on Pi Pico.
-# TSC2007 touch controller.
+# XPT2046 touch controller.
 # Edit the driver import for other displays.
 
 # Demo of initialisation procedure designed to minimise risk of memory fail
@@ -41,7 +41,8 @@ from gui.core.tgui import Display
 
 # Touch configuration
 from touch.xpt2046 import XPT2046
+
 spi = SoftSPI(mosi=Pin(1), miso=Pin(2), sck=Pin(3))  # 2.5MHz max
-tpad = XPT2046(spi, cspin=Pin(0), ssd)
+tpad = XPT2046(spi, Pin(0), ssd)
 tpad.init(240, 320, 157, 150, 3863, 4095, True, True, True)
 display = Display(ssd, tpad)

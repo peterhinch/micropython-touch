@@ -1,4 +1,4 @@
-# ili9341_pico.py Customise for your hardware config
+# ili9341_tsc2007_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

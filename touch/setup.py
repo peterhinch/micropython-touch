@@ -23,16 +23,19 @@ from gui.core.writer import CWriter
 import gui.fonts.font10 as font
 from gui.core.colors import *
 
+
 def cross(row, col, length, color):
     display.hline(col - length // 2, row, length, color)
     display.vline(col, row - length // 2, length, color)
 
+
 landscape = ssd.width > ssd.height
-ax = array("I", 0 for _ in range(4))  # x
-ay = array("I", 0 for _ in range(4))  # y
-ar = array("I", 0 for _ in range(4))  # row
-ac = array("I", 0 for _ in range(4))  # col
+ax = array("I", (0 for _ in range(4)))  # x
+ay = array("I", (0 for _ in range(4)))  # y
+ar = array("I", (0 for _ in range(4)))  # row
+ac = array("I", (0 for _ in range(4)))  # col
 wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+
 
 async def touch_state(s):
     while True:  # Wait for touch state to match passed value
@@ -42,6 +45,7 @@ async def touch_state(s):
         except OSError:  # Ignore high variance readings
             pass
         await asyncio.sleep(0)
+
 
 async def do_touch(n):
     ssd.show()
@@ -53,6 +57,7 @@ async def do_touch(n):
     ar[n] = touch.row
     ac[n] = touch.col
     await asyncio.sleep(1)  # Ensure touch has completed before drawing next cross
+
 
 async def main():
     display.print_left(wri, 2, 2, "Touch each cross.")
@@ -87,10 +92,10 @@ async def main():
     l = max(h, w)  # Long axis in pixels
     # Crosses 0 and 1 are horizontally aligned. Determine whether this is x or y.
     x_horizontal = abs(ax[0] - ax[1]) > abs(ay[0] - ay[1])
-    if x_horizontal:   # Horizontal axis is x
+    if x_horizontal:  # Horizontal axis is x
         xpx = l if landscape else s
         ypx = s if landscape else l
-    else:   # Horizontal axis is y
+    else:  # Horizontal axis is y
         xpx = s if landscape else l
         ypx = l if landscape else s
 
@@ -100,15 +105,15 @@ async def main():
     # First two crosses should be on a similar row
     xpose = abs(ar[0] - ar[1]) > abs(ac[0] - ac[1])
     if xpose:
-        assert abs(ar[0] - ar[1]) > 50
+        # assert abs(ar[0] - ar[1]) > 50
         rrefl = ar[0] > ar[1]
-        assert abs(ac[0] - ac[3]) > 50
-        crefl = ac[0] >  ac[3]
+        # assert abs(ac[0] - ac[3]) > 50
+        crefl = ac[0] > ac[3]
     else:
-        assert abs(ar[0] - ar[3]) > 50
+        # assert abs(ar[0] - ar[3]) > 50
         rrefl = ar[0] > ar[3]
-        assert abs(ac[0] - ac[1]) > 50
-        crefl = ac[0] >  ac[1]
+        # assert abs(ac[0] - ac[1]) > 50
+        crefl = ac[0] > ac[1]
 
     if max(xmin, ymin) > 1000 or min(xmax, ymax) < 3000:
         print("WARNING: touches may not have been propoerly recorded. Please repeat setup.")
@@ -121,5 +126,6 @@ async def main():
     # else:
     #     print("Mapping is correct: no need to invoke tpad.mapping.")
     #
+
 
 asyncio.run(main())

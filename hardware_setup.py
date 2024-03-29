@@ -1,4 +1,4 @@
-# ili9341_tsc2007_pico.py Customise for your hardware config
+# ili9341_ft6206_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
@@ -40,10 +40,10 @@ ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 defau
 from gui.core.tgui import Display
 
 # Touch configuration
-from touch.tsc2007 import TSC2007
+from touch.ft6206 import FT6206
 
 i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, ssd)
-tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
+tpad = FT6206(i2c, ssd)
+tpad.init(240, 320, 0, 0, 240, 320, False, False, True)
 
 display = Display(ssd, tpad)
