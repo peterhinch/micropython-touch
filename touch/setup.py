@@ -32,8 +32,6 @@ def cross(row, col, length, color):
 landscape = ssd.width > ssd.height
 ax = array("I", (0 for _ in range(4)))  # x
 ay = array("I", (0 for _ in range(4)))  # y
-ar = array("I", (0 for _ in range(4)))  # row
-ac = array("I", (0 for _ in range(4)))  # col
 wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
 
@@ -54,8 +52,6 @@ async def do_touch(n):
     display.print_left(wri, 2, 50 + 30 * n, f"x = {touch._x:04d} y = {touch._y:04d}", YELLOW)
     ax[n] = touch._x
     ay[n] = touch._y
-    ar[n] = touch.row
-    ac[n] = touch.col
     await asyncio.sleep(1)  # Ensure touch has completed before drawing next cross
 
 
@@ -103,29 +99,20 @@ async def main():
     # At this stage it doesn't matter if the correct max pixel values have been assigned
     # to x and y: looking only at relative values
     # First two crosses should be on a similar row
-    xpose = abs(ar[0] - ar[1]) > abs(ac[0] - ac[1])
-    if xpose:
-        # assert abs(ar[0] - ar[1]) > 50
-        rrefl = ar[0] > ar[1]
-        # assert abs(ac[0] - ac[3]) > 50
-        crefl = ac[0] > ac[3]
-    else:
-        # assert abs(ar[0] - ar[3]) > 50
-        rrefl = ar[0] > ar[3]
-        # assert abs(ac[0] - ac[1]) > 50
-        crefl = ac[0] > ac[1]
+    # Rows and cols should increase away from first cross (array index 0)
+    xpose = not x_horizontal
+    if xpose:  # rows are x, cols are y but touch.py reflects before transposing
+        crefl = ax[0] > ax[3]
+        rrefl = ay[0] > ay[1]
+    else:  # rows are y, cols are x
+        rrefl = ay[0] > ay[3]
+        crefl = ax[0] > ax[1]
 
-    if max(xmin, ymin) > 1000 or min(xmax, ymax) < 3000:
+    if (not touch.precal) and (max(xmin, ymin) > 1000 or min(xmax, ymax) < 3000):
         print("WARNING: touches may not have been propoerly recorded. Please repeat setup.")
     print("Please check the following (see TOUCHPAD.md):")
     print(f"tpad.init({xpx}, {ypx}, {xmin}, {ymin}, {xmax}, {ymax}, {xpose}, {rrefl}, {crefl})")
     print("Then paste it into hardware_setup.py, replacing the initial tpad.init line.")
-
-    # if xpose or rrefl or crefl:
-    #     print(f"tpad.mapping(transpose={xpose}, row_reflect={rrefl}, col_reflect={crefl})")
-    # else:
-    #     print("Mapping is correct: no need to invoke tpad.mapping.")
-    #
 
 
 asyncio.run(main())

@@ -55,7 +55,7 @@ def main():
 s = """
 For each point touched, display row and column values. These represent display coordinates.
 The raw x and y values from the touch panel are also displayed. These should each cover an
-approximate range of 0-4095.
+approximate range of 0-4095 for 12-bit touch panels.
 """
 print(s)
 main()

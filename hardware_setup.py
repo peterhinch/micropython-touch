@@ -44,6 +44,6 @@ from touch.ft6206 import FT6206
 
 i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = FT6206(i2c, ssd)
-tpad.init(240, 320, 0, 0, 240, 320, False, False, True)
-
+# tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
+tpad.init(240, 320, 0, 0, 272, 309, True, True, False)
 display = Display(ssd, tpad)

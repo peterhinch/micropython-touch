@@ -59,6 +59,7 @@ class NoPreProcess:
 class ABCTouch:
     def __init__(self, prep, ssd):
         self.prep = prep  # Preprocessor
+        self.precal = isinstance(prep, NoPreProcess)
         self.init(ssd.height, ssd.width, 0, 0, 4095, 4095, False, False, False)
 
     # Assign orientation and calibration values.
@@ -85,10 +86,10 @@ class ABCTouch:
     # Preprocessor .get() calls touch subclass .acquire to get values
     def poll(self):
         if res := self.prep.get():
-            if isinstance(self.prep, NoPreProcess):
-                col = self._y
-                row = self._x
-                print(f"x {self._x} y {self._y}")
+            if self.precal:
+                col = self._x  # This is not the true mapping of FT6206 but setup
+                row = self._y  # will set ._trans
+                # print(f"x {self._x} y {self._y}")
             else:
                 xpx = ((self._x - self._x0) * self._xl) >> _SCALE  # Convert to pixels
                 ypx = ((self._y - self._y0) * self._yl) >> _SCALE
