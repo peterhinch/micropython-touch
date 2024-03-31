@@ -5,7 +5,8 @@
 
 # As written, supports:
 # ili9341 240x320 displays on Pi Pico.
-# TSC2007 touch controller.
+# FT6206 touch controller.
+# https://www.adafruit.com/product/1947
 # Edit the driver import for other displays.
 
 # Demo of initialisation procedure designed to minimise risk of memory fail

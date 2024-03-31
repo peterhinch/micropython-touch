@@ -104,6 +104,22 @@ tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 ```
 This is pasted into `hardware_setup.py`.
 
+# FT6206 Capacitive controller
+
+Constructor. This takes the following mandatory positional args:
+* `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
+* `ssd` Initialised display driver instance.
+
+Optional args:
+* `addr=0x38` I2C address of device.
+* `thresh=128` Touch detection threshold.
+
+The example tested was [Adafruit 2.8" touch shield](https://www.adafruit.com/product/1947).
+The FT6206 produced pre-calibrated row and column values which did not need
+calibration or pre-processing. Calibration should still be performed to ensure
+that display modes are honoured by the touch driver. However the `.init` method
+ignores the last four numeric args as scaling is not required.
+
 # Under the hood
 
 The following provides details for those wishing to adapt the code or to
@@ -113,13 +129,14 @@ contribute new touch drivers.
 
 Touchscreen hardware comes in various forms requiring different drivers. All
 drivers are subclassed from `ABCTouch` defined in `touch.touch.py`. This
-abstract base class performs coordinate mapping to handle calibration values,
-also reflection and rotation for landcsape/portrait or USD configuration. It
+abstract base class performs coordinate scaling to handle calibration values,
+also reflection and rotation for landscape/portrait or USD configuration. It
 also does averaging to reduce the noise present in touch measurements. This
 enables hardware specific subclasses to be extremely minimal, simplifying the
-development of further drivers. Currently two drivers are provided:
+development of further drivers. Currently three drivers are provided:
 * TSC2007 [e.g. Adafruit](http://www.adafruit.com/products/5423)
 * XPT2046 Used on many Chinese resistive touchscreens.
+* FT6206 [e.g. Adafruit](https://www.adafruit.com/product/1947).
 
 ## Mapping
 

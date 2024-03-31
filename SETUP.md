@@ -16,7 +16,21 @@ noisy outputs. [This Adafruit screen](https://www.adafruit.com/product/1743) was
 used in development with [this touch controller](http://www.adafruit.com/products/5423)
 with good results.
 
-### 1.1.2 Platform
+The [supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
+doc lists display controllers having compatible drivers.
+
+### 1.1.2 Resistive or Capacitive
+
+Capacitive touch panels don't work with a fingernail or stylus. Given the small
+size of typical displays relative to a human finger, this makes precise touch
+quite hard to achieve. Screen layouts should be designed accordingly, with
+relatively large widgets so that very accurate touch is not required. By
+contrast a carefully calibrated resistive panel, touched with a stylus, can
+yield quite precise coordinates.
+
+See [touchpad doc](./TOUCHPAD.md) for supported touch controllers.
+
+### 1.1.3 Platform
 
 The principal issue is RAM. The amount required by an application depends on a
 number of factors including display pixel count and color depth; also the
@@ -201,6 +215,23 @@ The `x` and `y` values should vary smoothly as a touch is moved across the
 display. Values should start around 0 to the low hundreds and end within a few
 hundred of 4095. If there are dead zones where the value of an axis barely
 changes as the touch is moved, the touch overlay is not usable.
+
+If calibration appeared successful yet the demos don't respond correctly to
+touch there may be an issue with `touch.setup.py`. Please run `touch.check` and
+study the `row` and `col` values. With the display oriented so that the text is
+correctly displayed, the values should be near 0 with a touch near the top left
+hand corner. As touch moves downwards, `row` should increase. Moving to the
+right, `col` should increase. If this does not occur, the three boolean values
+in this `hardware_setup.py` line may need to be amended.
+```python
+tpad.init(240, 320, 120, 314, 3923, 3878, True, True, False)
+```
+Their meanings are as follows:
+* `trans:bool` Transpose axes.
+* `rr:bool` Reflect rows.
+* `rc:bool` Reflect columns.
+
+Please report any problems with `touch.setup.py`.
 
 # 3. Deployment
 

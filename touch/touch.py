@@ -89,7 +89,6 @@ class ABCTouch:
             if self.precal:
                 col = self._x  # This is not the true mapping of FT6206 but setup
                 row = self._y  # will set ._trans
-                # print(f"x {self._x} y {self._y}")
             else:
                 xpx = ((self._x - self._x0) * self._xl) >> _SCALE  # Convert to pixels
                 ypx = ((self._y - self._y0) * self._yl) >> _SCALE
