@@ -214,3 +214,6 @@ If the touch ends before a full sample set is acquired, `get` returns `False`
 and no touch is recorded. Otherwise `get` returns `True` and the ABC bound
 variables `._x` and `._y` are updated to contain the mean values of the raw
 touch coordinates.
+
+There is also a `NoPreProcess` class for pre-calibrated displays. This simply
+passes `get` calls to `acquire`.

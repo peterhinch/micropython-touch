@@ -2639,37 +2639,38 @@ Screen refresh is performed in a continuous loop with yields to the scheduler.
 In normal applications this works well, however a significant proportion of
 processor time is spent performing a blocking refresh. A means of synchronising
 refresh to other tasks is provided, enabling the application to control the
-screen refresh. This is done by means of two `Event` instances. The refresh
-task operates as below (code simplified to illustrate this mechanism).
+screen refresh. This is done by means of a `Lock` instance. The refresh task
+operates as below (code simplified to illustrate this mechanism).
 
 ```python
 class Screen:
-    rfsh_start = Event()  # Refresh pauses until set (set by default).
-    rfsh_done = Event()  # Flag a user task that a refresh was done.
+    rfsh_lock = Lock()  # Refresh pauses until lock is acquired
 
     @classmethod
     async def auto_refresh(cls):
-        cls.rfsh_start.set()
         while True:
-            await cls.rfsh_start.wait()
-            ssd.show()  # Synchronous (blocking) refresh.
+            async with cls.rfsh_lock:
+                ssd.show()  # Synchronous (blocking) refresh.
             # Flag user code.
-            cls.rfsh_done.set()
             await asyncio.sleep_ms(0)  # Let user code respond to event
 ```
-By default the `rfsh_start` event is permanently set, allowing refresh to free
-run. User code can clear this event to delay refresh. The `rfsh_done` event can
-signal to user code that refresh is complete. As an example of simple usage,
-the following, if awaited, pauses until a refresh is complete and prevents
-another from occurring.
+User code can wait on the lock and, once acquired, perform an operation which
+cannot be interrupted by a refresh. This is normally done as follows:
+```python
+async with Screen.rfsh_lock:
+    # do something that can't be interrupted with a refresh
+```
+but more advanced synchronisation is possible. The following coro allows one
+full refresh to occur then prevents any more (until some other task releases the
+lock).
 ```python
     async def refresh_and_stop(self):
-        Screen.rfsh_start.set()  # Allow refresh
-        Screen.rfsh_done.clear()  # Enable completion flag
-        await Screen.rfsh_done.wait()  # Wait for a refresh to end
-        Screen.rfsh_start.clear()  # Prevent another.
+        await Screen.rfsh_lock.acquire()  # Current refresh has finished
+        Screen.rfsh_lock.release()
+        while not Screen.rfsh_lock.locked()  # Allow exactly one refresh
+            await asyncio.sleep_ms(0)
+        await Screen.rfsh_lock.acquire()
 ```
-The demo `gui/demos/audio.py` provides example usage.
 
 ###### [Contents](./README.md#0-contents)
 

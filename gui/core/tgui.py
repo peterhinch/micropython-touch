@@ -75,11 +75,12 @@ class Display:
             ),
         )
 
-    def __init__(self, objssd, objtouch=None):
+    def __init__(self, objssd, objtouch=None, arbitrate=None):
         global display, ssd, touch
         ssd = objssd
         display = self
         touch = objtouch if objtouch is not None else DummyTouch()
+        Screen.arbitrate = arbitrate  # Optional 3-tuple controls SPI baudrate
         self.height = ssd.height
         self.width = ssd.width
         self._is_grey = False  # Not greyed-out
@@ -153,10 +154,10 @@ class Screen:
     do_gc = True  # Allow user to take control of GC
     current_screen = None
     is_shutdown = asyncio.Event()
-    # These events enable user code to synchronise display refresh
-    # to a realtime process.
-    rfsh_start = asyncio.Event()  # Refresh pauses until set (set by default).
-    rfsh_done = asyncio.Event()  # Flag a user task that a refresh was done.
+    # The refresh lock prevents concurrent refresh and touch detect (may be on same bus)
+    # Also allows user control
+    rfsh_lock = asyncio.Lock()
+    arbitrate = None  # Optional 3-tuple controls SPI baudrate
 
     @classmethod
     def show(cls, force):
@@ -228,33 +229,44 @@ class Screen:
     @classmethod
     async def auto_refresh(cls):
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
-        # By default rfsh_start is permanently set. User code can clear this.
-        cls.rfsh_start.set()
+        # If bus is shared, must pause between refreshes for touch responsiveness.
+        arb = cls.arbitrate
+        if pause := (0 if arb is None else 100):
+            # if cls.arbitrate:  # Ensure we start at high baudrate
+            arb[0].init(baudrate=arb[1])
         if arfsh:
             h = ssd.height
             split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
             if split == 1:
                 arfsh = False
         while True:
-            await cls.rfsh_start.wait()
             Screen.show(False)  # Update stale controls. No physical refresh.
-            # Now perform physical refresh.
-            if arfsh:
-                await ssd.do_refresh(split)
-            else:
-                ssd.show()  # Synchronous (blocking) refresh.
-            # Flag user code.
-            cls.rfsh_done.set()
-            await asyncio.sleep_ms(0)  # Let user code respond to event
+            # Now perform physical refresh. If there is no arbitration or user
+            # locking, the lock will be acquired immediately
+            async with cls.rfsh_lock:
+                if arfsh:
+                    await ssd.do_refresh(split)
+                else:
+                    ssd.show()  # Synchronous (blocking) refresh.
+            await asyncio.sleep_ms(pause)  # Let user code respond to event
 
     @classmethod
     async def _touchtest(cls):  # Singleton coro tests all touchable instances
+        arb = cls.arbitrate  # Bus arbitration
+        spi = arb[0]
         while True:
             await asyncio.sleep_ms(0)
             tl = cls.current_screen.lstactive  # Active (touchable) widgets
             ids = id(cls.current_screen)
             try:
-                if touch.poll():  # Display is touched.
+                if arb is None:
+                    t = touch.poll()
+                else:
+                    async with cls.rfsh_lock:
+                        spi.init(baudrate=arb[2])
+                        t = touch.poll()
+                        spi.init(baudrate=arb[1])
+                if t:  # Display is touched.
                     for obj in (a for a in tl if a.visible and not a.greyed_out()):
                         if obj._trytouch(touch.row, touch.col):
                             # Run user "on press" callback if touched
@@ -267,7 +279,7 @@ class Screen:
                         obj.busy = False
                         obj._untouched()  # Run "on release" callback
             except OSError:  # Ignore indeterminate touch readings
-                pass
+                spi.init(baudrate=arb[1])  # Set bus for display
 
     @classmethod
     async def garbage_collect(cls):

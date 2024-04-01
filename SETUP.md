@@ -117,7 +117,10 @@ display = Display(ssd)
 ```
 The `Pin` instances are arbitrary, but the SPI instance should be hard SPI with
 the maximum baudrate permitted by the display driver chip. The bus should not be
-shared with any other device.
+shared with any other device if this is possible. However some displays such as
+the Waveshare Pico Res Touch units share the bus between the touh controller and
+the screen. Please see [Section 2.7](./SETUP.md#27-shared-spi-bus) for details
+of the changes to `hardware_setup.py` needed to accommodate bus sharing.
 
 Args to `SSD` should be chosen to match the display dimensions in pixels and the
 required orientation (landcsape/portrait etc.) Options depend on the specific
@@ -161,7 +164,8 @@ Hard or soft I2C may be used. Note that I2C interfaces require pullup resistors.
 In many cases these are installed on the target hardware.
 
 Touch controllers such as XPT2046 use an SPI bus. This may be hard or soft and
-speed is not critical. The SPI bus may not be shared with that of the display.
+speed is not critical. If the SPI bus is shared with that of the display, please
+see [Section 2.7](./SETUP.md#27-shared-spi-bus).
 
 ## 2.5 Touch calibration
 
@@ -206,7 +210,20 @@ At the REPL reset the hardware (with `ctrl-d`) and issue:
 This should show two `Button` widgets labelled "Yes" and "No". When they are
 touched, output should appear at the REPL.
 
-## 2.7 Troubleshooting
+## 2.7 Shared SPI bus
+
+Certain displays such as the
+[Waveshare Pico res touch](https://www.waveshare.com/wiki/Pico-ResTouch-LCD-2.8)
+share the SPI bus between the display and the touch controller. The following
+changes to standard setup must be made to accommodate this (an example file
+is `st7789_ws_pico_res_touch_pico.py` in `setup_examples`).
+1. The SPI baudrate should be set to 2.5MHz to enable `touch.setup` and
+`touch.check` to run.
+2. An additional arg must be passed to the `Display` constructor. This is a
+3-tuple comprising the SPI bus instance, the display baudrate (typically 33MHz),
+and the touch controller baudrate (typically 2.5MHz).
+
+## 2.8 Troubleshooting
 
 If a screen proves hard to calibrate it can be informative to run `touch.check`
 on the uncalibrated screen. Comment out any `tpad.init` line in
@@ -232,6 +249,26 @@ Their meanings are as follows:
 * `rc:bool` Reflect columns.
 
 Please report any problems with `touch.setup.py`.
+
+### 2.7.1 Dead zones
+
+These can occur where `touch.check` shows a band near one edge where `row` or
+`col` is stuck; this despite `x` and `y` values which show no dead zone. The
+cause is incorrect calibration. Note that if `x` or `y` also show a dead zone
+the cause is almost certainly poor quality touch overlay hardware.
+
+To understand dead zones it is worth understanding the meaning of the numeric
+args to `tpad.init`:
+1. `xpix: int` Number of pixels associated with `x` coordinate.
+2. `ypix: int` Number of pixels associated with `y` coordinate.
+3. `xmin: int` Minimum value of `x`.
+4. `ymin: int` Minimum value of `y`.
+5. `xmax: int` Maximum  value of `x`.
+6. `ymax: int` Maximum value of `y`.
+
+If the actual range of `x` or `y` values is not approximately equal to the
+range specified, a dead zone will occur close to a display edge. Remove the
+`tpad.init` line from `hardware_setup.py`, reboot and repeat calibration.
 
 # 3. Deployment
 

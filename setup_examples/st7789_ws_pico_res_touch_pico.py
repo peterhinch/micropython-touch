@@ -18,7 +18,10 @@ pbl = Pin(13, Pin.OUT, value=1)
 gc.collect()  # Precaution before instantiating framebuf
 # Max baudrate produced by Pico is 31_250_000. ST7789 datasheet allows <= 62.5MHz.
 # Note non-standard MISO pin. This works, verified by SD card.
-spi = SPI(1, 1_000_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
+
+# In shared bus devices must set baudrate to that supported by touch controller.
+# This is to enable touc.setup and touch.check to work: these don't support arbitration.
+spi = SPI(1, 2_500_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
 
 # Define the display
 # For portrait mode:
@@ -31,5 +34,6 @@ from gui.core.tgui import Display
 from touch.xpt2046 import XPT2046
 
 tpad = XPT2046(spi, Pin(0), ssd)
-tpad.init(240, 320, 301, 476, 3968, 3900, True, True, False)
+# tpad.init(240, 320, 157, 150, 3863, 4095, True, True, True)
+# Bus arbitration: pass (spi, display baud, touch baud)
 display = Display(ssd, tpad, (spi, 33_000_000, 2_500_000))
