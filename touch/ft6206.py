@@ -14,14 +14,12 @@
 # 0 <= x <= 240
 # 0 <= y <= 320
 
-from .touch import ABCTouch, NoPreProcess
+from .touch import ABCTouch
 
 
 class FT6206(ABCTouch):
     def __init__(self, i2c, ssd, addr=0x38, thresh=128):
-        # , *, alen=10, variance=50, verbose=True):
-        # Instantiate a dummy preprocessor
-        super().__init__(NoPreProcess(self), ssd)
+        super().__init__(None, ssd)
         self.i2c = i2c
         self.addr = addr
         buf = bytearray(1)

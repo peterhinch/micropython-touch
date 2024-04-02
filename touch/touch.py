@@ -46,20 +46,11 @@ class PreProcess:
         return True
 
 
-# Dummy preprocessor for pre-calibrated touch panels
-class NoPreProcess:
-    def __init__(self, tpad):
-        self.tpad = tpad
-
-    def get(self):
-        return self.tpad.acquire()
-
-
 # Class is instantiated with a configured preprocessor.
 class ABCTouch:
     def __init__(self, prep, ssd):
-        self.prep = prep  # Preprocessor
-        self.precal = isinstance(prep, NoPreProcess)
+        self.get = self.acquire if prep is None else prep.get
+        self.precal = prep is None
         self.init(ssd.height, ssd.width, 0, 0, 4095, 4095, False, False, False)
 
     # Assign orientation and calibration values.
@@ -85,7 +76,7 @@ class ABCTouch:
     # referenced coordinates.
     # Preprocessor .get() calls touch subclass .acquire to get values
     def poll(self):
-        if res := self.prep.get():
+        if res := self.get():
             if self.precal:
                 col = self._x  # This is not the true mapping of FT6206 but setup
                 row = self._y  # will set ._trans

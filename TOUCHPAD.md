@@ -32,10 +32,11 @@ range of `row/col` values is precisely that of the display size in pixels.
 Calibration has the following objectives:
 1. If a display has NxP pixels, ensuring that the larger number is associated
 with the long axis of the touch panel.
-2. Calibrating the touch panel to allow for the fact that the actual range of
-the hardware may be smaller than its theoretical 0-4095 bits. Thus if one axis
-returns values in the range 189-3800, after calibration these will be mapped to
-0-4095.
+2. Allowing for the fact that the physical dimensions of the touch overlay may
+exceed those of the pixel array. In this case, as points on the pixel array are
+touched, the range of values from the touch controller is smaller than its
+theoretical 0-4095 bits. Calibration enables the touch driver base class to
+correct for this.
 3. Mapping `(x,y)` touch coordinates onto `(row,col)` screen coordinates. This
 must allow for landscape/portrait or upside down orientation. For example, if a
 display has 240x320 pixels and is mounted in portrait mode, a touch near the top
@@ -45,9 +46,11 @@ bottom right will issue something close to `row=319, col=239`.
 The output of the calibration process is a line of code defining values for the
 touchpad driver's `init` method. This is documented below.
 
-Item 1. above is possible because the `touch` constructor takes as an arg the
-initialised display driver instance: the code can deduce the long axis of the
-unit from `ssd.height` and `ssd.width` (the pixel dimensions).
+Determining the long axis is possible because the `touch` constructor takes as
+an arg the  initialised display driver instance: the code can deduce the long
+axis from `ssd.height` and `ssd.width` (the pixel dimensions). Orientation can
+be deduced because `touch.setup` prompts the user to touch points in a specific
+order.
 
 # TSC2007
 
@@ -116,9 +119,9 @@ Optional args:
 
 The example tested was [Adafruit 2.8" touch shield](https://www.adafruit.com/product/1947).
 The FT6206 produced pre-calibrated row and column values which did not need
-calibration or pre-processing. Calibration should still be performed to ensure
-that display modes are honoured by the touch driver. However the `.init` method
-ignores the last four numeric args as scaling is not required.
+calibration or pre-processing. Calibration should still be performed to enable
+screen orientation to be detected. The `.init` method ignores the last four
+numeric args as scaling is not required.
 
 # Under the hood
 
@@ -151,7 +154,7 @@ with the display orientation (e.g. landscape/portrait, usd, etc.).
 This base class method takes the following mandatory positional arguments:
 1. `xpix: int` Number of pixels associated with `x` coordinate.
 2. `ypix: int` Number of pixels associated with `y` coordinate.
-3. `xmin: int` Minimum value of `x`.
+3. `xmin: int` Minimum value of `x`. These four values are for scaling.
 4. `ymin: int` Minimum value of `y`.
 5. `xmax: int` Maximum  value of `x`.
 6. `ymax: int` Maximum value of `y`.

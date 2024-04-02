@@ -253,7 +253,8 @@ class Screen:
     @classmethod
     async def _touchtest(cls):  # Singleton coro tests all touchable instances
         arb = cls.arbitrate  # Bus arbitration
-        spi = arb[0]
+        if arb is not None:
+            spi = arb[0]
         while True:
             await asyncio.sleep_ms(0)
             tl = cls.current_screen.lstactive  # Active (touchable) widgets
@@ -279,7 +280,8 @@ class Screen:
                         obj.busy = False
                         obj._untouched()  # Run "on release" callback
             except OSError:  # Ignore indeterminate touch readings
-                spi.init(baudrate=arb[1])  # Set bus for display
+                if arb is not None:
+                    spi.init(baudrate=arb[1])  # Set bus for display
 
     @classmethod
     async def garbage_collect(cls):
