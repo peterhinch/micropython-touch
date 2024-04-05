@@ -24,9 +24,10 @@ doc lists display controllers having compatible drivers.
 Capacitive touch panels don't work with a fingernail or stylus. Given the small
 size of typical displays relative to a human finger, this makes precise touch
 quite hard to achieve. Screen layouts should be designed accordingly, with
-relatively large widgets so that very accurate touch is not required. By
-contrast a carefully calibrated resistive panel, touched with a stylus, can
-yield quite precise coordinates.
+relatively large widgets so that precise touch is not required. By contrast a
+carefully calibrated resistive panel, touched with a stylus, can yield precise
+coordinates. This enables more complex layouts. Many of the demos have such
+layouts and are hard to use with a capacitive screen.
 
 See [touchpad doc](./TOUCHPAD.md) for supported touch controllers.
 

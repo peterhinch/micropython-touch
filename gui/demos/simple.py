@@ -21,8 +21,7 @@ class BaseScreen(Screen):
             print("Button pressed", arg)
 
         super().__init__()
-        # verbose default indicates if fast rendering is enabled
-        wri = CWriter(ssd, arial10, GREEN, BLACK)
+        wri = CWriter(ssd, arial10, GREEN, BLACK)  # Verbose
         col = 2
         row = 2
         Label(wri, row, col, "Simple Demo")

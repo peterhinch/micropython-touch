@@ -68,7 +68,7 @@ March 2024: Initial port from micro-gui.
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Widget control](./README.md#14-widget-control) Operation of variable controls.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
- 1.6 [Quick start](./README.md#16-quick-start)    
+ 1.6 [Quick start](./README.md#16-quick-start) Also a guide to hardware choice, calibration, application development.   
  1.7 [Files](./README.md#111-files) Discussion of the files in the library.  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.1 [Demos](./README.md#1111-demos) Simple demos showing coding techniques.  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.2 [Test scripts](./README.md#1112-test-scripts) GUI tests, some needing larger displays  
