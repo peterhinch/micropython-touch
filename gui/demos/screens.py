@@ -113,7 +113,6 @@ class BaseScreen(Screen):
             elements=("cat", "dog", "aardvark", "goat", "pig", "mouse"),
             bdcolor=GREEN,
             bgcolor=DARKGREEN,
-            also=Listbox.ON_LEAVE,
         )
         col = 70
         Dropdown(

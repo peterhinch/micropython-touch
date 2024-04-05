@@ -158,6 +158,9 @@ class Screen:
     # Also allows user control
     rfsh_lock = asyncio.Lock()
     arbitrate = None  # Optional 3-tuple controls SPI baudrate
+    BACK = 0
+    STACK = 1
+    REPLACE = 2
 
     @classmethod
     def show(cls, force):
@@ -167,35 +170,37 @@ class Screen:
                     obj.show()
 
     @classmethod
-    def change(cls, cls_new_screen, *, forward=True, args=[], kwargs={}):
-        cs_old = cls.current_screen
+    def change(cls, cls_new_screen, *, mode=1, args=[], kwargs={}):
+        ins_old = cls.current_screen  # Current Screen instance
         # If initialising ensure there is an event loop before instantiating the
         # first Screen: it may create tasks in the constructor.
-        if cs_old is None:
+        if ins_old is None:
             loop = asyncio.get_event_loop()
         else:  # Leaving an existing screen
-            for entry in cls.current_screen.tasks:
+            for entry in ins_old.tasks:
                 # Always cancel on back. Also on forward if requested.
-                if entry[1] or not forward:
+                if entry[1] or not mode:
                     entry[0].cancel()
-                    cls.current_screen.tasks.remove(entry)  # remove from list
-            cs_old.on_hide()  # Optional method in subclass
-        if forward:
+                    ins_old.tasks.remove(entry)  # remove from list
+            ins_old.on_hide()  # Optional method in subclass
+        if mode:  # STACK or REPLACE - instantiate new screen
             if isinstance(cls_new_screen, type):
-                if isinstance(cs_old, Window):
+                if isinstance(ins_old, Window):
                     raise ValueError("Windows are modal.")
-                new_screen = cls_new_screen(*args, **kwargs)
+                if mode == cls.REPLACE and isinstance(cls_new_screen, Window):
+                    raise ValueError("Windows must be stacked.")
+                ins_new = cls_new_screen(*args, **kwargs)  # New instance
             else:
                 raise ValueError("Must pass Screen class or subclass (not instance)")
-            new_screen.parent = cs_old
-            cs_new = new_screen
-        else:
-            cs_new = cls_new_screen  # An object, not a class
-        cls.current_screen = cs_new
-        cs_new.on_open()  # Optional subclass method
-        cs_new._do_open(cs_old)  # Clear and redraw
-        cs_new.after_open()  # Optional subclass method
-        if cs_old is None:  # Initialising
+            # REPLACE: parent of new screen is parent of current screen
+            ins_new.parent = ins_old if mode == cls.STACK else ins_old.parent
+        else:  # mode is BACK
+            ins_new = cls_new_screen  # An object, not a class
+        cls.current_screen = ins_new
+        ins_new.on_open()  # Optional subclass method
+        ins_new._do_open(ins_old)  # Clear and redraw
+        ins_new.after_open()  # Optional subclass method
+        if ins_old is None:  # Initialising
             loop.run_until_complete(cls.monitor())  # Starts and ends uasyncio
             # Don't do asyncio.new_event_loop() as it prevents re-running
             # the same app.
@@ -301,7 +306,7 @@ class Screen:
         if parent is None:  # Closing base screen. Quit.
             cls.is_shutdown.set()  # .monitor initiates shutdown.
         else:
-            cls.change(parent, forward=False)
+            cls.change(parent, mode=cls.BACK)
 
     @classmethod
     def addobject(cls, obj):

@@ -29,7 +29,7 @@ class BaseScreen(Screen):
         Button(wri, row, col, text="Yes", callback=my_callback, args=("Yes",))
         col += 60
         Button(wri, row, col, text="No", callback=my_callback, args=("No",))
-        CloseButton(wri)  # Quit the application
+        CloseButton(wri, 30)  # Quit the application
 
 
 def test():

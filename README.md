@@ -1060,6 +1060,12 @@ Optional keyword only arguments:
  * `args=()` Args for above.
  * `bgcolor=RED`
 
+Class variable:
+ * `width=30` Sets a default minimum button width. Larger buttons are easier to
+ touch accurately. This may be set to zero: the actual width is the largest of
+ the class variable, the width passed to the constructor, and that calculated
+ from the font size.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 6.5 ButtonList object

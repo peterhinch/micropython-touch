@@ -126,11 +126,13 @@ class Button(Widget):
 # Preferred way to close a screen or dialog. Produces an X button at the top RHS.
 # Note that if the bottom screen is closed, the application terminates.
 class CloseButton(Button):
+    width = 30  # Large size for ease of touch (40)
+
     def __init__(self, writer, width=0, callback=dolittle, args=(), bgcolor=RED):
         scr = Screen.current_screen
         # Calculate the button width if not provided. Button allows
         # 5 pixels either side.
-        wd = width if width else (writer.stringlen("X") + 10)
+        wd = max(width, CloseButton.width, (writer.stringlen("X") + 10))
         self.user_cb = callback
         self.user_args = args
         super().__init__(
