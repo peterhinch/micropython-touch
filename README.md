@@ -15,6 +15,11 @@ compatible with all `nano-gui` display drivers so is portable to a wide range of
 displays. Support for e-paper is theoretically possible if any exist with touch
 controllers. The GUI is also portable between hosts.
 
+It was developed from [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main)
+with the aim of supporting a variety of touch controllers. Touch drivers share
+a common API via a common abstract base class, the aim being to simplify the
+design of touch controller drivers.
+
 ![Image](./images/rp2_test_fixture.JPG)  
 Raspberry Pico with an ILI9341 from eBay (XPT2046 touch controller).
 
@@ -28,14 +33,12 @@ Raspberry Pico with Adafruit 3.2" display and TSC2007 touch controller.
 [Touchpad drivers](./TOUCHPAD.md) Details of supported drivers and technical notes.  
 Commercial links to hardware that produced excellent results:  
 [TSC2007 breakout](http://www.adafruit.com/products/5423) Interface to displays
-that bring out analog touch signals, such as:  
-[Adafruit 3.2" touchscreen](https://www.adafruit.com/product/1743)
+that bring out analog touch signals, such as  
+[Adafruit 3.2" touchscreen](https://www.adafruit.com/product/1743)  
+Waveshare make touch displays where the Raspberry Pico plugs in e.g.
+[Waveshare Pico res touch](https://www.waveshare.com/wiki/Pico-ResTouch-LCD-2.8).  
 
 # Alternative GUIs for MicroPython
-
-This was developed from [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main)
-with the aim of supporting a variety of touch controllers. Touch drivers share
-a common API via a common abstract base class.
 
 The following are similar GUI repos with differing objectives.
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) Extremely low
@@ -207,9 +210,14 @@ conventions within graphs.
 
 A `Screen` is a window which occupies the entire display. A `Screen` can
 overlay another, replacing all its contents. When closed, the `Screen` below is
-re-displayed.
+re-displayed. This default method of navigation results in a tree structure of
+`Screen` instances where the screen below retains state. An alternative allows
+a `Screen` to replace another, allowing `Screen` instances to be navigated in an
+arbitrary way. For example a set of `Screen` instances might be navigated in a
+circular fashion. The penalty is that, to save RAM, state is not retained when a
+`Screen` is replaced
 
-A `Window` is a subclass of `Screen` but is smaller, with size and location
+A `Window` is a subclass of `Screen` but is smaller, having size and location
 attributes. It can overlay part of an underlying `Screen` and is typically used
 for dialog boxes. `Window` objects are modal: a `Window` can overlay a `Screen`
 but cannot overlay another `Window`.
@@ -218,11 +226,6 @@ A `Widget` is an object capable of displaying data. Some are also capable of
 data input: such a widget is defined as `active`. A `passive` widget can only
 display data. An `active` widget can respond to touch. `Widget` objects have
 dimensions defined by bound variables `height` and `width`.
-
-The GUI design is based on overlapping windows. When a window is closed, that
-below it is revealed. This is RAM-efficient: memory used by the closed window is
-retrieved. I'm told it is possible to write applications which subvert this
-design but it is unsupported.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -291,6 +294,7 @@ from gui.core.tgui import Display
 from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c)
+# The following line of code is the outcome of calibration.
 tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 display = Display(ssd, tpad)
 ```
@@ -336,8 +340,7 @@ gui.demos.simple.test()
 ```
 Before running a different demo the host should be reset (ctrl-d) to clear RAM.
 
-These will run on screens of 128x128 pixels or above. The initial ones are
-minimal and aim to demonstrate a single technique.  
+The initial ones are minimal and aim to demonstrate a single technique.  
  * `simple.py` Minimal demo discussed below. `Button` presses print to REPL.
  * `checkbox.py` A `Checkbox` controlling an `LED`.
  * `slider.py` A `Slider` whose color varies with its value.
@@ -349,6 +352,7 @@ minimal and aim to demonstrate a single technique.
  * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
  * `screen_change.py` A `Button` causing a screen change using a re-usable
  "forward" button.
+ * `screen_replace.py` A more complex (non-tree) screen layout.
  * `primitives.py` Use of graphics primitives, also the `Pad` widget.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
  screen layout using widget metrics. Has a simple `asyncio` task.
@@ -356,7 +360,8 @@ minimal and aim to demonstrate a single technique.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
- * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
+ * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (This runs
+ very slowly if running via mpremote mount).
  * `qrcode.py` Display a QR code. Requires the uQR module.
 
 ### 1.7.2 Test scripts
@@ -393,6 +398,7 @@ a different algorithm where a touch causes the control's value to change at a
 rate depending on the location of the touch. The closer the touch is to the  
 centreline of the control, the slower the rate of change. This allows very
 precise changes to be made by adjusting the location and duration of a touch.
+"Closer" is on the horizontal axis for horizontal widgets, otherwise vertical.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -606,18 +612,27 @@ communication between them.
 
 ## 4.1 Class methods
 
-In normal use the following methods only are required:  
- * `change(cls, cls_new_screen, *, forward=True, args=[], kwargs={})` Change
- screen, refreshing the display. Mandatory positional argument: the new screen
- class name. This must be a class subclassed from `Screen`. The class will be
- instantiated and displayed. Optional keyword arguments `args`, `kwargs` enable
- passing positional and keyword arguments to the constructor of the new, user
- defined, screen.
- * `back(cls)` Restore previous screen.
+In normal use only `change` and `back` are required, to move to a new `Screen`
+and to drop back to the previous `Screen` in a tree (or to quit the application
+if there is no predecessor).
+
+ * `change(cls, cls_new_screen, *, mode=Screen.STACK, args=[], kwargs={})`  
+ Change screen, refreshing the display. Mandatory positional argument: the new
+ screen class name. This must be a class subclassed from `Screen`. The class
+ will be instantiated and displayed. Optional keyword arguments `args`, `kwargs`
+ enable  passing positional and keyword arguments to the constructor of the new,
+ user defined, screen. By default the new screen overlays the old. When the new
+ `Screen` is closed (via `back`) the old is re-displayed having retained state.
+ If `mode=Screen.REPLACE` is passed the old screen instance is deleted. The new
+ one retains the parent of the old, so if it is closed that parent is
+ re-displayed with its state retained. This enables arbitrary navigation between
+ screens (directed graph rather than tree structure). See demo `screen_replace`.
+ * `back(cls)` Restore previous screen. If there is no parent, quits the
+ application.
 
 These are uncommon:  
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
- `CloseButton` instance.
+ `CloseButton` on the initial `Screen`: the button issues `Screen.back()`.
  * `show(cls, force)`. This causes the screen to be redrawn. If `force` is
  `False` unchanged widgets are not refreshed. If `True`, all visible widgets
  are re-drawn. Explicit calls to this should never be needed.

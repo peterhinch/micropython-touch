@@ -28,7 +28,7 @@ def fwdbutton(wri, row, col, cls_screen, text="Next", args=()):
 
 def navbutton(wri, row, col, gen, delta, text):
     def nav(button):
-        cls_screen, num = gen.send(delta)
+        cls_screen, num = gen(delta)  # gen.send(delta)
         Screen.change(cls_screen, mode=Screen.REPLACE, args=(num,))  # Callback
 
     Button(wri, row, col, height=30, callback=nav, fgcolor=BLACK, bgcolor=YELLOW, text=text)
@@ -43,19 +43,24 @@ class RingScreen(Screen):
         CloseButton(wri)
 
 
+# Create a tuple of Screen subclasses (in this case all are identical).
 ring = ((RingScreen, 0), (RingScreen, 1), (RingScreen, 2))
 
-
-def screens():
+# Define a means of navigating between these classes
+def navigator():
     x = 0
-    while True:
-        delta = yield ring[x]
-        if isinstance(delta, int):
-            x = (x + delta) % len(ring)
+
+    def nav(delta):
+        nonlocal x
+        v = x
+        x = (x + delta) % len(ring)
+        return ring[x]
+
+    return nav
 
 
-nav = screens()
-next(nav)
+nav = navigator()
+
 # This screen overlays BaseScreen.
 class StackScreen(Screen):
     def __init__(self):

@@ -22,7 +22,6 @@ from gui.widgets import Label, Button, CloseButton, Pointer, Dial
 
 def fwdbutton(wri, row, col, cls_screen, text="Next"):
     def fwd(button):
-        print(cls_screen, type(cls_screen))
         Screen.change(cls_screen)
 
     Button(
@@ -34,7 +33,6 @@ def fwdbutton(wri, row, col, cls_screen, text="Next"):
         fgcolor=BLACK,
         bgcolor=GREEN,
         text=text,
-        shape=RECTANGLE,
         width=100,
     )
 

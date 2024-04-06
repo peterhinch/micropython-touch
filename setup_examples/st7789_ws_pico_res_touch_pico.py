@@ -1,7 +1,7 @@
 # ws_pico_res_touch.py
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2022 Peter Hinch
+# Copyright (c) 2022-2024 Peter Hinch
 # With help from Tim Wermer.
 
 import gc
