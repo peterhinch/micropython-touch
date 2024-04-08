@@ -616,7 +616,7 @@ In normal use only `change` and `back` are required, to move to a new `Screen`
 and to drop back to the previous `Screen` in a tree (or to quit the application
 if there is no predecessor).
 
- * `change(cls, cls_new_screen, *, mode=Screen.STACK, args=[], kwargs={})`  
+ * `change(cls, cls_new_screen, mode=Screen.STACK, *, args=[], kwargs={})`  
  Change screen, refreshing the display. Mandatory positional argument: the new
  screen class name. This must be a class subclassed from `Screen`. The class
  will be instantiated and displayed. Optional keyword arguments `args`, `kwargs`
@@ -654,12 +654,12 @@ These are null functions which may be redefined in user subclasses.
  * `after_open(self)` Called after a screen has been displayed.
  * `on_hide(self)` Called when a screen ceases to be current.
 
-See `demos/plot.py` for examples of usage of `after_open`.
+See `demos/plot.py`, `demos/primitives.py` for examples of `after_open`.
 
 ## 4.4 Method
 
  * `reg_task(self, task, on_change=False)` The first arg may be a `Task`
- instance or a coroutine.
+ instance or a coroutine. Returns the passed `task` object.
 
 This is a convenience method which provides for the automatic cancellation of
 tasks. If a screen runs independent tasks it can opt to register these. If the

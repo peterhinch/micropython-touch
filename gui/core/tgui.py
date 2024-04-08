@@ -170,7 +170,7 @@ class Screen:
                     obj.show()
 
     @classmethod
-    def change(cls, cls_new_screen, *, mode=1, args=[], kwargs={}):
+    def change(cls, cls_new_screen, mode=1, *, args=[], kwargs={}):
         ins_old = cls.current_screen  # Current Screen instance
         # If initialising ensure there is an event loop before instantiating the
         # first Screen: it may create tasks in the constructor.

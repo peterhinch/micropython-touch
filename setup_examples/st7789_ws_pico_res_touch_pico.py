@@ -33,7 +33,7 @@ from gui.core.tgui import Display
 # Use of SD card is not recommended because of SPI bus sharing.
 from touch.xpt2046 import XPT2046
 
-tpad = XPT2046(spi, Pin(0), ssd)
+tpad = XPT2046(spi, Pin(16), ssd)
 tpad.init(240, 320, 157, 150, 3863, 4095, True, True, False)
 # Bus arbitration: pass (spi, display baud, touch baud)
 display = Display(ssd, tpad, (spi, 33_000_000, 2_500_000))

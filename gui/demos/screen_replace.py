@@ -29,7 +29,7 @@ def fwdbutton(wri, row, col, cls_screen, text="Next", args=()):
 def navbutton(wri, row, col, gen, delta, text):
     def nav(button):
         cls_screen, num = gen(delta)  # gen.send(delta)
-        Screen.change(cls_screen, mode=Screen.REPLACE, args=(num,))  # Callback
+        Screen.change(cls_screen, Screen.REPLACE, args=(num,))  # Callback
 
     Button(wri, row, col, height=30, callback=nav, fgcolor=BLACK, bgcolor=YELLOW, text=text)
 
@@ -52,7 +52,6 @@ def navigator():
 
     def nav(delta):
         nonlocal x
-        v = x
         x = (x + delta) % len(ring)
         return ring[x]
 

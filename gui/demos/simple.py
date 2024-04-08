@@ -26,9 +26,9 @@ class BaseScreen(Screen):
         row = 2
         Label(wri, row, col, "Simple Demo")
         row = 50
-        Button(wri, row, col, text="Yes", callback=my_callback, args=("Yes",))
+        Button(wri, row, col, litcolor=WHITE, text="Yes", callback=my_callback, args=("Yes",))
         col += 60
-        Button(wri, row, col, text="No", callback=my_callback, args=("No",))
+        Button(wri, row, col, litcolor=WHITE, text="No", callback=my_callback, args=("No",))
         CloseButton(wri, 30)  # Quit the application
 
 
