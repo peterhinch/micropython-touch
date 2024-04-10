@@ -11,7 +11,7 @@ from gui.widgets import CloseButton, Slider, Label
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -19,16 +19,20 @@ class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
         col = 2
         row = 2
-        self.lbl = Label(wri, row + 45, col + 50, 35, bdcolor=RED, bgcolor=DARKGREEN)
+        self.lbl = Label(wri, row, col, "0.500", bdcolor=RED, bgcolor=DARKGREEN)
         # Instantiate Label first, because Slider callback will run now.
         # See linked_sliders.py for another approach.
+        row += 30
+        col = 100
         Slider(
             wri,
             row,
             col,
+            width=30,
+            height=180,
             callback=self.slider_cb,
             bdcolor=RED,
             slotcolor=BLUE,

@@ -1,7 +1,7 @@
-# aclock.py micro-gui analog clock demo.
+# aclock.py micropython-touch analog clock demo.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021-2022 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Initialise hardware and framebuf before importing modules.
 import hardware_setup  # Create a display instance
@@ -10,12 +10,12 @@ from gui.widgets import Label, Dial, Pointer, CloseButton
 
 # Now import other modules
 from cmath import rect, pi
-import uasyncio as asyncio
+import asyncio
 import time
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as font
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -72,12 +72,12 @@ class BaseScreen(Screen):
         }
 
         wri = CWriter(ssd, font, GREEN, BLACK)  # verbose = True
-        dial = Dial(wri, 2, 2, height=70, ticks=12, fgcolor=GREEN, pip=GREEN)
+        dial = Dial(wri, 2, 2, height=120, ticks=12, fgcolor=GREEN, pip=GREEN)
         # Set up clock display: instantiate labels
         # Demo of relative positioning.
         gap = 4  # Vertical gap between widgets
         row = dial.mrow + gap
-        lbldate = Label(wri, row, 2, 100, **labels)
+        lbldate = Label(wri, row, 2, 200, **labels)
         row = lbldate.mrow + gap
         lbltim = Label(wri, row, 2, "00.00.00", **labels)
         self.reg_task(aclock(dial, lbldate, lbltim))

@@ -1,13 +1,14 @@
-# active.py micro-gui demo of widgets that respond to user control
+# active.py micropython-touch demo of touch widgets
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup
 from gui.core.tgui import Screen, ssd
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 # Widgets
@@ -42,24 +43,28 @@ class BaseScreen(Screen):
 
         super().__init__()
         wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri_big = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+
         col = 2
-        row = 200
-        Label(wri, row, col, "Result")
-        col = 42
-        self.lbl = Label(wri, row, col, 70, bdcolor=RED)
+        row = 190
+        Label(wri_big, row, col, "Result")
+        row = 215
+        self.lbl = Label(wri_big, row, col, 100, bdcolor=RED)
 
         self.vslider = Slider(
             wri,
-            2,
-            2,
+            25,
+            20,
+            width=30,
+            height=150,
             callback=self.slider_cb,
             bdcolor=RED,
             slotcolor=BLUE,
             legends=("0.0", "0.5", "1.0"),
             value=0.5,
         )
-        col = 80
-        row = 15
+        col = 85
+        row = 25
         self.hslider = HorizSlider(
             wri,
             row,
@@ -97,13 +102,13 @@ class BaseScreen(Screen):
             value=10,
             active=True,
         )
-        row = 120
-        self.knob = Knob(wri, row, 2, callback=self.cb, bgcolor=DARKGREEN, color=LIGHTRED)
-        col = 150
-        row = 185
+        row += 40
+        self.knob = Knob(wri, row, col, callback=self.cb, bgcolor=DARKGREEN, color=LIGHTRED)
+        col = 180
+        row = 155
         Checkbox(wri, row, col, callback=self.cbcb)
-        col += 35
-        Label(wri, row, col, "Enable/disable")
+        row = 190
+        Label(wri_big, row, col, "Enable/disable")
         CloseButton(wri)
 
     def cb(self, obj):
