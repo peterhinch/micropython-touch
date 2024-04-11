@@ -298,6 +298,7 @@ class Screen:
     async def show_ram():
         while _vb:
             await asyncio.sleep(20)
+            gc.collect()
             print(f"Free RAM {gc.mem_free() >> 10}KiB")
 
     @classmethod
