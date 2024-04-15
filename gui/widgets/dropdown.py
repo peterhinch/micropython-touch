@@ -135,13 +135,15 @@ class Dropdown(Widget):
                 self.fgcolor,
             )
 
-    def _touched(self, rrow, _):
+    # Display listbox on release. This avoids case where listbox opens, registers
+    # a touch and immediately closes again.
+    def _touched(self, rrow, _):  # Base class requires this to exist.
+        pass
+
+    def _untouched(self):
         if len(self.elements) > 1:
             args = (self.writer, self.row - 2, self.col - 2, self)
             Screen.change(_ListDialog, args=args)
-
-    # def _untouched(self):
-    #     self.touched = False
 
     def _despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]

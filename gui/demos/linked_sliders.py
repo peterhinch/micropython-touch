@@ -1,7 +1,7 @@
-# linked_sliders.py Minimal micro-gui demo one Slider controlling two others.
+# linked_sliders.py Minimal touchgui demo one Slider controlling two others.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -11,7 +11,7 @@ from gui.widgets import CloseButton, Slider
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as font
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -22,16 +22,18 @@ class BaseScreen(Screen):
             "slotcolor": BLUE,
             "legends": ("0", "5", "10"),
             "value": 0.5,
+            "width": 30,
+            "height": 180,
         }
         super().__init__()
         wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
-        col = 2
-        row = 2
+        col = 50
+        row = 20
         # Note: callback runs now, but other sliders have not yet been instantiated.
         self.s0 = Slider(wri, row, col, callback=self.slider_cb, **args)
-        col = self.s0.mcol + 2
+        col = self.s0.mcol + 20
         self.s1 = Slider(wri, row, col, **args)
-        col = self.s1.mcol + 2
+        col = self.s1.mcol + 20
         self.s2 = Slider(wri, row, col, **args)
         CloseButton(wri)
 

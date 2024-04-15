@@ -11,7 +11,7 @@ from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -21,14 +21,15 @@ class BaseScreen(Screen):
             print("Button pressed", arg)
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK)  # Verbose
+        tbl = {"litcolor": WHITE, "height": 60, "width": 80, "callback": my_callback}
+        wri = CWriter(ssd, font, GREEN, BLACK)  # Verbose
         col = 2
         row = 2
         Label(wri, row, col, "Simple Demo")
-        row = 50
-        Button(wri, row, col, litcolor=WHITE, text="Yes", callback=my_callback, args=("Yes",))
-        col += 60
-        Button(wri, row, col, litcolor=WHITE, text="No", callback=my_callback, args=("No",))
+        row = 150
+        Button(wri, row, col, text="Yes", args=("Yes",), **tbl)
+        col += 100
+        Button(wri, row, col, text="No", args=("No",), **tbl)
         CloseButton(wri, 30)  # Quit the application
 
 

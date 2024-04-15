@@ -109,7 +109,7 @@ class BaseScreen(Screen):
         Checkbox(wri, row, col, callback=self.cbcb)
         row = 190
         Label(wri_big, row, col, "Enable/disable")
-        CloseButton(wri)
+        CloseButton(wri_big)
 
     def cb(self, obj):
         self.lbl.value("{:5.3f}".format(obj.value()))

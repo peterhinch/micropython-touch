@@ -156,7 +156,7 @@ class Listbox(Widget):
         await asyncio.sleep(1)
         while True:
             self.do_adj(up)
-            await asyncio.sleep_ms(300)
+            await asyncio.sleep_ms(600)
 
     def _touched(self, rrow, _):
         self.ev = min(rrow // self.entry_height, len(self.elements) - 1) + self.ntop

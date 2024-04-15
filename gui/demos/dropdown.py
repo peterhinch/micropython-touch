@@ -1,7 +1,7 @@
-# dropdown.py micro-gui demo of Dropdown class
+# dropdown.py touch-gui demo of Dropdown class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -21,8 +21,8 @@ class BaseScreen(Screen):
         super().__init__()
         wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
-        col = 2
-        row = 2
+        col = 50
+        row = 20
         els = ("hydrogen", "helium", "neon", "argon", "krypton", "xenon", "radon")
         self.dd = Dropdown(
             wri,

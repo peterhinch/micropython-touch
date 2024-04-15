@@ -23,7 +23,7 @@ def fwdbutton(wri, row, col, cls_screen, text="Next", args=()):
     def fwd(button):
         Screen.change(cls_screen, args=args)  # Callback
 
-    Button(wri, row, col, height=30, callback=fwd, fgcolor=BLACK, bgcolor=GREEN, text=text)
+    Button(wri, row, col, height=50, width=80, callback=fwd, text=text)
 
 
 def navbutton(wri, row, col, gen, delta, text):
@@ -37,7 +37,7 @@ def navbutton(wri, row, col, gen, delta, text):
 class RingScreen(Screen):
     def __init__(self, num):
         super().__init__()
-        Label(wri, 2, 2, f"Ring screen no. {num}.")
+        Label(wri, 2, 2, f"Ring screen no. {num}.", fgcolor=YELLOW)
         navbutton(wri, 40, 80, nav, 1, "Right")
         navbutton(wri, 40, 2, nav, -1, "Left")
         CloseButton(wri)
@@ -64,8 +64,8 @@ nav = navigator()
 class StackScreen(Screen):
     def __init__(self):
         super().__init__()
-        Label(wri, 2, 2, "Stacked screen.")
-        fwdbutton(wri, 40, 2, RingScreen, args=(0,))
+        Label(wri, 2, 2, "Stacked screen.", fgcolor=CYAN)
+        fwdbutton(wri, 40, 40, RingScreen, args=(0,))
         CloseButton(wri)
 
 
@@ -74,7 +74,7 @@ class BaseScreen(Screen):
 
         super().__init__()
         Label(wri, 2, 2, "Base screen.")
-        fwdbutton(wri, 40, 2, StackScreen)
+        fwdbutton(wri, 40, 40, StackScreen)
         CloseButton(wri)
 
 

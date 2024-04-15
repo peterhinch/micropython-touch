@@ -1,7 +1,7 @@
-# checkbox.py Minimal micro-gui demo showing a Checkbox updating an LED.
+# checkbox.py Minimal touch-gui demo showing a Checkbox updating an LED.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -11,7 +11,7 @@ from gui.widgets import CloseButton, Checkbox, LED
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -19,9 +19,9 @@ class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
-        col = 2
-        row = 2
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+        col = 50
+        row = 50
         self.cb = Checkbox(wri, row, col, callback=self.cbcb)
         col += 40
         self.led = LED(wri, row, col, color=YELLOW, bdcolor=GREEN)

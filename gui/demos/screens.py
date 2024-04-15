@@ -1,7 +1,7 @@
-# screens.py micro-gui demo of multiple screens, dropdowns etc
+# screens.py touch-gui demo of multiple screens, dropdowns etc
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -11,7 +11,7 @@ from gui.widgets import Button, RadioButtons, CloseButton, Listbox, Dropdown, Di
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 # Note that litcolor is defeated by design, because the callback's action
@@ -30,6 +30,8 @@ def fwdbutton(writer, row, col, cls_screen, text, color, *args, **kwargs):
         text=text,
         textcolor=WHITE,
         shape=CLIPPED_RECT,
+        height=30,
+        width=70,
     )
 
 
@@ -45,15 +47,15 @@ class UserDialogBox(Window):
             Window.value(text)
             callback(Window, *args)
 
-        height = 80
+        height = 100
         width = 150
         super().__init__(20, 20, height, width, bgcolor=DARKGREEN)
-        row = self.height - 30
+        row = self.height - 50
         # .locn converts Window relative row, col to absolute row, col
         Button(
             writer,
             *self.locn(row, 20),
-            height=20,
+            height=30,
             width=50,
             textcolor=BLACK,
             bgcolor=RED,
@@ -64,7 +66,7 @@ class UserDialogBox(Window):
         Button(
             writer,
             *self.locn(row, 80),
-            height=20,
+            height=30,
             width=50,
             textcolor=BLACK,
             bgcolor=GREEN,
@@ -79,7 +81,7 @@ class UserDialogBox(Window):
 class Overlay(Screen):
     def __init__(self):
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
         Label(wri, 20, 20, "Screen overlays base")
         CloseButton(wri)
 
@@ -101,11 +103,11 @@ class BaseScreen(Screen):
             label.value("User Dialog: {}".format(window.value()))
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
-        col = 2
-        row = 2
-        Listbox(
+        col = 20
+        row = 20
+        lb = Listbox(
             wri,
             row,
             col,
@@ -114,7 +116,7 @@ class BaseScreen(Screen):
             bdcolor=GREEN,
             bgcolor=DARKGREEN,
         )
-        col = 70
+        col = lb.mcol + 10
         Dropdown(
             wri,
             row,
@@ -124,9 +126,9 @@ class BaseScreen(Screen):
             bdcolor=GREEN,
             bgcolor=DARKGREEN,
         )
-        row += 30
+        row += 50
         lbl = Label(wri, row, col, "Result from dialog box.")
-        row += 20
+        row += 40
         dialog_elements = (("Yes", GREEN), ("No", RED), ("Foo", YELLOW))
         # 1st 6 args are for fwdbutton
         fwdbutton(
@@ -143,7 +145,7 @@ class BaseScreen(Screen):
             callback=dbcb,
             args=(lbl,),
         )
-        col += 60
+        col += 80
         fwdbutton(
             wri,
             row,
@@ -160,11 +162,7 @@ class BaseScreen(Screen):
 
 
 def test():
-    if ssd.height < 128 or ssd.width < 240:
-        print("This test requires a display of at least 240x128 pixels.")
-    else:
-        print("Testing micro-gui...")
-        Screen.change(BaseScreen)
+    Screen.change(BaseScreen)
 
 
 test()

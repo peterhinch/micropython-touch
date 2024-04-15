@@ -1,7 +1,7 @@
-# dialog.py micro-gui demo of the DialogBox class
+# dialog.py touchgui demo of the DialogBox class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -11,7 +11,7 @@ from gui.widgets import Label, Button, CloseButton, DialogBox
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -22,21 +22,21 @@ class BaseScreen(Screen):
         def fwd(button, my_kwargs):
             Screen.change(DialogBox, kwargs=my_kwargs)
 
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
-        row = 2
-        col = 2
+        row = 20
+        col = 20
         # Trailing spaces ensure Label is wide enough to show results
         self.lbl = Label(wri, row, col, "Dialog box test   ")
         # DialogBox constructor arguments. Here we pass all as keyword wargs.
         kwargs = {
             "writer": wri,
             "row": 20,
-            "col": 2,
+            "col": 20,
             "elements": (("Yes", GREEN), ("No", RED), ("Foo", YELLOW)),
             "label": "Test dialog",
         }
-        row = 30
+        row = 70
         Button(
             wri,
             row,
@@ -45,6 +45,7 @@ class BaseScreen(Screen):
             bgcolor=RED,
             textcolor=WHITE,
             callback=fwd,
+            height=30,
             args=(kwargs,),
         )
         CloseButton(wri)  # Quit the application
@@ -53,7 +54,7 @@ class BaseScreen(Screen):
     # the screen first opens).
     def after_open(self):
         if (v := Window.value()) is not None:
-            self.lbl.value("Result: {}".format(v))
+            self.lbl.value(f"Result: {v}")
 
 
 def test():
