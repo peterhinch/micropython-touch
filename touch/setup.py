@@ -37,12 +37,10 @@ wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
 async def touch_state(s):
     while True:  # Wait for touch state to match passed value
-        try:
-            if touch.poll() == s:
-                break
-        except OSError:  # Ignore high variance readings
-            pass
-        await asyncio.sleep(0)
+        if touch.poll() == s:
+            break
+        # Polling at too high a rate led to bad ._x and ._y values on touch release.
+        await asyncio.sleep_ms(100)
 
 
 async def do_touch(n):

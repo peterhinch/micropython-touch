@@ -32,21 +32,18 @@ def main():
     display.print_left(wri, 2, 120, f"y = ", CYAN)
     ssd.show()
     while True:
-        try:
-            if touch.poll():
-                tr = touch.row
-                tc = touch.col
-                tx = touch._x
-                ty = touch._y
-                display.print_left(wri, 40, 30, f"{tr:04d}", YELLOW)
-                display.print_left(wri, 40, 60, f"{tc:04d}", YELLOW)
-                display.print_left(wri, 40, 90, f"{tx:04d}", CYAN)
-                display.print_left(wri, 40, 120, f"{ty:04d}", CYAN)
-                ssd.show()
-                if (rcol < tc < rcol + rw) and (rrow < tr < (rrow + rh)):
-                    break
-        except OSError:
-            pass
+        if touch.poll():
+            tr = touch.row
+            tc = touch.col
+            tx = touch._x
+            ty = touch._y
+            display.print_left(wri, 40, 30, f"{tr:04d}", YELLOW)
+            display.print_left(wri, 40, 60, f"{tc:04d}", YELLOW)
+            display.print_left(wri, 40, 90, f"{tx:04d}", CYAN)
+            display.print_left(wri, 40, 120, f"{ty:04d}", CYAN)
+            ssd.show()
+            if (rcol < tc < rcol + rw) and (rrow < tr < (rrow + rh)):
+                break
         time.sleep_ms(100)
     display.clr_scr()
     ssd.show()
