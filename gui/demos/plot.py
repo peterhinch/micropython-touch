@@ -1,11 +1,11 @@
-# plot.py Test/demo program for micro-gui plot. Cross-patform,
+# plot.py Test/demo program for micropython-touch plot. Cross-patform,
 # but requires a large enough display.
 # Tested on Adafruit ssd1351-based OLED displays:
 # Adafruit 1.5" 128*128 OLED display: https://www.adafruit.com/product/1431
 # Adafruit 1.27" 128*96 display https://www.adafruit.com/product/1673
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup

@@ -1,4 +1,4 @@
-# dialog.py touchgui demo of the DialogBox class
+# dialog.py micropython-touch demo of the DialogBox class
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

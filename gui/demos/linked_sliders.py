@@ -1,4 +1,4 @@
-# linked_sliders.py Minimal touchgui demo one Slider controlling two others.
+# linked_sliders.py Minimal micropython-touch demo one Slider controlling two others.
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

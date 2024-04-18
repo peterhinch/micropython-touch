@@ -1,7 +1,7 @@
-# tstat.py nanogui demo for the Tstat class
+# tstat.py micropython-touch demo for the Tstat class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Usage:
 # import gui.demos.tstat
@@ -14,7 +14,7 @@ from gui.widgets import Button, CloseButton, Slider, Label, Meter, Region, LED
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -27,13 +27,14 @@ class BaseScreen(Screen):
             ts.del_region(reg)
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
-        col = 2
-        row = 10
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+        col = 20
+        row = 20
         sl = Slider(
             wri,
             row,
             col,
+            width=20,
             callback=self.slider_cb,
             bdcolor=RED,
             slotcolor=BLUE,
@@ -52,7 +53,7 @@ class BaseScreen(Screen):
         reg = Region(self.ts, 0.4, 0.55, MAGENTA, self.ts_cb)
         al = Region(self.ts, 0.9, 1.0, RED, self.al_cb)
         col = self.ts.mcol + 5
-        self.lbl = Label(wri, row, col, 35, bdcolor=RED, bgcolor=BLACK)
+        self.lbl = Label(wri, row, col, 80, bdcolor=RED, bgcolor=BLACK)
         self.alm = LED(wri, self.lbl.mrow + 5, col, height=20, color=RED, bdcolor=BLACK)
         self.led = LED(wri, self.alm.mrow + 5, col, height=20, color=YELLOW, bdcolor=BLACK)
         self.grn = LED(wri, self.led.mrow + 5, col, height=20, color=GREEN, bdcolor=BLACK)
@@ -62,6 +63,7 @@ class BaseScreen(Screen):
             row + 30,
             col,
             width=0,
+            height=30,
             text="down",
             litcolor=RED,
             callback=btncb,
@@ -72,6 +74,7 @@ class BaseScreen(Screen):
             btn.mrow + 5,
             col,
             width=btn.width,
+            height=30,
             text="up",
             litcolor=RED,
             callback=btncb,
@@ -82,6 +85,7 @@ class BaseScreen(Screen):
             btn1.mrow + 5,
             col,
             width=btn.width,
+            height=30,
             text="del",
             litcolor=RED,
             callback=delete_alarm,
@@ -115,11 +119,8 @@ class BaseScreen(Screen):
 
 
 def test():
-    if ssd.height < 128 or ssd.width < 128:
-        print(" This test requires a display of at least 128x128 pixels.")
-    else:
-        print("Tstat demo.")
-        Screen.change(BaseScreen)
+    print("Tstat demo.")
+    Screen.change(BaseScreen)
 
 
 test()

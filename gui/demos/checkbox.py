@@ -1,4 +1,4 @@
-# checkbox.py Minimal touch-gui demo showing a Checkbox updating an LED.
+# checkbox.py Minimal micropython-touch demo showing a Checkbox updating an LED.
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

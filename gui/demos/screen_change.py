@@ -1,4 +1,4 @@
-# screen_change.py Minimal touch-gui demo showing a Button causing a screen change.
+# screen_change.py Minimal micropython-touch demo showing a Button causing a screen change.
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

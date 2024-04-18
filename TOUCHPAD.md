@@ -59,17 +59,11 @@ Constructor. This takes the following positional args:
 * `ssd` Initialised display driver instance.
 * `addr=0x48` I2C address of device.
 
-Optional keyword-only args:
+Optional keyword-only arg:
 * `alen:int=10`
-* `variance:int=50`
-* `verbose:bool=True`
-These determine the post-processing done on touch samples. When a touch occurs a
-set of N samples is acquired. If the variance exceeds the `variance` value the
-set is discarded and another is acquired. `alen` determines the size of the set.
-If `verbose` is set a message is output each time a sample set is discarded. In
-practice `variance` is determined by the quality of the touch panel. Set it too
-low and all samples are discarded: the application becomes unresponsive. A value
-of 50 works well with a good quality display.
+This determines the post-processing done on touch samples. When a touch occurs a
+set of N samples is acquired and the mean is taken as the touch location. `alen`
+determines the size of the set.
 
 Method: `init`. This is a method of the base class and its args are described
 below in "the init method". In practice the user runs the calibration script
@@ -86,18 +80,11 @@ Constructor. This takes the following mandatory positional args:
 * `cspin` An initialised `Pin` instance connected to the device chip select.
 * `ssd` Initialised display driver instance.
 
-Optional keyword-only args:
+Optional keyword-only arg:
 * `alen:int=10`
-* `variance:int=500`
-* `verbose:bool=True`
-These determine the post-processing done on touch samples. When a touch occurs a
-set of N samples is acquired. If the variance exceeds the `variance` value the
-set is discarded and another is acquired. `alen` determines the size of the set.
-If `verbose` is set a message is output each time a sample set is discarded. In
-practice `variance` is determined by the quality of the touch panel. Set it too
-low and all samples are discarded: the application becomes unresponsive. A value
-of 50 works well with a good quality display. The default of 500 was needed for
-a cheap Chinese display.
+This determines the post-processing done on touch samples. When a touch occurs a
+set of N samples is acquired and the mean is taken as the touch location. `alen`
+determines the size of the set.
 
 Method: `init`. This is a method of the base class and its args are described
 below in "the init method". In practice the user runs the calibration script
@@ -200,18 +187,15 @@ different algorithm with an individual hardware driver. The preprocessor is
 instantiated in the hardware driver's constructor, and takes args provided to
 the driver's constructor.
 
-The currently implemented `PreProcess` class works as follows.
+The currently implemented `PreProcess` class (in `touch.py`) works as follows.
 
 Constructor args:
 * `tpad` The `Touch` instance.
 * `alen:int` Array length: number of samples to acquire.
-* `variance:int` Maximum variance before an `OSError` is thrown.
-* `verbose:bool` Controls whether a message occurs reporting excessive variance.
 
 When the `get` method is called, arrays `.ax` and `.ay` are populated by
-repeated calls to the superclass `acquire`. The mean and variance of x and y are
-calculated. If the variance exceeds the `variance` value an `OSError` is raised:
-this is trapped by the GUI and the touch is rejected.
+repeated calls to the superclass `acquire`. The mean values of x and y are
+calculated.
 
 If the touch ends before a full sample set is acquired, `get` returns `False`
 and no touch is recorded. Otherwise `get` returns `True` and the ABC bound

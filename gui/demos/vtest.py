@@ -1,7 +1,7 @@
-# vtest.py Test/demo of Dial for micro-gui
+# vtest.py Test/demo of Dial for micropython-touch
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup

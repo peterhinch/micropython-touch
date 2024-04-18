@@ -1,4 +1,4 @@
-# simple.py Minimal touch-gui demo.
+# simple.py Minimal micropython-touch demo.
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

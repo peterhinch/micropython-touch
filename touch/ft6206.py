@@ -19,7 +19,7 @@ from .touch import ABCTouch
 
 class FT6206(ABCTouch):
     def __init__(self, i2c, ssd, addr=0x38, thresh=128):
-        super().__init__(None, ssd)
+        super().__init__(ssd, None)  # No preprocessor required
         self.i2c = i2c
         self.addr = addr
         buf = bytearray(1)

@@ -1,7 +1,7 @@
-# slider_label.py Minimal micro-gui demo showing a Slider controlling a Label.
+# slider_label.py Minimal micropython-touch demo showing a Slider controlling a Label.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance

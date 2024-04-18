@@ -1,4 +1,4 @@
-# dropdown.py touch-gui demo of Dropdown class
+# dropdown.py micropython-touch demo of Dropdown class
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

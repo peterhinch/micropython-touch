@@ -1,4 +1,4 @@
-# screens.py touch-gui demo of multiple screens, dropdowns etc
+# screens.py micropython-touch demo of multiple screens, dropdowns etc
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch

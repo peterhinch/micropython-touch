@@ -1,4 +1,4 @@
-# screen_replace.py deemo showing non-stacked screens
+# screen_replace.py micropython-touch demo showing non-stacked screens
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2024 Peter Hinch

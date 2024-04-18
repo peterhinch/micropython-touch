@@ -1,7 +1,7 @@
-# various.py micro-gui demo of multiple controls on a large display
+# various.py micropython-touch demo of multiple controls on a large display
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # Initialise hardware and framebuf before importing modules.
 # Create SSD instance. Must be done first because of RAM use.
@@ -231,7 +231,7 @@ def test():
     if ssd.height < 240 or ssd.width < 320:
         print(" This test requires a display of at least 320x240 pixels.")
     else:
-        print("Testing micro-gui...")
+        print("Testing micropython-touch...")
         Screen.change(FooScreen)
 
 

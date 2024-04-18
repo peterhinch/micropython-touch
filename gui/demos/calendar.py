@@ -21,6 +21,7 @@ class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
+        btn = {"height": 30, "callback": self.adjust, "shape": CIRCLE, "litcolor": WHITE}
         self.date = DateCal()
         wri = CWriter(ssd, font, GREEN, BLACK, False)
         wri1 = CWriter(ssd, font1, WHITE, BLACK, False)
@@ -38,49 +39,23 @@ class BaseScreen(Screen):
 
         row = self.grid.mrow + 4
         ht = 30
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="y-", callback=self.adjust, args=("y", -1)
-        )
+        b = Button(wri, row, col, text="y-", args=("y", -1), **btn)
         col = b.mcol + 2
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="y+", callback=self.adjust, args=("y", 1)
-        )
+        b = Button(wri, row, col, text="y+", args=("y", 1), **btn)
         col = b.mcol + 5
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="m-", callback=self.adjust, args=("m", -1)
-        )
+        b = Button(wri, row, col, text="m-", args=("m", -1), **btn)
         col = b.mcol + 2
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="m+", callback=self.adjust, args=("m", 1)
-        )
+        b = Button(wri, row, col, text="m+", args=("m", 1), **btn)
         col = b.mcol + 5
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="w-", callback=self.adjust, args=("d", -7)
-        )
+        b = Button(wri, row, col, text="w-", args=("d", -7), **btn)
         col = b.mcol + 2
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="w+", callback=self.adjust, args=("d", 7)
-        )
+        b = Button(wri, row, col, text="w+", args=("d", 7), **btn)
         col = b.mcol + 5
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="d-", callback=self.adjust, args=("d", -1)
-        )
+        b = Button(wri, row, col, text="d-", args=("d", -1), **btn)
         col = b.mcol + 2
-        b = Button(
-            wri, row, col, height=ht, shape=CIRCLE, text="d+", callback=self.adjust, args=("d", 1)
-        )
+        b = Button(wri, row, col, text="d+", args=("d", 1), **btn)
         col = b.mcol + 5
-        b = Button(
-            wri,
-            row,
-            col,
-            height=ht,
-            shape=CIRCLE,
-            fgcolor=BLUE,
-            text="H",
-            callback=self.adjust,
-            args=("h",),
-        )
+        b = Button(wri, row, col, fgcolor=BLUE, text="H", args=("h",), **btn)
         # row = b.mrow + 10
         col = 2
         row = ssd.height - (wri1.height + 2)

@@ -14,17 +14,19 @@ from gui.core.writer import CWriter
 
 import asyncio
 from gui.core.colors import *
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.widgets import Label, Textbox, Button, CloseButton
 
-wri = CWriter(ssd, arial10)  # verbose = True
+wri = CWriter(ssd, font)  # verbose = True
+
+btnargs = {"height": 30, "width": 80, "fgcolor": BLACK}
 
 
 def fwdbutton(wri, row, col, cls_screen, text, bgc):
     def fwd(button):
         Screen.change(cls_screen)
 
-    b = Button(wri, row, col, callback=fwd, fgcolor=BLACK, bgcolor=bgc, text=text)
+    b = Button(wri, row, col, callback=fwd, bgcolor=bgc, text=text, **btnargs)
     return b.mrow
 
 
@@ -60,7 +62,7 @@ async def clip(tb):
 
 # Args for textboxes
 # Positional
-pargs = (2, 2, 100, 7)  # Row, Col, Width, nlines
+pargs = (2, 2, 180, 7)  # Row, Col, Width, nlines
 
 # Keyword
 tbargs = {
@@ -122,11 +124,8 @@ class MainScreen(Screen):
 
 
 def test():
-    if ssd.height < 128 or ssd.width < 128:
-        print(" This test requires a display of at least 128x128 pixels.")
-    else:
-        print("Textbox demo.")
-        Screen.change(MainScreen)
+    print("Textbox demo.")
+    Screen.change(MainScreen)
 
 
 test()

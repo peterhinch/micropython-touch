@@ -1,7 +1,7 @@
-# primitives.py micro-gui demo of use of graphics primitives
+# primitives.py micropython-touch demo of use of graphics primitives
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
@@ -28,9 +28,10 @@ class BaseScreen(Screen):
         col = 2
         row = 2
         Label(wri, row, col, "Primitives")
-        text = "Touch me."
+        text = "Touch this text."
         row = 135
         Label(wri, row, col, text, fgcolor=YELLOW)
+        Label(wri, row + 20, col, "Or try long touch.")
         sl = wri.stringlen(text)
         Pad(
             wri,

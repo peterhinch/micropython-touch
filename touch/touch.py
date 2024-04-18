@@ -14,14 +14,12 @@ _SCALE = const(18)  # 12 bits ADC -> 30 bit small int. Subclasses must be limite
 # .get acquires a set of samples and modifies ._x and ._y to provide mean
 # values.
 class PreProcess:
-    def __init__(self, tpad, alen, variance, verbose):
+    def __init__(self, tpad, alen):
         self.tpad = tpad
         # Arrays for means
         self.ax = array("H", (0 for _ in range(alen)))
         self.ay = array("H", (0 for _ in range(alen)))
         self.alen = alen
-        self.var = variance
-        self.verbose = verbose
 
     def get(self):
         tpad = self.tpad
@@ -33,22 +31,14 @@ class PreProcess:
                 return False  # No or bad touch
             self.ax[idx] = tpad._x
             self.ay[idx] = tpad._y
-        xm = sum(self.ax) // alen  # Mean values
-        ym = sum(self.ay) // alen
-        xv = sum((x - xm) ** 2 for x in self.ax) // alen  # Variance
-        yv = sum((y - ym) ** 2 for y in self.ay) // alen
-        if xv > self.var or yv > self.var:
-            if self.verbose:
-                print(f"Excessive touch variance: x = {xv}  y = {yv}")
-            raise OSError  # Variance too high. tgui.py ignores reading
-        tpad._x = xm
-        tpad._y = ym
+        tpad._x = sum(self.ax) // alen  # Mean values
+        tpad._y = sum(self.ay) // alen
         return True
 
 
 # Class is instantiated with a configured preprocessor.
 class ABCTouch:
-    def __init__(self, prep, ssd):
+    def __init__(self, ssd, prep):
         self.get = self.acquire if prep is None else prep.get
         self.precal = prep is None
         self.init(ssd.height, ssd.width, 0, 0, 4095, 4095, False, False, False)

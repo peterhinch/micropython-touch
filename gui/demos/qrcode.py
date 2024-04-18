@@ -1,7 +1,7 @@
-# qrcode.py Minimal micro-gui demo.
+# qrcode.py Minimal mmicropython-touch demo.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2022 Peter Hinch
+# Copyright (c) 2022-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance

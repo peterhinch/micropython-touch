@@ -1,7 +1,7 @@
-# menu.py micro-gui demo of Menu class
+# menu.py micropython-touch demo of Menu class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 import hardware_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd

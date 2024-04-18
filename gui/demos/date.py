@@ -1,18 +1,20 @@
-# date.py Minimal Date class for micropython
+# date.py Minimal Date class for micropython-touch
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2023 Peter Hinch
+# Copyright (c) 2023-2024 Peter Hinch
 
 from time import mktime, localtime
 
 _SECS_PER_DAY = const(86400)
+
+
 def leap(year):
     return bool((not year % 4) ^ (not year % 100))
 
-class Date:
 
+class Date:
     def __init__(self, lt=None):
-        self.callback = lambda : None  # No callback until set
+        self.callback = lambda: None  # No callback until set
         self.now(lt)
 
     def now(self, lt=None):
@@ -36,7 +38,7 @@ class Date:
 
     @year.setter
     def year(self, v):
-        if  self.mday == 29 and self.month == 2 and not leap(v):
+        if self.mday == 29 and self.month == 2 and not leap(v):
             self.mday = 28  # Ensure it doesn't skip a month
         self._lt[0] = v
         self._update()

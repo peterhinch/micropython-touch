@@ -1,7 +1,7 @@
-# listbox.py micro-gui demo of Listbox class
+# listbox.py micropython-touch demo of Listbox class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 # hardware_setup must be imported before other modules because of RAM use.
 from hardware_setup import ssd  # Create a display instance
