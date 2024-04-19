@@ -21,10 +21,10 @@ from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSe
 from gui.widgets import Label, Button, CloseButton, Listbox
 
 # Fonts & colors
-import gui.fonts.arial10 as arial10
+import gui.fonts.font10 as font
 from gui.core.colors import *
 
-wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
 
 def fwdbutton(writer, row, col, cls_screen, text, color, *args, **kwargs):
@@ -39,7 +39,7 @@ def fwdbutton(writer, row, col, cls_screen, text, color, *args, **kwargs):
         bgcolor=color,
         text=text,
         textcolor=BLACK,
-        height=20,
+        height=25,
         width=60,
     )
 
@@ -48,7 +48,7 @@ class EmptyScreen(Screen):
     def __init__(self):
         super().__init__()
         Label(wri, 2, 2, "Test of overlay.")
-        Label(wri, 20, 2, "Check redraw of underlying screen.")
+        Label(wri, 35, 2, "Check redraw of underlying screen.")
         CloseButton(wri)
 
 
@@ -281,11 +281,8 @@ class BaseScreen(Screen):
 
 
 def test():
-    if ssd.height < 128 or ssd.width < 200:
-        print(" This test requires a display of at least 128x200 pixels.")
-    else:
-        print("Testing micro-gui...")
-        Screen.change(BaseScreen)
+    print("Plot module...")
+    Screen.change(BaseScreen)
 
 
 test()

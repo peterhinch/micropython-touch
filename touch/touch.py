@@ -24,16 +24,20 @@ class PreProcess:
     def get(self):
         tpad = self.tpad
         alen = self.alen
-        if not tpad.acquire():  # If touched, get and discard first (noisy) reading.
-            return False  # No or invalid touch.
-        for idx in range(alen):  # Populate arrays
-            if not tpad.acquire():
-                return False  # No or bad touch
-            self.ax[idx] = tpad._x
-            self.ay[idx] = tpad._y
-        tpad._x = sum(self.ax) // alen  # Mean values
-        tpad._y = sum(self.ay) // alen
-        return True
+        x = tpad._x
+        y = tpad._y
+        ok = False
+        if tpad.acquire():  # If touched, get and discard first (noisy) reading.
+            for idx in range(alen):  # Populate arrays
+                if not tpad.acquire():
+                    break  # No or bad touch
+                self.ax[idx] = tpad._x
+                self.ay[idx] = tpad._y
+            else:
+                ok = True
+        tpad._x = sum(self.ax) // alen if ok else x
+        tpad._y = sum(self.ay) // alen if ok else x
+        return ok
 
 
 # Class is instantiated with a configured preprocessor.

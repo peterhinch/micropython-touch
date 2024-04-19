@@ -12,7 +12,7 @@ scale = 2  # Magnification of graphic
 version = 4
 # qr_buf = QRMap.make_buffer(version, scale)
 from gui.core.writer import CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.freesans20 as font
 from gui.core.colors import *
 
 
@@ -22,7 +22,7 @@ class BaseScreen(Screen):
             graphic("https://en.wikipedia.org/wiki/QR_code")
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK)
+        wri = CWriter(ssd, font, GREEN, BLACK)
         col = 2
         row = 2
         Label(wri, row, col, "QR code Demo.")
@@ -30,7 +30,16 @@ class BaseScreen(Screen):
         graphic = QRMap(wri, row, col, version, scale)
         graphic("uQR rocks!")
         col = 120
-        Button(wri, row, col, text="URL", callback=my_callback, args=(graphic,))
+        Button(
+            wri,
+            row,
+            col,
+            height=25,
+            text="URL",
+            litcolor=WHITE,
+            callback=my_callback,
+            args=(graphic,),
+        )
         CloseButton(wri)  # Quit the application
 
 

@@ -43,7 +43,7 @@ class BaseScreen(Screen):
         self.ts = Meter(
             wri,
             row,
-            sl.mcol + 5,
+            sl.mcol + 10,
             ptcolor=YELLOW,
             height=100,
             width=15,
@@ -52,15 +52,16 @@ class BaseScreen(Screen):
         )
         reg = Region(self.ts, 0.4, 0.55, MAGENTA, self.ts_cb)
         al = Region(self.ts, 0.9, 1.0, RED, self.al_cb)
-        col = self.ts.mcol + 5
-        self.lbl = Label(wri, row, col, 80, bdcolor=RED, bgcolor=BLACK)
-        self.alm = LED(wri, self.lbl.mrow + 5, col, height=20, color=RED, bdcolor=BLACK)
+        col = self.ts.mcol + 10
+        row = 10
+        self.alm = LED(wri, row, col, height=20, color=RED, bdcolor=BLACK)
         self.led = LED(wri, self.alm.mrow + 5, col, height=20, color=YELLOW, bdcolor=BLACK)
         self.grn = LED(wri, self.led.mrow + 5, col, height=20, color=GREEN, bdcolor=BLACK)
-        col = self.lbl.mcol + 5
+        col = self.led.mcol + 30
+        row = 2
         btn = Button(
             wri,
-            row + 30,
+            row,
             col,
             width=0,
             height=30,
@@ -91,6 +92,9 @@ class BaseScreen(Screen):
             callback=delete_alarm,
             args=(self.ts, al),
         )
+        row = sl.mrow + 10
+        col = 2
+        self.lbl = Label(wri, row, col, "0.000 ", bdcolor=RED, bgcolor=BLACK)
         CloseButton(wri)
 
     def after_open(self):

@@ -61,7 +61,9 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-March 2024: Initial port from micro-gui.
+April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
+of larger displays.
+March 2024: Port from micro-gui.
 
 # 0. Contents
 
@@ -360,8 +362,8 @@ The initial ones are minimal and aim to demonstrate a single technique.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
- * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (This runs
- very slowly if running via mpremote mount).
+ * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
+    docs).
  * `qrcode.py` Display a QR code. Requires the uQR module.
 
 ### 1.7.2 Test scripts
@@ -2300,18 +2302,18 @@ Keyword only args:
 
 Methods:__
  * `value` mandatory arg `fn` path to an image file. Causes the `BitMap` image
- to be updated from the file. Blocks for a period depending on filesystem
- performance.
+ to be updated from the file. Files should be stored on the root directory of
+ the host. Blocks for a period depending on filesystem performance.
  * `color` args `fgcolor=None`, `bgcolor=None`. Causes the image colors to be
  changed. The file will be re-read and the image updated.
 
-Beacuse of the use of file storage when an update occurs there will be a brief
+Because of the use of file storage when an update occurs there will be a brief
 "dead time" when the GUI is unresponsive. This is not noticeable if the image
 is displayed when a screen initialises, or if it changes in response to a user
 action. Use in animations is questionable.
 
-See `gui/demos/bitmap.py` for a usage example (this demo is very slow if
-running via `mpremote mount` - a consequence of file retrieval over USB).
+See `gui/demos/bitmap.py` for a usage example. For this demo four files must be
+copied from `gui/fonts/bitmaps/` to the root directory of the device.
 
 ###### [Contents](./README.md#0-contents)
 
