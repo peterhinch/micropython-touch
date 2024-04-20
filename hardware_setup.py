@@ -1,48 +1,72 @@
-# ili9341_tsc2007_pico.py Customise for your hardware config
+# ili9488_ws_pico_res_touch.py
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021-2024 Peter Hinch
+# Copyright (c) 2024 Peter Hinch
 
-# As written, supports:
-# ili9341 240x320 displays on Pi Pico.
-# TSC2007 touch controller.
-# Edit the driver import for other displays.
+# Original source https://github.com/peterhinch/micropython-touch/issues/2
+# Contributor @beetlegigg.
+
+# Supported display TFT 480x320
+# https://www.waveshare.com/pico-restouch-lcd-3.5.htm
 
 # Demo of initialisation procedure designed to minimise risk of memory fail
 # when instantiating the frame buffer. The aim is to do this as early as
 # possible before importing other modules.
 
-# WIRING
-# Pico      Display
-# GPIO Pin
-# 3v3  36   Vin
-# IO6   9   CLK  Hardware SPI0
-# IO7  10   DATA (AKA SI MOSI)
-# IO8  11   Rst
-# IO9  12   DC
-# Gnd  13   Gnd
-# IO10 14   CS
-# IO26 31   Touch SDA
-# IO27 32   Touch SCL
+# WIRING for rpi pico/w
 
-from machine import Pin, I2C, SPI, freq
+# Using waveshare LCD 3.5
+# LCD       picoW (GPIO)
+# VCC       Vin
+# GND       Gnd
+# LCD_DC    8
+# LCD_CS    9
+# LCD_CLK   10
+# MOSI      11
+# MISO      12
+# BackLight 13
+# LCD_RST   15
+# (Touch)
+# TP_CS     16
+# TP_IRQ    17 (unused)
+
+# (GPIO used for SD card)
+# 5		SDIO_CLK
+# 18	SDIO_CMD
+# 19	SDIO_DO
+# 20	SDIO_D1
+# 21	SDIO_D2
+# 22	SDIO CS/D3
+
+from machine import Pin, SPI, freq
 import gc
-from drivers.ili93xx.ili9341 import ILI9341 as SSD
+from drivers.ili94xx.ili9486 import ILI9486 as SSD
 
-freq(250_000_000)  # RP2 overclock
-# Create and export an SSD instance
-prst = Pin(8, Pin.OUT, value=1)
-pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
-pcs = Pin(10, Pin.OUT, value=1)
-spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
-gc.collect()  # Precaution before instantiating framebuf
-ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
-from gui.core.tgui import Display
+SSD.COLOR_INVERT = 0xFFFF  # Fix color inversion
+
+# RP2 overclock
+freq(250_000_000)
+
+# Screen configuration
+# (Create and export an SSD instance)
+prst = Pin(15, Pin.OUT, value=1)
+pdc = Pin(8, Pin.OUT, value=0)
+pcs = Pin(9, Pin.OUT, value=1)
+
+# Use hardSPI (bus 1)
+spi = SPI(1, 2_500_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
+# Precaution before instantiating framebuf
+gc.collect()
+ssd = SSD(spi, height=320, width=480, dc=pdc, cs=pcs, rst=prst, usd=True)
+from gui.core.tgui import Display, quiet
+
+quiet()  # Comment this out for periodic free RAM messages
+from touch.xpt2046 import XPT2046
 
 # Touch configuration
-from touch.tsc2007 import TSC2007
+tpad = XPT2046(spi, Pin(16), ssd, alen=10)
+tpad.init(320, 480, 202, 206, 3898, 3999, True, False, True)
 
-i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
-tpad = TSC2007(i2c, ssd)
-tpad.init(240, 320, 194, 194, 3898, 3898, True, True, False)
-display = Display(ssd, tpad)
+# instantiate a Display
+# Bus arbitration: pass (spi, display baud, touch baud)
+display = Display(ssd, tpad, (spi, 33_000_000, 2_500_000))
