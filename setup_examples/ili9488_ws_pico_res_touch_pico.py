@@ -64,7 +64,7 @@ quiet()  # Comment this out for periodic free RAM messages
 from touch.xpt2046 import XPT2046
 
 # Touch configuration
-tpad = XPT2046(spi, Pin(16), ssd, alen=10)
+tpad = XPT2046(spi, Pin(16), ssd)
 tpad.init(320, 480, 202, 206, 3898, 3999, True, False, True)
 
 # instantiate a Display
