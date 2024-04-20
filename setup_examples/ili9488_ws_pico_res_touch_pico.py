@@ -58,7 +58,9 @@ spi = SPI(1, 2_500_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
 # Precaution before instantiating framebuf
 gc.collect()
 ssd = SSD(spi, height=320, width=480, dc=pdc, cs=pcs, rst=prst, usd=True)
-from gui.core.tgui import Display
+from gui.core.tgui import Display, quiet
+
+quiet()  # Comment this out for periodic free RAM messages
 from touch.xpt2046 import XPT2046
 
 # Touch configuration

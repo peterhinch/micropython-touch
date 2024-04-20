@@ -54,7 +54,9 @@ spi = SPI(1, 2_500_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
 # ssd = SSD(spi, height=320, width=240, dc=pdc, cs=pcs, rst=prst)
 # For landscape mode:
 ssd = SSD(spi, height=240, width=320, disp_mode=PORTRAIT, dc=pdc, cs=pcs, rst=prst)
-from gui.core.tgui import Display
+from gui.core.tgui import Display, quiet
+
+quiet()  # Comment this out for periodic free RAM messages
 from touch.xpt2046 import XPT2046
 
 # Touch configuration.

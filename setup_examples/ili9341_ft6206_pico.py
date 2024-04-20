@@ -38,8 +38,9 @@ pcs = Pin(17, Pin.OUT, value=1)
 spi = SPI(0, sck=Pin(18), mosi=Pin(19), miso=Pin(16), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
-from gui.core.tgui import Display
+from gui.core.tgui import Display, quiet
 
+quiet()  # Comment this out for periodic free RAM messages
 # Touch configuration
 from touch.ft6206 import FT6206
 
