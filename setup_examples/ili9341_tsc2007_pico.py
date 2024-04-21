@@ -46,6 +46,7 @@ from touch.tsc2007 import TSC2007
 
 i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = TSC2007(i2c, ssd)
-tpad.init(240, 320, 201, 304, 3901, 3873, True, True, False)
+# To create a tpad.init line for your displays please read SETUP.md
+# tpad.init(240, 320, 201, 304, 3901, 3873, True, True, False)
 
 display = Display(ssd, tpad)

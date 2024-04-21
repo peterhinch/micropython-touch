@@ -61,6 +61,7 @@ from touch.xpt2046 import XPT2046
 
 # Touch configuration.
 tpad = XPT2046(spi, Pin(16), ssd)
-tpad.init(240, 320, 157, 150, 3863, 4095, True, True, False)
+# To create a tpad.init line for your displays please read SETUP.md
+# tpad.init(240, 320, 157, 150, 3863, 4095, True, True, False)
 # Bus arbitration: pass (spi, display baud, touch baud)
 display = Display(ssd, tpad, (spi, 33_000_000, 2_500_000))

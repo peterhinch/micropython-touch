@@ -46,5 +46,6 @@ from touch.xpt2046 import XPT2046
 
 spi = SoftSPI(mosi=Pin(1), miso=Pin(2), sck=Pin(3))  # 2.5MHz max
 tpad = XPT2046(spi, Pin(0), ssd)
-tpad.init(240, 320, 157, 150, 3863, 4095, True, True, True)
+# To create a tpad.init line for your displays please read SETUP.md
+# tpad.init(240, 320, 157, 150, 3863, 4095, True, True, True)
 display = Display(ssd, tpad)
