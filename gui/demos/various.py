@@ -179,8 +179,6 @@ class FooScreen(Screen):
 
     def cbcb(self, cb):
         self.led.value(cb.value())
-        gc.collect()
-        print("Free RAM:", gc.mem_free())
 
 
 async def run(dial, lbltim, m0, scale):
