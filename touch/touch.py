@@ -36,7 +36,7 @@ class PreProcess:
             else:
                 ok = True
         tpad._x = sum(self.ax) // alen if ok else x
-        tpad._y = sum(self.ay) // alen if ok else x
+        tpad._y = sum(self.ay) // alen if ok else y
         return ok
 
 

@@ -38,6 +38,4 @@ class XPT2046(ABCTouch):
             self._x = self._value(5)
             self._y = self._value(1)
         self.csn(1)
-        if t and (self._y > 4070 or self._x < 10):  # Discard silly values
-            raise OSError  # tgui.py ignores touch attempt
         return t
