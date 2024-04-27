@@ -86,8 +86,6 @@ March 2024: Port from micro-gui.
 3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
  3.1 [SSD class](./README.md#31-ssd-class) Instantiation in hardware_setup.  
  3.2 [Display class](./README.md#32-display-class) Instantiation in hardware_setup.py.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.1 [Encoder usage](./README.md#321-encoder-usage)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.2 [Encoder only mode](./README.md#322-encoder-only-mode)  
 4. [Screen class](./README.md#4-screen-class) Full screen window.  
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
@@ -112,7 +110,7 @@ March 2024: Port from micro-gui.
  6.9 [DialogBox class](./README.md#69-dialogbox-class) Pop-up modal dialog boxes.  
  6.10 [Textbox widget](./README.md#610-textbox-widget) Scrolling text display.  
  6.11 [Meter widget](./README.md#611-meter-widget) Display floats on an analog meter, with data driven callbacks.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.11.1 [Region class](./README.md#6111-region-class)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.11.1 [Region class](./README.md#6111-region-class) Convert a Meter to a thermostat type object.  
  6.12 [Slider and HorizSlider widgets](./README.md#612-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
  6.13 [Scale widget](./README.md#613-scale-widget) High precision float entry and display.  
  6.14 [ScaleLog widget](./README.md#614-scalelog-widget) Wide dynamic range float entry and display.  
@@ -325,6 +323,7 @@ Touch support is in `touch`:
 * `touch.py` Common abstract base class.
 * `tsc2007.py` Driver for TSC2007 controller.
 * `xpt2046.py` Driver for XPT2046 controller.
+* `ft6206.py` FT6206 capacitive screen controller.
 Other drivers will be added.
 
 The `gui/demos` directory contains a variety of demos and tests described
@@ -2404,6 +2403,8 @@ Class variable:
 
 The demo `primitives.py` illustrates this widget.
 
+###### [Contents](./README.md#0-contents)
+
 # 7. Graph Plotting
 
 ```python
@@ -2857,3 +2858,5 @@ This creates a file `tgui.mpy`. It is necessary to move, delete or rename
 
 If "incorrect mpy version" errors occur, the cross compiler should be
 recompiled.
+
+###### [Contents](./README.md#0-contents)
