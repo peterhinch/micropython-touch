@@ -1,0 +1,12 @@
+#! /bin/bash
+# mosquitto_sub -h 192.168.0.10 -t shed
+BROKER='192.168.0.10'
+while :
+do
+    mosquitto_pub -h $BROKER -t foo_topic -m "gordon bennett" -q 1
+    sleep 5
+    mosquitto_pub -h $BROKER -t foo_topic -m "pete was here" -q 1
+    sleep 5
+    mosquitto_pub -h $BROKER -t bar_topic -m "bar message" -q 1
+    sleep 5
+done

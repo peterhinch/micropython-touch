@@ -5,7 +5,7 @@ a touch interface and with drivers subclassed from
 [framebuf](https://docs.micropython.org/en/latest/library/framebuf.html).
 Written in Python it runs under a standard MicroPython firmware build. Input is
 by touch. The design is intended to support a range of touch controllers.
-Initially the TSC2007 and XPT2046 are supported.
+Initially the TSC2007, XPT2046 and FT6206 are supported.
 
 It is larger and more complex than
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) owing to its
@@ -74,10 +74,10 @@ March 2024: Port from micro-gui.
  1.4 [Widget control](./README.md#14-widget-control) Operation of variable controls.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
  1.6 [Quick start](./README.md#16-quick-start) Also a guide to hardware choice, calibration, application development.   
- 1.7 [Files](./README.md#111-files) Discussion of the files in the library.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.1 [Demos](./README.md#1111-demos) Simple demos showing coding techniques.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.2 [Test scripts](./README.md#1112-test-scripts) GUI tests, some needing larger displays  
- 1.8 [Floating Point Widgets](./README.md#112-floating-point-widgets) How to input floating point data.  
+ 1.7 [Files](./README.md#17-files) Discussion of the files in the library.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.1 [Demos](./README.md#171-demos) Simple demos showing coding techniques.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.7.2 [Test scripts](./README.md#172-test-scripts) GUI tests, some needing larger displays  
+ 1.8 [Floating Point Widgets](./README.md#18-floating-point-widgets) How to input floating point data.  
 2. [Usage](./README.md#2-usage) Application design.  
  2.1 [Program structure and operation](./README.md#21-program-structure-and-operation) A simple demo of navigation and use.  
  2.2 [Callbacks](./README.md#22-callbacks)  
@@ -112,7 +112,7 @@ March 2024: Port from micro-gui.
  6.9 [DialogBox class](./README.md#69-dialogbox-class) Pop-up modal dialog boxes.  
  6.10 [Textbox widget](./README.md#610-textbox-widget) Scrolling text display.  
  6.11 [Meter widget](./README.md#611-meter-widget) Display floats on an analog meter, with data driven callbacks.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.11.1 [Region class](./README.md#161-region-class)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.11.1 [Region class](./README.md#6111-region-class)  
  6.12 [Slider and HorizSlider widgets](./README.md#612-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
  6.13 [Scale widget](./README.md#613-scale-widget) High precision float entry and display.  
  6.14 [ScaleLog widget](./README.md#614-scalelog-widget) Wide dynamic range float entry and display.  
@@ -361,10 +361,10 @@ The initial ones are minimal and aim to demonstrate a single technique.
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
- * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
     docs).
- * `qrcode.py` Display a QR code. Requires the uQR module.
+ * `qrcode.py` Display a QR code. Requires the uQR module: copy from `optional/pi/`
+ to the root directory.
 
 ### 1.7.2 Test scripts
 
@@ -383,6 +383,8 @@ Some of these require larger screens. Required sizes are specified as
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
+ * `mqtt.py` (240x320) Demo of sending and receiving MQTT messages. Requires
+ some setup, see `./optional/mqtt/MQTT_DEMO.md`.
 
 ###### [Contents](./README.md#0-contents)
 
