@@ -23,13 +23,15 @@ doc lists display controllers having compatible drivers.
 
 There is a perception that capacitive touch is "better" than resistive. This is
 because capacitive overlays can respond to multi-touch gestures. In the context
-of this GUI that is irrelevant. For most widgets and screen layouts, precision
-is more important. Capacitive touch panels don't work with a fingernail or
-stylus: they must be touched with a finger. With a finger (on either type of
-overlay) it is hard to touch a precise location. For finger touch, screen
-layouts should be designed accordingly, with relatively large widgets. By
-contrast a well calibrated resistive panel, touched with a stylus, can yield
-precise coordinates enabling more complex layouts. Some of the demos have such
+of this GUI that is irrelevant. For most widgets and screen layouts on small
+screens, precision is the main requirement. Capacitive touch panels don't work
+with a fingernail or plain plastic stylus: they must be touched with a finger or
+a stylus designed for capacitive screens.
+
+With a finger (on capacitive or resistive overlays) it is hard to touch a
+precise location. For finger touch, screen layouts should be designed
+accordingly, with relatively large widgets. A suitable stylus can yield
+precise coordinates enabling more complex layouts. Most of the demos have such
 layouts and are hard to use with finger touch.
 
 See [touchpad doc](./TOUCHPAD.md) for supported touch controllers.

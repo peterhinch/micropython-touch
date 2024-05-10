@@ -47,6 +47,8 @@ from touch.ft6206 import FT6206
 i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
 tpad = FT6206(i2c, ssd)
 # To create a tpad.init line for your displays please read SETUP.md
-# tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
+# The FT6206 is pre-calibrated: the purpose of running touch.setup is to match
+# the chosen screenorientation. Numeric args may be as below.
+# tpad.init(240, 320, 0, 0, 240, 320, True, True, False)
 
 display = Display(ssd, tpad)

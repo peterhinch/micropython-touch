@@ -47,7 +47,7 @@ class BaseScreen(Screen):
 
 
 def test():
-    print("Slider Label demo. Long press select for precision mode.")
+    print("Slider Label demo.")
     Screen.change(BaseScreen)
 
 
