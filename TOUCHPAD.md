@@ -110,6 +110,10 @@ calibration or pre-processing. Calibration should still be performed to enable
 screen orientation to be detected. The `.init` method ignores the last four
 numeric args as scaling is not required.
 
+# CST816S Capacitive controller
+
+TODO
+
 # Under the hood
 
 The following provides details for those wishing to adapt the code or to
