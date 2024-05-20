@@ -51,10 +51,11 @@ class ABCTouch:
     def init(self, xpix, ypix, xmin, ymin, xmax, ymax, trans, rr, rc):
         self._xpix = xpix  # No of pixels on x axis
         self._ypix = ypix  # Pixels on y axis
-        self._x0 = xmin  # Returned value for row 0
-        self._y0 = ymin  # Returned value for col 0
-        self._xl = (xpix << _SCALE) // (xmax - xmin)
-        self._yl = (ypix << _SCALE) // (ymax - ymin)
+        if not self.precal:  # Scaling
+            self._x0 = xmin  # Returned value for row 0
+            self._y0 = ymin  # Returned value for col 0
+            self._xl = (xpix << _SCALE) // (xmax - xmin)
+            self._yl = (ypix << _SCALE) // (ymax - ymin)
         # Mapping
         self._rr = rr  # Row reflect
         self._rc = rc  # Col reflect

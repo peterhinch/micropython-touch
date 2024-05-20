@@ -29,7 +29,7 @@ Raspberry Pico with Adafruit 3.2" display and TSC2007 touch controller.
 # Documents
 
 [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md).  
-[Setup guide](./SETUP.md) Calibration and a guide to application development.  
+[Setup guide](./SETUP.md) Quick start guide. Calibration and approaches to application development.  
 [Touchpad drivers](./TOUCHPAD.md) Details of supported drivers and technical notes.  
 Commercial links to hardware that produced excellent results:  
 [TSC2007 breakout](http://www.adafruit.com/products/5423) Interface to displays
@@ -46,14 +46,14 @@ The following are similar GUI repos with differing objectives.
  * [micro-gui](https://github.com/peterhinch/micropython-micro-gui/tree/main) A
  similar GUI with input provided by various configurations of pushbuttons and/or
  an encoder. Ideal for displays lacking touch overlays.
- * [LCD160cr](https://github.com/peterhinch/micropython-lcd160cr-gui) Touch GUI
- for the official display. Alas this is hewn from the purest, weapons grade
- unobtanium.
- * [RA8875](https://github.com/peterhinch/micropython_ra8875) Touch GUI for
+  * [RA8875](https://github.com/peterhinch/micropython_ra8875) Touch GUI for
  displays with RA8875 controller. Supports large displays, e.g. from Adafruit.
  * [SSD1963](https://github.com/peterhinch/micropython-tft-gui) Touch GUI for
  displays based on SSD1963 and XPT2046. High performance on large displays due
  to the parallel interface. Specific to STM hosts.
+ * [LCD160cr](https://github.com/peterhinch/micropython-lcd160cr-gui) Touch GUI
+ for the official display. Alas the hardware is hewn from ingots of the purest,
+ weapons grade unobtanium.
 
 [LVGL](https://lvgl.io/) is a pretty icon-based GUI library. It is written in C
 with MicroPython bindings; consequently it requires the build system for your
@@ -61,8 +61,9 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+May 2024: Add support for round displays with CST816S touch controller.  
 April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
-of larger displays.
+of larger displays.  
 March 2024: Port from micro-gui.
 
 # 0. Contents
@@ -377,6 +378,8 @@ Some of these require larger screens. Required sizes are specified as
  * `active.py` Demonstrates `active` controls providing floating point input
  (240x320).
  * `plot.py` Graph plotting (128x200).
+ * `round.py` Polar plot demo primarily for round touchscreens (240x240). Also
+ demonstrates a sequential screen arrangement rather than a tree structure.
  * `screens.py` Listbox, dropdown and dialog boxes (128x240).
  * `various.py` Assorted widgets including the different types of `Button`
  (240x320).

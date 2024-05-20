@@ -137,7 +137,7 @@ def test():
     if ssd.height < 240 or ssd.width < 320:
         print(" This test requires a display of at least 320x240 pixels.")
     else:
-        print("Testing micro-gui...")
+        print("Testing micropython-touch...")
         Screen.change(BaseScreen)
 
 

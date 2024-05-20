@@ -96,7 +96,7 @@ This is pasted into `hardware_setup.py`.
 
 # FT6206 Capacitive controller
 
-Constructor. This takes the following mandatory positional args:
+`FT6206` constructor mandatory positional args:
 * `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
 * `ssd` Initialised display driver instance.
 
@@ -110,9 +110,45 @@ calibration or pre-processing. Calibration should still be performed to enable
 screen orientation to be detected. The `.init` method ignores the last four
 numeric args as scaling is not required.
 
+See `setup_examples/ili9341_ft6206_pico.py`.
+
 # CST816S Capacitive controller
 
-TODO
+`CST816S` class.  
+Constructor mandatory positional args:
+* `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
+* `rst` A `Pin` instance initialised with `Pin.OUT, value=1`.
+* `pint` A `Pin` instance initialised with `Pin.IN`.
+* `ssd` Initialised display driver instance.
+
+Optional arg:
+* `addr=0x15` I2C address of device.
+
+Bound variable:
+* `version` Returns the chip version information. See technical note below and
+code comments.
+
+See `setup_examples/gc9a01_ws_rp2040_touch.py` for a `hardware_setup.py`
+example. Note that `touch.setup.py` is unusable with circular
+displays because the crosses lie outside the visible area. However the
+controller is pre-calibrated and the following initialisation should be used:
+```py
+tpad.init(240, 240, 0, 0, 240, 240, False, True, True)
+```
+The three boolean args are described below and may be changed to match the
+orientation of the screen (to validate run `touch.check`).
+
+Tested with [Waveshare 1.28 inch touch LCD](https://www.waveshare.com/wiki/1.28inch_Touch_LCD)
+and [Waveshare RP2040 touch LCD 1.28](https://www.waveshare.com/wiki/RP2040-Touch-LCD-1.28).
+
+### Technical note
+
+The chip has the curious property of being undetectable by `I2C.scan`. It only
+becomes present on the I2C bus for a "brief period" after it issues an
+interrupt. It is also poorly documented, with the above "brief period" being
+unknown. This ha the weird consequence that it is impossible to check the chip's
+presence and version details until after it has detected a touch and raised an
+interrupt. If anyone can shed any light on this, please raise an issue.
 
 # Under the hood
 

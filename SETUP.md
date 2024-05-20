@@ -153,6 +153,23 @@ With the display oriented as per the project requirements, it should show a red
 square at the top left, a blue square at bottom right, and a green diagonal line
 passing through the squares. This should be pixel perfect.
 
+#### Round displays
+
+The above script is not very useful on round displays as the rectangles are off
+screen. The following should be used:
+```Python
+from hardware_setup import ssd  # Create a display instance
+from gui.core.colors import *
+ssd.fill(0)
+w = ssd.width
+ssd.line(0, 0, w - 1, w - 1, GREEN)  # Green diagonal corner-to-corner
+offs = round(0.29289 * w / 2)
+ssd.rect(offs, offs, 15, 15, RED)  # Red square at top left
+ssd.rect(w - offs - 15, w - offs - 15, 15, 15, BLUE)  # Blue square at bottom right
+ssd.ellipse(119, 119, 119, 119, GREEN)
+ssd.show()
+```
+
 ## 2.4 Add the touch overlay
 
 Exit the REPL with `ctrl-x`. Edit `hardware_setup.py` to add the touch
