@@ -6,7 +6,7 @@
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup
 
-import cmath
+from cmath import rect, pi
 import math
 import asyncio
 
@@ -19,55 +19,68 @@ from gui.widgets import Pad, Label
 import gui.fonts.font10 as font
 from gui.core.colors import *
 
+
+# ***** Define some generators to populate polar curves *****
+def f1(k, nmax):
+    def f(theta, k):
+        return rect(math.sin(k * theta), theta)  # complex
+
+    for n in range(nmax + 1):
+        yield f(2 * pi * n / nmax, k)  # complex z
+
+
+def f2(k, l, nmax):
+    v1 = 1 - l + 0j
+    v2 = l + 0j
+    rot = rect(1, 2 * pi / nmax)
+    for n in range(nmax + 1):
+        yield v1 + v2
+        v1 *= rot
+        v2 *= rot ** k
+
+
+def f3(c, r, nmax):
+    rot = rect(1 - r * c / nmax, c * 2 * pi / nmax)
+    v = 1 + 0j
+    for n in range(nmax + 1):
+        yield v
+        v *= rot
+
+
+# Instantiate generators with args
+generators = [
+    [f1(3, 150), YELLOW],
+    [f1(5, 150), RED],
+    [f1(7, 150), CYAN],
+    [f2(5, 0.3, 150), YELLOW],
+    [f2(6, 0.4, 150), MAGENTA],
+    [f3(6, 0.9, 150), WHITE],
+]
+
+# ***** GUI code *****
+
 wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
 
-# def fwdbutton(writer, row, col, cls_screen, text, color, *args, **kwargs):
-#     def fwd(button):
-#         Screen.change(cls_screen, args=args, kwargs=kwargs)
-#
-#     Button(
-#         writer,
-#         row,
-#         col,
-#         callback=fwd,
-#         bgcolor=color,
-#         text=text,
-#         textcolor=BLACK,
-#         height=25,
-#         width=60,
-#     )
-
-
 class PolarScreen(Screen):
-    colors = {3: YELLOW, 5: RED, 7: CYAN}
-
-    def __init__(self, k):
+    def __init__(self, n):
         super().__init__()
         Pad(wri, 0, 0, height=239, width=239, callback=self.cb)
-        self.k = k
+        self.n = n  # Current screen number
         self.g = PolarGraph(
             wri, 2, 2, height=236, bdcolor=False, fgcolor=GREEN, gridcolor=LIGHTGREEN
         )
 
-    def cb(self, _):
-        self.k += 2
-        if self.k < 9:
-            Screen.change(PolarScreen, mode=Screen.REPLACE, args=(self.k,))
+    def cb(self, _):  # Pad touch callback
+        self.n += 1  # Point to next config entry
+        if self.n < len(generators):
+            Screen.change(PolarScreen, mode=Screen.REPLACE, args=(self.n,))
         else:
-            Screen.back()  # Quit
+            Screen.back()  # Quit: there is no parent Screen instance.
 
     def after_open(self):  # After graph has been drawn
-        def populate():
-            def f(theta, k):
-                return cmath.rect(math.sin(k * theta), theta)  # complex
-
-            nmax = 150
-            k = self.k
-            for n in range(nmax + 1):
-                yield f(2 * cmath.pi * n / nmax, k)  # complex z
-
-        PolarCurve(self.g, PolarScreen.colors[self.k], populate())
+        gen, color = generators[self.n]  # Retrieve generator and color from config
+        PolarCurve(self.g, color, gen)  # populate graph.
 
 
 class BaseScreen(Screen):
@@ -79,12 +92,12 @@ class BaseScreen(Screen):
         l = Label(wri, l.mrow + 2, col, "Touch screen to change")
         Label(wri, l.mrow + 2, col, "function plotted.")
 
-    def cb(self, _):
-        Screen.change(PolarScreen, mode=Screen.REPLACE, args=(3,))
+    def cb(self, _):  # Change to screen 0
+        Screen.change(PolarScreen, mode=Screen.REPLACE, args=(0,))
 
 
 def test():
-    print("Plot module...")
+    print("Plot module. Touch to change function to plot.")
     Screen.change(BaseScreen)
 
 
