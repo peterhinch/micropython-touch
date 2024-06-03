@@ -23,7 +23,11 @@
 
 import gc
 from machine import Pin, SPI, I2C
-from drivers.gc9a01.gc9a01_8_bit import GC9A01 as SSD
+
+# from drivers.gc9a01.gc9a01_16_bit import GC9A01 as SSD
+# from drivers.gc9a01.gc9a01_8_bit import GC9A01 as SSD
+
+from drivers.gc9a01.gc9a01 import GC9A01 as SSD
 
 pdc = Pin(8, Pin.OUT, value=0)
 pcs = Pin(9, Pin.OUT, value=1)
