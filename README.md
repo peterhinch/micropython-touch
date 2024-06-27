@@ -319,7 +319,7 @@ The system is organised as a Python package with the root being `gui`. Core
 files in `gui/core` are:  
  * `colors.py` Constants including colors and shapes.
  * `tgui.py` The main GUI code.
- * `writer.py` Supports the `Writer` and `CWriter` classes.
+ * `writer.py` Supports the `Writer` and `CWriter` classes.  
 Touch support is in `touch`:
 * `touch.py` Common abstract base class.
 * `tsc2007.py` Driver for TSC2007 controller.
@@ -386,7 +386,7 @@ Some of these require larger screens. Required sizes are specified as
  * `vtest.py` Clock and compass styles of vector display (240x320).
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
  * `mqtt.py` (240x320) Demo of sending and receiving MQTT messages. Requires
- some setup, see `./optional/mqtt/MQTT_DEMO.md`.
+ some setup, see [./optional/mqtt/MQTT_DEMO.md](./optional/mqtt/MQTT_DEMO.md).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -596,10 +596,6 @@ The constructor takes the following positional args:
  2. `objtouch=None` Touch controller instance. `None` allows the display to be
  tested prior to implementing the touch interface.
 
-Class variables:  
- * `verbose=True` Causes a message to be printed indicating whether an encoder
- was specified.
-
 ###### [Contents](./README.md#0-contents)
 
 # 4. Screen class
@@ -611,7 +607,7 @@ instantiated it is associated with the current screen.
 
 All applications require the creation of at least one user screen. This is done
 by subclassing the `Screen` class. Widgets are instantiated in the `Screen`
-constructor. Widgets may be assigned to bound variable: this facilitates
+constructor. Widgets may be assigned to a bound variable: this facilitates
 communication between them.
 
 ###### [Contents](./README.md#0-contents)
@@ -660,7 +656,9 @@ These are null functions which may be redefined in user subclasses.
  * `after_open(self)` Called after a screen has been displayed.
  * `on_hide(self)` Called when a screen ceases to be current.
 
-See `demos/plot.py`, `demos/primitives.py` for examples of `after_open`.
+See `demos/plot.py`, `demos/primitives.py` for examples of `after_open`; this
+method is particularly useful for drawing onto a screen and for
+[displaying images](https://github.com/peterhinch/micropython-nano-gui/blob/master/IMAGE_DISPLAY.md).
 
 ## 4.4 Method
 
@@ -734,11 +732,11 @@ not be updated until the window has closed.
 
 ## 5.3 Popup windows
 
-In general `Screen` and `Window` instances need at least one `active` widget.
-There is a special case of a popup window which typically displays status data,
-possibly with a progress meter. A popup has no user controls and is closed by
-user code. A popup is created by passing a `Writer` (or `CWriter`) to the
-constructor and is closed by issuing the `Window.close()` static method.
+There is a special case of a popup window with no touch sensitive controls.
+This typically displays status data, possibly with a progress meter. Such a
+popup is closed by user code. A popup is created by passing a `Writer` (or
+`CWriter`) to the constructor and is closed by issuing the `Window.close()`
+static method.
 
 ###### [Contents](./README.md#0-contents)
 
