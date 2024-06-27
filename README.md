@@ -320,7 +320,8 @@ files in `gui/core` are:
  * `colors.py` Constants including colors and shapes.
  * `tgui.py` The main GUI code.
  * `writer.py` Supports the `Writer` and `CWriter` classes.  
-Touch support is in `touch`:
+
+Touch support is in the `touch` directory:
 * `touch.py` Common abstract base class.
 * `tsc2007.py` Driver for TSC2007 controller.
 * `xpt2046.py` Driver for XPT2046 controller.
