@@ -1075,7 +1075,7 @@ Constructor mandatory positional arg:
 
 Optional keyword only arguments:  
  * `width=0` By default dimensions are calculated from font size. The button is
- is square. Optionally `width` may be specified.
+ square. Optionally `width` may be specified.
  * `callback=dolittle` Optional callback, not normally required.
  * `args=()` Args for above.
  * `bgcolor=RED`
@@ -1526,7 +1526,7 @@ Rendering text to the screen is relatively slow. To send a large amount of text
 the fastest way is to perform a single `append`. Text may contain newline
 (`'\n'`) characters as required. In that way rendering occurs once only.
 
-`ntrim`__
+`append` arg `ntrim`  
 If text is regularly appended to a `Textbox` its buffer grows, using RAM. The
 value of `ntrim` sets a limit to the number of lines which are retained, with
 the oldest (topmost) being discarded as required.
@@ -1540,7 +1540,7 @@ linear scale. Optionally it can support data dependent callbacks.
 ```python
 from gui.widgets import Meter  # File: meter.py
 ```
-![Image](./images/meter.JPG)
+![Image](./images/meter.JPG)  
 The two styles of `meter`, both showing a value of 0.65. This `passive` widget
 provides a vertical linear meter display of values scaled between 0.0 and 1.0.
 In these examples each meter simply displays a data value.
@@ -1593,7 +1593,8 @@ Methods:
     Out of range values are constrained. If `None` is passed the meter is not
     updated.
     * `color` Updates the color of the bar or line if a value is also passed.
-    `None` causes no change.  
+    `None` causes no change.
+
  Returns the current value.  
  2. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
     * `text=None` The text to display. If `None` displays last value.
