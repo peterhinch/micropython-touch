@@ -20,7 +20,7 @@ class Label(Widget):
         text,
         invert=False,
         fgcolor=None,
-        bgcolor=BLACK,
+        bgcolor=None,
         bdcolor=False,
         justify=0,
     ):
