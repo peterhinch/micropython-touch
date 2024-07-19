@@ -153,8 +153,9 @@ class CloseButton(Button):
 # Group of buttons, typically at same location, where pressing one shows
 # the next e.g. start/stop toggle or sequential select from short list
 class ButtonList:
-    def __init__(self, callback=dolittle):
+    def __init__(self, callback=dolittle, new_cb=False):
         self.user_callback = callback
+        self._new_cb = new_cb
         self.lstbuttons = []
         self.current = None  # No current button
         self._greyed_out = False
@@ -179,12 +180,11 @@ class ButtonList:
             new.visible = True
             new.draw = True  # Redisplay without changing currency
             # Args for user callback: button instance followed by any specified.
-            # Normal behaviour is to run cb of old button: this mimics a button press.
-            # Optionally programmatic value changes can run the cb of new button.
-            if new_cb:  # Forced value change, callback is that of new button
+            # This may be overridden for programmatic value changes, or for
+            # physical button presses via constructor arg. See docs.
+            if new_cb or self._new_cb:
                 self.user_callback(new, *new.callback_args)
-            else:  # A button was pressed
-                # Callback context is button just pressed, not the new one
+            else:
                 self.user_callback(old, *old.callback_args)
         return self.current
 
@@ -204,8 +204,10 @@ class ButtonList:
         old.visible = False
         new.visible = True
         new.draw = True
-        # Callback context is button just pressed, not the new one
-        self.user_callback(old, *old.callback_args)
+        if self._new_cb:
+            self.user_callback(new, *new.callback_args)
+        else:
+            self.user_callback(old, *old.callback_args)
 
 
 # Group of buttons at different locations, where pressing one shows
