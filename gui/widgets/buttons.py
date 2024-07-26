@@ -91,21 +91,20 @@ class Button(Widget):
                         self.writer, xc, yc, self.text, self.textcolor, self.bgcolor
                     )
 
-    async def shownormal(self):
-        await asyncio.sleep_ms(Button.lit_time)
-        # Handle case where screen changed while timer was active: delay repaint
-        # until screen is current. Pathological app behaviour where another
-        # control caused a screen change while timer running.
-        while self.screen is not Screen.current_screen:
-            await asyncio.sleep_ms(500)
+    async def shownormal(self):  # Revert to normal color after a delay
+        try:
+            await asyncio.sleep_ms(Button.lit_time)
+        except asyncio.CancelledError:  # Or prior to a screen change
+            pass
         self.bgcolor = self.def_bgcolor
         self.draw = True  # Redisplay
 
     def _touched(self, row, col):  # Process touch
-        if self.litcolor is not None:
+        if self.litcolor is not None and self.bgcolor != self.litcolor:
             self.bgcolor = self.litcolor
             self.draw = True
-            asyncio.create_task(self.shownormal())
+            revert = asyncio.create_task(self.shownormal())
+            Screen.current_screen.reg_task(revert, True)  # Cancel on screen change
         if self.lp_callback is not None:
             self.lp_task = asyncio.create_task(self.longpress())
         if not self.onrelease:
