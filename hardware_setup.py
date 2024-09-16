@@ -1,57 +1,51 @@
-# gc9a01_ws_rp2040_touch.py
-# Driver for https://www.waveshare.com/wiki/RP2040-Touch-LCD-1.28
+# ili9341_tsc2007_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2024 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
-# Pinout (from Waveshare schematic)
-# Touch Controller
-# I2C SDA 6
-# I2C CLK 7
-# TP RST 22
-# TP INT 21
+# As written, supports:
+# ili9341 240x320 displays on Pi Pico.
+# TSC2007 touch controller.
+# Edit the driver import for other displays.
 
-# LCD
-# DC 8
-# CS 9
-# SCK 10
-# MOSI 11
-# MISO 12
-# RST 13
-# BL 25
+# Demo of initialisation procedure designed to minimise risk of memory fail
+# when instantiating the frame buffer. The aim is to do this as early as
+# possible before importing other modules.
 
+# WIRING
+# Pico      Display
+# GPIO Pin
+# 3v3  36   Vin
+# IO6   9   CLK  Hardware SPI0
+# IO7  10   DATA (AKA SI MOSI)
+# IO8  11   Rst
+# IO9  12   DC
+# Gnd  13   Gnd
+# IO10 14   CS
+# IO26 31   Touch SDA
+# IO27 32   Touch SCL
 
+from machine import Pin, I2C, SPI, freq
 import gc
-from machine import Pin, SPI, I2C
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
 
-# from drivers.gc9a01.gc9a01_16_bit import GC9A01 as SSD
-# from drivers.gc9a01.gc9a01_8_bit import GC9A01 as SSD
-
-from drivers.gc9a01.gc9a01 import GC9A01 as SSD
-
-pdc = Pin(8, Pin.OUT, value=0)
-pcs = Pin(9, Pin.OUT, value=1)
-prst = Pin(13, Pin.OUT, value=1)
-pbl = Pin(25, Pin.OUT, value=1)
-
+freq(250_000_000)  # RP2 overclock
+# Create and export an SSD instance
+prst = Pin(8, Pin.OUT, value=1)
+pdc = Pin(9, Pin.OUT, value=0)  # Arbitrary pins
+pcs = Pin(10, Pin.OUT, value=1)
+spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-
-# Define the display
-# gc9a01 datasheet allows <= 100MHz
-spi = SPI(1, 33_000_000, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
-ssd = SSD(spi, pcs, pdc, prst)  # Bool options lscape, usd, mirror
+ssd = SSD(spi, pcs, pdc, prst, height=240, width=320, usd=True)  # 240x320 default
 from gui.core.tgui import Display, quiet
 
 quiet()  # Comment this out for periodic free RAM messages
 
-# Touch configuration.
-from touch.cst816s import CST816S
+# Touch configuration
+from touch.tsc2007 import TSC2007
 
-pint = Pin(21, Pin.IN)  # Touch interrupt
-ptrst = Pin(22, Pin.OUT, value=1)  # Touch reset
-i2c = I2C(1, scl=Pin(7), sda=Pin(6), freq=100_000)
-tpad = CST816S(i2c, ptrst, pint, ssd)
-# To create a tpad.init line for your displays please read SETUP.md
-# The following is consistent with the SSD constructor args above.
-tpad.init(240, 240, 0, 0, 240, 240, False, True, True)
+i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100_000)
+tpad = TSC2007(i2c, ssd)
+tpad.init(240, 320, 201, 304, 3901, 3873, True, True, False)
+
 display = Display(ssd, tpad)

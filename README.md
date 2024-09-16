@@ -61,6 +61,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 May 2024: Add support for round displays with CST816S touch controller.  
 April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
 of larger displays.  
@@ -107,7 +108,9 @@ March 2024: Port from micro-gui.
  6.5 [ButtonList object](./README.md#65-buttonlist-object) Pushbuttons with multiple states.  
  6.6 [RadioButtons object](./README.md#66-radiobuttons-object) One-of-N pushbuttons.  
  6.7 [Listbox widget](./README.md#67-listbox-widget)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.7.1 [Dynamic changes](./README.md#671-dynamic-changes) Alter listbox contents at runtime.  
  6.8 [Dropdown widget](./README.md#68-dropdown-widget) Dropdown lists.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.8.1 [Dynamic changes](./README.md#681-dynamic-changes) Alter dropdown contents at runtime.  
  6.9 [DialogBox class](./README.md#69-dialogbox-class) Pop-up modal dialog boxes.  
  6.10 [Textbox widget](./README.md#610-textbox-widget) Scrolling text display.  
  6.11 [Meter widget](./README.md#611-meter-widget) Display floats on an analog meter, with data driven callbacks.  
@@ -388,6 +391,9 @@ Some of these require larger screens. Required sizes are specified as
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
  * `mqtt.py` (240x320) Demo of sending and receiving MQTT messages. Requires
  some setup, see [./optional/mqtt/MQTT_DEMO.md](./optional/mqtt/MQTT_DEMO.md).
+ * `listbox_var.py` Listbox with dynamically variable elements.
+ * `dropdown_var.py` Dropdown with dynamically variable elements.
+ * `dropdown_var_tuple.py ` Dropdown with dynamically variable tuple elements.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1261,6 +1267,7 @@ Methods:
  the control's list, that item becomes current. Normally returns the current
  string. If a provided arg did not match any list item, the control's state is
  not changed and `None` is returned.
+ * `update` No args. See [Dynamic changes](./README.md#671-dynamic-changes).
 
 The callback's first argument is the listbox instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
@@ -1301,6 +1308,12 @@ class BaseScreen(Screen):
 
 Screen.change(BaseScreen)
 ```
+### 6.7.1 Dynamic changes
+
+The contents of a listbox may be changed at runtime. To achieve this, elements
+must be defined as a list rather than a tuple. After the application has
+modified the list, it should call the `.update` method to refresh the control.
+The demo script `listbox_var.py` illustrates this.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1415,6 +1428,16 @@ class BaseScreen(Screen):
 
 Screen.change(BaseScreen)
 ```
+### 6.8.1 Dynamic changes
+
+The contents of a Dropdown may be changed at runtime. To achieve this, elements
+must be defined as a list rather than a tuple. After the application has
+modified the list, it should call the `.update` method to refresh the control.
+Changes should be made when the dropdown list is not visible; the consequence of
+`.update` will immediately be visible only if the currently visible item is
+deleted. The demo scripts `dropdown_var.py` and `dropdown_var_tuple.py`
+illustrate this.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 6.9 DialogBox class
