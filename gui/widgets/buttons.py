@@ -61,10 +61,6 @@ class Button(Widget):
         y = self.row
         w = self.width
         h = self.height
-        if not self.visible:  # erase the button
-            display.usegrey(False)
-            display.fill_rect(x, y, w, h, BGCOLOR)
-            return
         super().show()  # Blank rectangle containing button
         if self.shape == CIRCLE:  # Button coords are of top left corner of bounding box
             x += self.radius
