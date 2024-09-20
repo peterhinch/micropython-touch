@@ -2722,12 +2722,12 @@ but more advanced synchronisation is possible. The following coro allows one
 full refresh to occur then prevents any more (until some other task releases the
 lock).
 ```python
-    async def refresh_and_stop(self):
-        await Screen.rfsh_lock.acquire()  # Current refresh has finished
-        Screen.rfsh_lock.release()
-        while not Screen.rfsh_lock.locked()  # Allow exactly one refresh
-            await asyncio.sleep_ms(0)
-        await Screen.rfsh_lock.acquire()
+async def refresh_and_stop():
+    await Screen.rfsh_lock.acquire()  # Current refresh has finished
+    Screen.rfsh_lock.release()
+    while not Screen.rfsh_lock.locked():  # Allow exactly one refresh
+        await asyncio.sleep_ms(0)
+    await Screen.rfsh_lock.acquire()
 ```
 See [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) for
 the reason for continuous refresh.  
@@ -2912,24 +2912,24 @@ CPU activity remains high. The following script may be used to confirm this.
 import hardware_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 
-from gui.widgets import Label, Button, CloseButton
+from gui.widgets import Label, Button, CloseButton, LED
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10
 from gui.core.colors import *
 import asyncio
 
 async def refresh_and_stop():
-    Screen.rfsh_start.set()  # Allow refresh
-    Screen.rfsh_done.clear()  # Enable completion flag
-    await Screen.rfsh_done.wait()  # Wait for a refresh to end
-    Screen.rfsh_start.clear()  # Prevent another.
-    print("Refresh stopped")
+    await Screen.rfsh_lock.acquire()  # Current refresh has finished
+    Screen.rfsh_lock.release()
+    while not Screen.rfsh_lock.locked():  # Allow exactly one refresh
+        await asyncio.sleep_ms(0)
+    await Screen.rfsh_lock.acquire()
 
 def cby(_):
     asyncio.create_task(refresh_and_stop())
 
 def cbn(_):
-    Screen.rfsh_start.set()  # Allow refresh
+    Screen.rfsh_lock.release()  # Allow refresh
     print("Refresh started.")
 
 
@@ -2941,12 +2941,18 @@ class BaseScreen(Screen):
         col = 2
         row = 2
         Label(wri, row, col, "Refresh test")
+        self.led = LED(wri, row, 80)
         row = 50
         Button(wri, row, col, text="Stop", callback=cby)
         col += 60
         Button(wri, row, col, text="Start", callback=cbn)
+        self.reg_task(self.flash())
         CloseButton(wri)  # Quit
 
+    async def flash(self):  # Proof of stopped refresh
+        while True:
+            self.led.value(not self.led.value())
+            await asyncio.sleep_ms(300)
 
 def test():
     print("Refresh test.")
