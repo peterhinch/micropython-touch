@@ -2693,13 +2693,14 @@ class TSeq(Screen):
 
 # 8. Realtime applications
 
-Screen refresh is performed in a continuous loop with yields to the scheduler.
+Screen refresh is performed in a continuous loop which yields to the scheduler.
 In normal applications this works well, however a significant proportion of
-processor time is spent performing a blocking refresh. A means of synchronising
-refresh to other tasks is provided, enabling the application to control the
-screen refresh. This is done by means of a `Lock` instance. The refresh task
-operates as below (code simplified to illustrate this mechanism).
-
+processor time is spent performing a blocking refresh. The `asyncio` scheduler
+allocates run time to tasks in round-robin fashion. This means that another task
+will normally be scheduled once per screen refresh. This can limit data
+throughput. To enable applications to handle this, a means of synchronising
+refresh to other tasks is provided. This is via a `Lock` instance. The refresh
+task operates as below (code simplified to illustrate this mechanism).
 ```python
 class Screen:
     rfsh_lock = Lock()  # Refresh pauses until lock is acquired
@@ -2708,7 +2709,7 @@ class Screen:
     async def auto_refresh(cls):
         while True:
             async with cls.rfsh_lock:
-                ssd.show()  # Synchronous (blocking) refresh.
+                ssd.show()  # Refresh the physical display.
             # Flag user code.
             await asyncio.sleep_ms(0)  # Let user code respond to event
 ```
@@ -2718,17 +2719,11 @@ cannot be interrupted by a refresh. This is normally done as follows:
 async with Screen.rfsh_lock:
     # do something that can't be interrupted with a refresh
 ```
-but more advanced synchronisation is possible. The following coro allows one
-full refresh to occur then prevents any more (until some other task releases the
-lock).
-```python
-async def refresh_and_stop():
-    await Screen.rfsh_lock.acquire()  # Current refresh has finished
-    Screen.rfsh_lock.release()
-    while not Screen.rfsh_lock.locked():  # Allow exactly one refresh
-        await asyncio.sleep_ms(0)
-    await Screen.rfsh_lock.acquire()
-```
+The [micro-gui audio demo](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/audio.py)
+provides an example, where the `play_song` task gives priority to maintaining
+the audio buffer. It does this by holding the lock for several iterations of
+buffer filling before releasing the lock to allow a single refresh.
+
 See [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) for
 the reason for continuous refresh.  
 
@@ -2918,26 +2913,20 @@ import gui.fonts.arial10 as arial10
 from gui.core.colors import *
 import asyncio
 
-async def refresh_and_stop():
-    await Screen.rfsh_lock.acquire()  # Current refresh has finished
-    Screen.rfsh_lock.release()
-    while not Screen.rfsh_lock.locked():  # Allow exactly one refresh
-        await asyncio.sleep_ms(0)
+async def stop_rfsh():
     await Screen.rfsh_lock.acquire()
 
 def cby(_):
-    asyncio.create_task(refresh_and_stop())
+    asyncio.create_task(stop_rfsh())
 
 def cbn(_):
     Screen.rfsh_lock.release()  # Allow refresh
-    print("Refresh started.")
-
 
 class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK)
+        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
         col = 2
         row = 2
         Label(wri, row, col, "Refresh test")

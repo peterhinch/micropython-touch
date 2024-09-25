@@ -254,6 +254,7 @@ class Screen:
             # Now perform physical refresh. If there is no arbitration or user
             # locking, the lock will be acquired immediately
             async with cls.rfsh_lock:
+                await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
                 if arfsh:
                     await ssd.do_refresh(split)
                 else:
