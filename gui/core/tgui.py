@@ -21,7 +21,7 @@ touch = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 0)
+__version__ = (0, 1, 1)
 
 
 async def _g():
@@ -154,8 +154,7 @@ class Screen:
     do_gc = True  # Allow user to take control of GC
     current_screen = None
     is_shutdown = asyncio.Event()
-    # The refresh lock prevents concurrent refresh and touch detect (may be on same bus)
-    # Also allows user control
+    # The lock enables user code to synchronise refresh with a realtime process.
     rfsh_lock = asyncio.Lock()
     arbitrate = None  # Optional 3-tuple controls SPI baudrate
     BACK = 0
@@ -239,6 +238,7 @@ class Screen:
     @classmethod
     async def auto_refresh(cls):
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
+        gran = hasattr(ssd, "lock_mode")  # Allow granular locking
         # If bus is shared, must pause between refreshes for touch responsiveness.
         arb = cls.arbitrate
         if pause := (0 if arb is None else 100):
@@ -251,14 +251,19 @@ class Screen:
                 arfsh = False
         while True:
             Screen.show(False)  # Update stale controls. No physical refresh.
-            # Now perform physical refresh. If there is no arbitration or user
-            # locking, the lock will be acquired immediately
-            async with cls.rfsh_lock:
-                await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
-                if arfsh:
-                    await ssd.do_refresh(split)
-                else:
-                    ssd.show()  # Synchronous (blocking) refresh.
+            # Now perform physical refresh.
+            # If there is no user locking, .rfsh_lock will be acquired immediately
+            if arfsh and gran and ssd.lock_mode:  # Async refresh, display driver can handle lock
+                # User locking is granular: lock is released at intervals during refresh
+                await ssd.do_refresh(split, cls.rfsh_lock)
+            else:  # Either synchronous refresh or old style device driver
+                # Lock for the entire refresh period.
+                async with cls.rfsh_lock:
+                    await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
+                    if arfsh:
+                        await ssd.do_refresh(split)  # Yield at intervals during refresh
+                    else:
+                        ssd.show()  # Synchronous (blocking) refresh.
             await asyncio.sleep_ms(pause)  # Let user code respond to event
 
     @classmethod
