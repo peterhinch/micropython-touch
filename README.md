@@ -61,6 +61,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 May 2024: Add support for round displays with CST816S touch controller.  
 April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
