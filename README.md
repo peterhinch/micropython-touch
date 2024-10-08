@@ -137,12 +137,13 @@ March 2024: Port from micro-gui.
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.1 [Class Curve](./README.md#731-class-curve)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.2 [Class PolarCurve](./README.md#732-class-polarcurve)  
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
-8. [Realtime applications](./README.md#8-realtime-applications) Accommodating tasks requiring fast RT performance.  
+8. [Realtime applications](./README.md#8-realtime-applications) Accommodating tasks requiring fast RT performance: refresh control.  
 
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Useful hints.  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) The reason for continuous refresh.  
+[Appendix 5 Bus sharing](./README.md#appendix-5-bus-sharing) Using the SD card on Waveshare boards.    
 
 # 1. Basic concepts
 
@@ -2708,8 +2709,8 @@ simple and undemanding, the one exception being refresh. This has to copy the
 contents of the frame buffer to the hardware, and runs continuously. The way
 this works depends on the display type. On small displays with relatively few
 pixels it is a blocking, synchronous method. On bigger screens such a method
-would block for many tens of ms which would affect latency which would affect
-the responsiveness of the user interface. The drivers for such screens have an
+would block for many tens of ms causing latency which would affect the
+responsiveness of the user interface. The drivers for such screens have an
 asynchronous `do_refresh` method: this divides the refresh into a small number
 of segments, each of which blocks for a short period, preserving responsiveness.
 
@@ -2721,6 +2722,11 @@ refresh. Alternatively the `Lock` can be held for the duration of the update of
 one segment. In testing on a Pico with ILI9341 the `Lock` duration was reduced
 from 95ms to 11.3ms. If an application has a task which needs to be scheduled at
 a high rate, this corresponds to an increase from 10Hz to 88Hz.
+
+If an application acquires the lock, accesses to the touch controller will also
+be paused. In systems with a shared SPI bus this guarantees that the application
+has exclusive access to the bus. While the lock is held the application may use
+the bus as required.
 
 The mechanism for controlling lock behaviour is a method of the `ssd` instance:
 * `short_lock(v=None)` If `True` is passed, the `Lock` will be held briefly,
@@ -2992,4 +2998,45 @@ def test():
 
 test()
 ```
+###### [Contents](./README.md#0-contents)
+
+## Appendix 5 Bus sharing
+
+Boards from Waveshare use the same SPI bus to access the display controller, the
+touch controller, and an optional SD card. If an SD card is fitted, it is
+possible to mount this in `boot.py`: doing this enables the filesystem on the
+SD card to be managed at the Bash prompt using `mpremote`. There is a "gotcha"
+here. For this to work reliably, the `CS\` pins of the display controller and
+the touch controller must be set high, otherwise bus contention on the `miso`
+line can occur. The following is an example of a `boot.py` for the 2.8" Pico
+Res touch.
+```py
+from machine import SPI, Pin
+from sdcard import SDCard
+import os
+BAUDRATE = 3_000_000  # Much higher rates seem OK, but may depend on card.
+# Initialise all CS\ pins
+cst = Pin(16, Pin.OUT, value=1)  # Touch XPT2046
+csd = Pin(9, Pin.OUT, value=1)  # Display ST7789
+css = Pin(22, Pin.OUT, value=1)  # SD card
+spi = SPI(1, BAUDRATE, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
+sd = SDCard(spi, css, BAUDRATE)
+vfs = os.VfsFat(sd)
+os.mount(vfs, "/sd")
+```
+An application which is to access the SD card must ensure that the GUI is
+prevented from accessing the SPI bus for the duration of SD card access. This
+may be done with an asynchronous context manager. When the context manager
+terminates, refresh and touch sensitivity will re-start.
+```py
+async def read_data():
+    async with Screen.rfsh_lock:
+        # set up the SPI bus baudrate for the SD card
+        # read the data
+    await asyncio.sleep_ms(0)  # Allow refresh and touch to proceed
+    # Do anything else you need
+```
+See section 8 for further background. Tested by @bianc104 in
+[iss 15](https://github.com/peterhinch/micropython-touch/issues/15#issuecomment-2397988225)
+
 ###### [Contents](./README.md#0-contents)

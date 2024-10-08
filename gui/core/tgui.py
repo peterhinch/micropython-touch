@@ -273,26 +273,27 @@ class Screen:
             spi = arb[0]
         while True:
             await asyncio.sleep_ms(0)
-            tl = cls.current_screen.lstactive  # Active (touchable) widgets
-            ids = id(cls.current_screen)
-            if arb is None:
-                t = touch.poll()
-            else:  # No need for Lock: synchronous code.
-                spi.init(baudrate=arb[2])
-                t = touch.poll()
-                spi.init(baudrate=arb[1])
-            if t:  # Display is touched.
-                for obj in (a for a in tl if a.visible and not a.greyed_out()):
-                    if obj._trytouch(touch.row, touch.col):
-                        # Run user "on press" callback if touched
-                        break  # No need to check other objects
-                    if ids != id(Screen.current_screen):  # cb may have changed screen
-                        break  # get new touchlist
-            else:
-                for obj in (a for a in tl if a.was_touched):
-                    obj.was_touched = False  # Call _untouched once only
-                    obj.busy = False
-                    obj._untouched()  # Run "on release" callback
+            async with cls.rfsh_lock:  # Honour user lock.
+                tl = cls.current_screen.lstactive  # Active (touchable) widgets
+                ids = id(cls.current_screen)
+                if arb is None:
+                    t = touch.poll()
+                else:  # No need for to lock out refresh: synchronous code.
+                    spi.init(baudrate=arb[2])
+                    t = touch.poll()
+                    spi.init(baudrate=arb[1])
+                if t:  # Display is touched.
+                    for obj in (a for a in tl if a.visible and not a.greyed_out()):
+                        if obj._trytouch(touch.row, touch.col):
+                            # Run user "on press" callback if touched
+                            break  # No need to check other objects
+                        if ids != id(Screen.current_screen):  # cb may have changed screen
+                            break  # get new touchlist
+                else:
+                    for obj in (a for a in tl if a.was_touched):
+                        obj.was_touched = False  # Call _untouched once only
+                        obj.busy = False
+                        obj._untouched()  # Run "on release" callback
 
     @classmethod
     async def garbage_collect(cls):
