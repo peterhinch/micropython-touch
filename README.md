@@ -392,6 +392,8 @@ Some of these require larger screens. Required sizes are specified as
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
+ * `keyboard.py` Full alphanumeric keyboard using `Grid` (240x320). Illustrates
+ use of `Pad` to make a `Grid` respond to touch.
  * `mqtt.py` (240x320) Demo of sending and receiving MQTT messages. Requires
  some setup, see [./optional/mqtt/MQTT_DEMO.md](./optional/mqtt/MQTT_DEMO.md).
  * `listbox_var.py` Listbox with dynamically variable elements.
@@ -2433,6 +2435,10 @@ Method:
  current 'greyed out' status of the control. Otherwise enables or disables it;
  this determines whether the control responds to touch - there is no visible
  effect.
+
+ Bound variables (read access only):
+  * `rr` Coordinates of last touch in pixels relative to `Pad` location.
+  * `rc` These may be accessed by callbacks.
 
 Class variable:
 * `long_press_time = 1000` Press duration (ms) for a long press to be registered.
