@@ -256,8 +256,6 @@ is required `-f` is also required. Supplied examples are:
  * `font10.py` FreeSans 17 high.
  * `freesans20.py` FreeSans 20 high.
 
-The directory `gui/fonts/bitmaps` is only required for the `bitmap.py` demo.
-
 ###### [Contents](./README.md#0-contents)
 
 ## 1.4 Widget control
@@ -369,7 +367,7 @@ The initial ones are minimal and aim to demonstrate a single technique.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
-    docs).
+    docs for instructions for running this).
  * `qrcode.py` Display a QR code. Requires the uQR module: copy from `optional/pi/`
  to the root directory.
 
@@ -2351,8 +2349,9 @@ Because of the use of file storage when an update occurs there will be a brief
 is displayed when a screen initialises, or if it changes in response to a user
 action. Use in animations is questionable.
 
-See `gui/demos/bitmap.py` for a usage example. For this demo four files must be
-copied from `gui/fonts/bitmaps/` to the root directory of the device.
+See `gui/demos/bitmap.py` for a usage example. For this demo the directory tree
+`optional/bitmaps/` and contents should be copied to the device. If running via
+`mpremote mount .` the demo will run, but will be slow to update.
 
 ###### [Contents](./README.md#0-contents)
 
