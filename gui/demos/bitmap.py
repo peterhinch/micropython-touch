@@ -28,7 +28,10 @@ class BaseScreen(Screen):
         self.image = 0
 
     def cb(self, _):
-        self.graphic.value(f"/m{self.image:02d}")
+        try:
+            self.graphic.value(path := f"optional/bitmaps/m{self.image:02d}")
+        except OSError:
+            print(f"File {path} not found.")
         self.image += 1
         self.image %= 4
         if self.image == 3:

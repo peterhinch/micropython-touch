@@ -1,5 +1,6 @@
 # gc9a01_ws_rp2040_touch.py
 # Driver for https://www.waveshare.com/wiki/RP2040-Touch-LCD-1.28
+# Also https://www.waveshare.com/RP2350-LCD-1.28.htm tested by Adam Knowles
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2024 Peter Hinch
