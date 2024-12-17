@@ -1,11 +1,11 @@
 # qrcode.py Provides the QRMap widget to display the output of uQR library.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2022 Peter Hinch
+# Copyright (c) 2022-2024 Peter Hinch
 from framebuf import FrameBuffer, MONO_HLSB
 from gui.core.tgui import Widget, ssd
 from gui.core.colors import *
-from uQR import QRCode
+from optional.py.uQR import QRCode
 
 from utime import ticks_diff, ticks_ms
 

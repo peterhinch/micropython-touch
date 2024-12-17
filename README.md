@@ -368,8 +368,8 @@ The initial ones are minimal and aim to demonstrate a single technique.
  * `menu.py` A multi-level menu.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
     docs for instructions for running this).
- * `qrcode.py` Display a QR code. Requires the uQR module: copy from `optional/pi/`
- to the root directory.
+ * `qrcode.py` Display a QR code. Requires the uQR module: copy tree
+ `optional/py/uQR.py` to the root directory.
 
 ### 1.7.2 Test scripts
 
@@ -2364,7 +2364,8 @@ from gui.widgets import QRMap  # File: qrcode.py
 
 This renders QR codes generated using the [uQR](https://github.com/JASchilz/uQR)
 application. Images may be scaled to render them at larger sizes. Please see
-the notes below on performance and RAM usage.
+the notes below on performance and RAM usage. The widget requires the following
+file: `optional/py/uQR.py` to exist on the target.
 
 Constructor positional args:  
  1. `writer` A `Writer` instance.
@@ -2404,8 +2405,7 @@ The `uQR` library is large, and compiling it uses a substantial amount of RAM.
 If memory errors are encountered try cross-compiling or the use of frozen byte
 code.
 
-See `gui/demos/qrcode.py` for a usage example. The demo expects `uQR.py` to be
-located in the root directory of the target.
+See `gui/demos/qrcode.py` for a usage example.
 
 ###### [Contents](./README.md#0-contents)
 
