@@ -6,8 +6,8 @@
 # Usage:
 # import gui.demos.tstat
 
-# hardware_setup must be imported before other modules because of RAM use.
-import hardware_setup  # Create a display instance
+# touch_setup must be imported before other modules because of RAM use.
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 
 from gui.widgets import Button, CloseButton, Slider, Label, Meter, Region, LED

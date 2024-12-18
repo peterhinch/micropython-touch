@@ -4,7 +4,7 @@
 # Copyright (c) 2021-2024 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
-import hardware_setup
+import touch_setup
 from gui.core.tgui import Screen, ssd
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter

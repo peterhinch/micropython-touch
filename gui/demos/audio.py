@@ -14,7 +14,7 @@
 # Here for simplicity we assume stereo files ripped from CD's.
 #
 
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 from machine import I2S, SPI, Pin, UART
 from sdcard import SDCard

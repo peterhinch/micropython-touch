@@ -8,7 +8,7 @@
 # Copyright (c) 2021-2024 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
-import hardware_setup
+import touch_setup
 
 import cmath
 import math

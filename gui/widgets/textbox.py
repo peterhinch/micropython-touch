@@ -7,7 +7,7 @@
 # from gui.widgets.textbox import Textbox
 
 from gui.core.tgui import LinearIO
-from hardware_setup import ssd  # Display driver for Writer
+from touch_setup import ssd  # Display driver for Writer
 from gui.core.writer import Writer
 
 from time import ticks_diff, ticks_ms

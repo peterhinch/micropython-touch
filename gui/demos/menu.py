@@ -3,7 +3,7 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 import gui.fonts.freesans20 as font
 from gui.core.writer import CWriter

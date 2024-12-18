@@ -4,7 +4,7 @@
 # Copyright (c) 2021-2024 Peter Hinch
 
 # Initialise hardware and framebuf before importing modules.
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 from gui.widgets import Label, Dial, Pointer, CloseButton
 

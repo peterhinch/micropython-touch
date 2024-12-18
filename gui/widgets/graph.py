@@ -3,7 +3,7 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
 
-from hardware_setup import ssd, display  # Create a display instance
+from touch_setup import ssd, display  # Create a display instance
 from gui.core.tgui import Widget
 from cmath import rect, pi
 from micropython import const

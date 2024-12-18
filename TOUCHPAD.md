@@ -71,7 +71,7 @@ below in "the init method". In practice the user runs the calibration script
 ```python
 tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 ```
-This is pasted into `hardware_setup.py`.
+This is pasted into `touch_setup.py`.
 
 # XPT2046
 
@@ -92,7 +92,7 @@ below in "the init method". In practice the user runs the calibration script
 ```python
 tpad.init(240, 320, 241, 292, 3866, 3887, True, True, False)
 ```
-This is pasted into `hardware_setup.py`.
+This is pasted into `touch_setup.py`.
 
 # FT6206 Capacitive controller
 
@@ -128,7 +128,7 @@ Bound variable:
 * `version` Returns the chip version information. See technical note below and
 code comments.
 
-See `setup_examples/gc9a01_ws_rp2040_touch.py` for a `hardware_setup.py`
+See `setup_examples/gc9a01_ws_rp2040_touch.py` for a `touch_setup.py`
 example. Note that `touch.setup.py` is unusable with circular
 displays because the crosses lie outside the visible area. However the
 controller is pre-calibrated and the following initialisation should be used:

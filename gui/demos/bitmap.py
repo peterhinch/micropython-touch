@@ -3,8 +3,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2022-2024 Peter Hinch
 
-# hardware_setup must be imported before other modules because of RAM use.
-import hardware_setup  # Create a display instance
+# touch_setup must be imported before other modules because of RAM use.
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton, BitMap
 from gui.core.writer import CWriter
@@ -23,7 +23,7 @@ class BaseScreen(Screen):
         row = 25
         self.graphic = BitMap(wri, row, col, 99, 99, fgcolor=WHITE, bgcolor=BLACK)
         col = 120
-        Button(wri, row, col, height=25, text="Next", litcolor=LIGHTGREEN, callback=self.cb)
+        Button(wri, row, col, height=25, text="Next", litcolor=WHITE, callback=self.cb)
         CloseButton(wri)  # Quit the application
         self.image = 0
 

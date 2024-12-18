@@ -2,7 +2,7 @@
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2019-2024 Peter Hinch
-from hardware_setup import SSD
+from touch_setup import SSD
 from gui.core.writer import CWriter
 
 # Code can be portable between 4-bit and other drivers by calling create_color

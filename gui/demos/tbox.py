@@ -7,7 +7,7 @@
 # import gui.demos.tbox
 
 # Initialise hardware and framebuf before importing modules.
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 
 from gui.core.tgui import Screen, ssd
 from gui.core.writer import CWriter

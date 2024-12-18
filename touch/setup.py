@@ -14,8 +14,8 @@
 # programmatically. The user supplies portrait/lanscape status and the code figures
 # out horizontal and vertical axes.
 
-# hardware_setup must be imported before other modules because of RAM use.
-import hardware_setup  # Create a display instance
+# touch_setup must be imported before other modules because of RAM use.
+import touch_setup  # Create a display instance
 import asyncio
 from array import array
 from gui.core.tgui import ssd, display, touch
@@ -110,7 +110,7 @@ async def main():
         print("WARNING: touches may not have been propoerly recorded. Please repeat setup.")
     print("Please check the following (see TOUCHPAD.md):")
     print(f"tpad.init({xpx}, {ypx}, {xmin}, {ymin}, {xmax}, {ymax}, {xpose}, {rrefl}, {crefl})")
-    print("Then paste it into hardware_setup.py, replacing the initial tpad.init line.")
+    print("Then paste it into touch_setup.py, replacing the initial tpad.init line.")
 
 
 asyncio.run(main())

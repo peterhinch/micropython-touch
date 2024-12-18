@@ -5,7 +5,7 @@
 
 # This demo assumes a large display whose drive supports segmented refresh.
 
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 
 try:
     from gui.core.tgui import Screen, ssd

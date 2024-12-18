@@ -8,7 +8,7 @@
 # programmatically. The user supplies portrait/lanscape status and the code figures
 # out horizontal and vertical axes.
 
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 import time
 from gui.core.tgui import ssd, display, touch
 from gui.core.writer import CWriter

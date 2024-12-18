@@ -5,7 +5,7 @@
 
 # Initialise hardware and framebuf before importing modules.
 # Create SSD instance. Must be done first because of RAM use.
-import hardware_setup
+import touch_setup
 
 from gui.core.tgui import Screen, ssd
 from gui.core.writer import CWriter

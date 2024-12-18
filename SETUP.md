@@ -69,7 +69,7 @@ reduced when files are in Flash rather than on the PC.
 
 Setup comprises the following steps:
 1. Cloning the repo.
-2. Writing a `hardware_setup.py` file. This defines the display interface. It
+2. Writing a `touch_setup.py` file. This defines the display interface. It
 imports the correct device driver for the display, then defines `Pin` objects
 for the display's control signals and defines a hardware SPI bus for the screen.
 The display driver constructor creates a global `ssd` instance. Constructor args
@@ -77,11 +77,11 @@ assign the interface elements and define the orientation of the screen
 (portrait, landscape, upside-down (USD) which should be chosen to match project
 requirements.
 3. Testing and confirming orientation by running a simple script.
-4. Modifying `hardware_setup.py` to add a touchscreen definition. Typically this
+4. Modifying `touch_setup.py` to add a touchscreen definition. Typically this
 is an I2C or SPI interface, in some cases with additional `Pin` objects. The
 interface may be hard or soft as speeds are relatively low.
 5. Calibrating the touchscreen. This involves running a script, touching objects
-on screen, and pasting a line of code into `hardware_setup.py`.
+on screen, and pasting a line of code into `touch_setup.py`.
 6. Confirming operation using one or more of the supplied demo scripts.
 
 The following describes those steps in detail. Assumptions are that `mpremote`
@@ -96,7 +96,7 @@ $ git clone https://github.com/peterhinch/micropython-touch/
 ```
 Change to the `micropython-touch` directory.
 
-## 2.2 Edit hardware_setup.py
+## 2.2 Edit touch_setup.py
 
 See examples in the `setup_examples` directory.
 
@@ -126,7 +126,7 @@ the maximum baudrate permitted by the display driver chip. The bus should not be
 shared with any other device if this is possible. However some displays such as
 the Waveshare Pico Res Touch units share the bus between the touh controller and
 the screen. Please see [Section 2.7](./SETUP.md#27-shared-spi-bus) for details
-of the changes to `hardware_setup.py` needed to accommodate bus sharing.
+of the changes to `touch_setup.py` needed to accommodate bus sharing.
 
 Args to `SSD` should be chosen to match the display dimensions in pixels and the
 required orientation (landcsape/portrait etc.) Options depend on the specific
@@ -141,7 +141,7 @@ $ mpremote mount .
 ```
 At the REPL paste the following (ctrl-e, ctrl-v, ctrl-d):
 ```python
-from hardware_setup import ssd  # Create a display instance
+from touch_setup import ssd  # Create a display instance
 from gui.core.colors import *
 ssd.fill(0)
 ssd.line(0, 0, ssd.width - 1, ssd.height - 1, GREEN)  # Green diagonal corner-to-corner
@@ -157,8 +157,8 @@ passing through the squares. This should be pixel perfect.
 
 The above script is not very useful on round displays as the rectangles are off
 screen. The following should be used:
-```Python
-from hardware_setup import ssd  # Create a display instance
+```python
+from touch_setup import ssd  # Create a display instance
 from gui.core.colors import *
 ssd.fill(0)
 w = ssd.width
@@ -172,7 +172,7 @@ ssd.show()
 
 ## 2.4 Add the touch overlay
 
-Exit the REPL with `ctrl-x`. Edit `hardware_setup.py` to add the touch
+Exit the REPL with `ctrl-x`. Edit `touch_setup.py` to add the touch
 controller. In the case of TSC2007 replace the last line
 (`display = Display(ssd)`) with the following (pin numbers may be adapted):
 ```python
@@ -206,7 +206,7 @@ It is suggested that calibration be repeated a few times as touch hardware can
 be inconsistent. The last four numeric args should be studied: there should be
 two fairly low values followed by two similar large ones. Once a fairly
 consistent response has been achieved, the line of code should be pasted into
-`hardware_setup.py` as below:
+`touch_setup.py` as below:
 ```python
 from touch.tsc2007 import TSC2007
 i2c = SoftI2C(scl=Pin(27), sda=Pin(26), freq=100_000)
@@ -250,7 +250,7 @@ and the touch controller baudrate (typically 2.5MHz).
 
 If a screen proves hard to calibrate it can be informative to run `touch.check`
 on the uncalibrated screen. Comment out any `tpad.init` line in
-`hardware_setup.py`, reboot and run the test. Ignore the `row` and `col` values.
+`touch_setup.py`, reboot and run the test. Ignore the `row` and `col` values.
 The `x` and `y` values should vary smoothly as a touch is moved across the
 display. Values should start around 0 to the low hundreds and end within a few
 hundred of 4095. If there are dead zones where the value of an axis barely
@@ -262,7 +262,7 @@ study the `row` and `col` values. With the display oriented so that the text is
 correctly displayed, the values should be near 0 with a touch near the top left
 hand corner. As touch moves downwards, `row` should increase. Moving to the
 right, `col` should increase. If this does not occur, the three boolean values
-in this `hardware_setup.py` line may need to be amended.
+in this `touch_setup.py` line may need to be amended.
 ```python
 tpad.init(240, 320, 120, 314, 3923, 3878, True, True, False)
 ```
@@ -291,7 +291,7 @@ args to `tpad.init`:
 
 If the actual range of `x` or `y` values is not approximately equal to the
 range specified, a dead zone will occur close to a display edge. Remove the
-`tpad.init` line from `hardware_setup.py`, reboot and repeat calibration.
+`tpad.init` line from `touch_setup.py`, reboot and repeat calibration.
 
 # 3. Deployment
 
@@ -310,7 +310,7 @@ In the root directory of the clone issue:
 $ mpremote cp -r touch :
 $ mpremote cp -r gui :
 $ mpremote cp -r drivers :
-$ mpremote cp hardware_setup.py :
+$ mpremote cp touch_setup.py :
 $ mpremote cp uQR.py :
 ```
 
@@ -330,10 +330,10 @@ required, see
 [the drivers doc](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md#12-installation).
 
 To setup a system with files on the device follow the above instructions,
-ensuring that after each edit of `hardware_setup.py` the file is copied to the
+ensuring that after each edit of `touch_setup.py` the file is copied to the
 device:
 ```bash
-$ mpremote cp hardware_setup.py :
+$ mpremote cp touch_setup.py :
 ```
 Where a completed application is to be deployed it is necessary to copy all
 fonts, widgets and bitmaps employed by the application.

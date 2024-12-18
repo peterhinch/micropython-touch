@@ -61,6 +61,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Dec 2024: hardware_setup.py now renamed touch_setup.py (existing users please note).
 Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 May 2024: Add support for round displays with CST816S touch controller.  
@@ -87,8 +88,8 @@ March 2024: Port from micro-gui.
  2.3 [Colors](./README.md#23-colors)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3.1 [Monochrome displays](./README.md#231-monochrome-displays)  
 3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
- 3.1 [SSD class](./README.md#31-ssd-class) Instantiation in hardware_setup.  
- 3.2 [Display class](./README.md#32-display-class) Instantiation in hardware_setup.py.  
+ 3.1 [SSD class](./README.md#31-ssd-class) Instantiation in touch_setup.  
+ 3.2 [Display class](./README.md#32-display-class) Instantiation in touch_setup.py.  
 4. [Screen class](./README.md#4-screen-class) Full screen window.  
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
@@ -161,7 +162,7 @@ in pushbuttons via icon fonts, also via the [BitMap widget](./README.md#619-bitm
 The following, taken from `gui.demos.simple.py`, is a complete application. It
 shows a message and has "Yes" and "No" buttons which trigger a callback.
 ```python
-import hardware_setup  # Create a display instance linked to touch controller
+import touch_setup  # Create a display instance linked to touch controller
 from gui.core.tgui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton
@@ -201,7 +202,7 @@ test()
 Notes:  
  * Monochrome displays use the `Writer` class rather than `CWriter` to
  render fonts, as per the commented-out code above.
- * Hardware is defined by a single small file `hardware_setup.py` which the
+ * Hardware is defined by a single small file `touch_setup.py` which the
  user must edit.
 
 ## 1.1 Coordinates
@@ -270,10 +271,10 @@ This enables rapid change, but also slow and extremely precise adjustment.
 
 ## 1.5 Hardware definition
 
-A file `hardware_setup.py` must exist in the GUI root directory. This defines
+A file `touch_setup.py` must exist in the GUI root directory. This defines
 the connections to the display and the display driver. It also defines the touch
 driver and the pins used for its interface. The doc referenced in the next
-section describes the creation of a `hardware_setup.py` in detail. Example files
+section describes the creation of a `touch_setup.py` in detail. Example files
 may be found in the `setup_examples` directory. Further examples (without touch
 controller definitions) are in this
 [nano-gui directory](https://github.com/peterhinch/micropython-nano-gui/tree/master/setup_examples).
@@ -434,11 +435,11 @@ run by issuing at the REPL:
 >>> import gui.demos.simple
 ```
 
-Note that the import of `hardware_setup.py` is the first line of code. This is
+Note that the import of `touch_setup.py` is the first line of code. This is
 because the frame buffer is created here, with a need for a substantial block
 of contiguous RAM.
 ```python
-import hardware_setup  # Instantiate display, setup color LUT (if present)
+import touch_setup  # Instantiate display, setup color LUT (if present)
 from gui.core.tgui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton
 # from gui.core.writer import Writer  # Monochrome display
@@ -579,10 +580,10 @@ aware of any non-emitting displays (e.g. ePaper) with touch controllers.
 The following code, issued as the first executable lines of an application,
 initialises the display.
 ```python
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd, display  # display symbol is seldom needed
 ```
-The `hardware_setup` file creates singleton instances of `SSD` and `Display`
+The `touch_setup` file creates singleton instances of `SSD` and `Display`
 classes. These instances are made available via `tgui`. Normal GUI applications
 only need to import `ssd`. This reference to the display driver is used to
 initialise `Writer` objects. Bound variables `ssd.height` and `ssd.width` may
@@ -594,13 +595,13 @@ primitives to write directly to the screen. See
 
 ## 3.1 SSD class
 
-This is instantiated in `hardware_setup.py`. The specific class must match the
+This is instantiated in `touch_setup.py`. The specific class must match the
 display hardware in use. Display drivers are documented
 [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
 ## 3.2 Display class
 
-This is instantiated in `hardware_setup.py`. It registers the `SSD` instance
+This is instantiated in `touch_setup.py`. It registers the `SSD` instance
 along with the `touch` subclass instance used for input.
 
 The constructor takes the following positional args:  
@@ -818,7 +819,7 @@ If constructing a label would cause it to extend beyond the screen boundary a
 warning is printed at the console. The label may appear at an unexpected place.
 The following is a complete "Hello world" script.
 ```python
-from hardware_setup import ssd  # Create a display instance
+from touch_setup import ssd  # Create a display instance
 from gui.core.tgui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
@@ -2111,7 +2112,7 @@ Methods:
 
 Typical usage:
 ```python
-from hardware_setup import ssd  # Create a display instance
+from touch_setup import ssd  # Create a display instance
 import asyncio
 import cmath
 from gui.core.tgui import Screen
@@ -2819,7 +2820,7 @@ which is written to issue the display driver calls.
 
 The following code instantiates two classes:
 ```python
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd, display
 ```
 The `ssd` object is an instance of the object defined in the display driver. It
@@ -2920,7 +2921,7 @@ The directory `/mnt/qnap2/Scripts/modules/rp2_modules` contains only a symlink
 to the `gui` directory of the `micropython-touch` source tree. The freezing
 process follows symlinks and respects directory structures.
 
-It is usually best to keep `hardware_setup.py` unfrozen for ease of making
+It is usually best to keep `touch_setup.py` unfrozen for ease of making
 changes. I also keep the display driver and `boolpalette.py` in the filesystem
 as I have experienced problems freezing display drivers - but feel free to
 experiment.
@@ -2958,7 +2959,7 @@ because `asyncio` continues to schedule tasks even if refresh is paused. Overall
 CPU activity remains high. The following script may be used to confirm this.
 
 ```py
-import hardware_setup  # Create a display instance
+import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton, LED

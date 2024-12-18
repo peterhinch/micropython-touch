@@ -3,8 +3,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
-# hardware_setup must be imported before other modules because of RAM use.
-from hardware_setup import ssd  # Create a display instance
+# touch_setup must be imported before other modules because of RAM use.
+from touch_setup import ssd  # Create a display instance
 from gui.core.tgui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *

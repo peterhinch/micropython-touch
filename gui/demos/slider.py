@@ -3,8 +3,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
-# hardware_setup must be imported before other modules because of RAM use.
-import hardware_setup
+# touch_setup must be imported before other modules because of RAM use.
+import touch_setup
 from gui.core.tgui import Screen, ssd
 
 from gui.widgets import CloseButton, Slider
