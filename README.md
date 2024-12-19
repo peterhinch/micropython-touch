@@ -61,7 +61,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Dec 2024: hardware_setup.py now renamed touch_setup.py (existing users please note).
+Dec 2024: hardware_setup.py now renamed touch_setup.py (existing users please note).  
 Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 May 2024: Add support for round displays with CST816S touch controller.  
@@ -338,7 +338,7 @@ below.
 
 ### 1.7.1 Demos
 
-Demos are run by issuing (for example):
+Demos are run from the GUI root directory by issuing (for example):
 ```python
 >>> import gui.demos.simple
 ```
@@ -348,7 +348,18 @@ gui.demos.simple.test()
 ```
 Before running a different demo the host should be reset (ctrl-d) to clear RAM.
 
-The initial ones are minimal and aim to demonstrate a single technique.  
+It is possible to run the demos without installing. Copy the directory tree to
+the PC with
+```bash
+$ git clone https://github.com/peterhinch/micropython-touch
+```
+ Ensure your `touch setup.py` is in the GUI root and the hardware is connected.
+ Then issue (e.g.)
+```bash
+$ mpremote mount . exec "import gui.demos.simple"
+```
+
+The initial demos are minimal and aim to demonstrate a single technique.  
  * `simple.py` Minimal demo discussed below. `Button` presses print to REPL.
  * `checkbox.py` A `Checkbox` controlling an `LED`.
  * `slider.py` A `Slider` whose color varies with its value.
