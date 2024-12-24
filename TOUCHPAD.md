@@ -150,6 +150,31 @@ unknown. This ha the weird consequence that it is impossible to check the chip's
 presence and version details until after it has detected a touch and raised an
 interrupt. If anyone can shed any light on this, please raise an issue.
 
+# CST820 Capacitive controller
+
+`CST820` class.  
+Constructor mandatory positional args:
+* `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
+* `rst` A `Pin` instance initialised with `Pin.OUT, value=1`.
+* `ssd` Initialised display driver instance.
+
+Optional arg:
+* `addr=0x15` I2C address of device.
+
+Bound variable:
+* `version` Returns the chip version information. See technical note below and
+code comments.
+
+See `setup_examples/gc9a01_ws_rp2040_touch.py` for a `touch_setup.py`
+example. Note that `touch.setup.py` is unusable with circular
+displays because the crosses lie outside the visible area. However the
+controller is pre-calibrated and the following initialisation should be used:
+```py
+tpad.init(240, 240, 0, 0, 240, 240, False, True, True)
+```
+The three boolean args are described below and may be changed to match the
+orientation of the screen (to validate run `touch.check`).
+
 # Under the hood
 
 The following provides details for those wishing to adapt the code or to

@@ -15,10 +15,6 @@
 
 # I2C clock rate 10KHz - 400KHz
 
-# Cheap yellow display uses XPT2046 and ILI9341
-# 0 <= x < 240
-# 0 <= y < 240
-
 from time import sleep_ms
 from .touch import ABCTouch
 
@@ -32,14 +28,14 @@ class CST820(ABCTouch):
         sleep_ms(5)
         rst(1)
         sleep_ms(50)
+        if (v := self.version()) != 0xB7:
+            print(f"WARNING: unexpected touch chip version: {v:02X}")
         # i2c.writeto_mem(addr, 0xFE, b"\xff")  # prohibit automatic switching to low-power mode
-        # i2c.writeto_mem(addr, 0xfe, b'\x01') # Or should it be this???
 
     def acquire(self, buf=bytearray(6)):
         self.i2c.readfrom_mem_into(self.addr, 0x01, buf)
         self._x = ((buf[2] & 0xF) << 8) + buf[3]
         self._y = ((buf[4] & 0xF) << 8) + buf[5]
-        # Gesture == 5 or event == 1: touch released
         return buf[1] == 1  # Touched if fingers==1
 
     def version(self):
