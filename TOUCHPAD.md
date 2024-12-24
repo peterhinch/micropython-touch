@@ -152,6 +152,8 @@ interrupt. If anyone can shed any light on this, please raise an issue.
 
 # CST820 Capacitive controller
 
+This is used in the capacitive version of the 2.4" CYD (Cheap Yellow Display).
+
 `CST820` class.  
 Constructor mandatory positional args:
 * `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
@@ -161,19 +163,10 @@ Constructor mandatory positional args:
 Optional arg:
 * `addr=0x15` I2C address of device.
 
-Bound variable:
-* `version` Returns the chip version information. See technical note below and
-code comments.
+Method:
+* `version` Returns the chip version number. Should be 183 (0xB7).
 
-See `setup_examples/gc9a01_ws_rp2040_touch.py` for a `touch_setup.py`
-example. Note that `touch.setup.py` is unusable with circular
-displays because the crosses lie outside the visible area. However the
-controller is pre-calibrated and the following initialisation should be used:
-```py
-tpad.init(240, 240, 0, 0, 240, 240, False, True, True)
-```
-The three boolean args are described below and may be changed to match the
-orientation of the screen (to validate run `touch.check`).
+See `setup_examples/CYD_ESP32_2432S024C.py` for a `touch_setup.py` example.
 
 # Under the hood
 
