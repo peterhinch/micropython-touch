@@ -1,4 +1,5 @@
-# hardware_setup.py for CYDc_ESP32-2432S024C --- ili9341_CST820_ESP32
+# hardware_setup.py for CYD_ESP32-2432S024C --- ili9341_CST820_ESP32
+# 2.4" Cheap Yellow Display
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
@@ -11,11 +12,6 @@
 # Both use a vanilla ESP32 with an ili9341 240x320 display.
 # Resistive version uses XPT2046 on same SPI bus as display, cs/ on GPIO33
 # This setup is for the capacitive version with CST820 controller on I2C.
-
-from machine import Pin, SPI, SoftI2C
-import gc
-from drivers.ili93xx.ili9341 import ILI9341 as SSD
-
 
 # Pin Reference
 """
@@ -32,13 +28,17 @@ T   32   Digital   Touch CST820                     - Touch CST820:	CTP_SCL
 T   33   Digital   Touch CST820                     - Touch CST820:	CTP_SDA
 """
 
+from machine import Pin, SPI, SoftI2C
+import gc
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
+
 # Display setup
 prst = Pin(0, Pin.OUT, value=1)
 pdc = Pin(2, Pin.OUT, value=0)
 pcs = Pin(15, Pin.OUT, value=1)
 
 # Use hardSPI (bus 1)
-spi = SPI(1, sck=Pin(14), mosi=Pin(13), baudrate=40000000)
+spi = SPI(1, sck=Pin(14), mosi=Pin(13), baudrate=40_000_000)
 # Precaution before instantiating framebuf
 gc.collect()
 ssd = SSD(spi, height=240, width=320, dc=pdc, cs=pcs, rst=prst, usd=True)  # 240x320 default
@@ -48,9 +48,10 @@ tft_bl = Pin(27, Pin.OUT, value=1)  # Turn on backlight
 # Touchpad
 from touch.cst820 import CST820
 
-pint = Pin(21, Pin.IN)  # Touch interrupt
+# Touch interrupt is unused: in testing it was never asserted by hardware.
+# pint = Pin(21, Pin.IN)
 ptrst = Pin(25, Pin.OUT, value=1)  # Touch reset
-i2c = SoftI2C(scl=Pin(32), sda=Pin(33), freq=400000)
+i2c = SoftI2C(scl=Pin(32), sda=Pin(33), freq=400_000)
 tpad = CST820(i2c, ptrst, ssd)
 # Assign orientation and calibration values.
 #          xpix, ypix, xmin, ymin, xmax, ymax, trans,   rr,    rc):
