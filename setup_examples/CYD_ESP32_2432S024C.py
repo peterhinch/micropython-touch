@@ -13,8 +13,9 @@
 # Resistive version uses XPT2046 on same SPI bus as display, cs/ on GPIO33
 # This setup is for the capacitive version with CST820 controller on I2C.
 
-# Pin Reference
 """
+Pin Reference (display and touch)
+
 D    0   Digital   Boot Button
 D    2   Digital   Display                          - Display:		TFT_RS / TFT_DC
     12   Digital   Display                          - Display:		TFT_SDO / TFT_MISO [HSPI]
@@ -26,6 +27,43 @@ T   25   Digital   Touch CST920                     - Touch CST820:	CTP_RST
 D   27   Digital   Display                          - Display:		TFT_BL (BackLight)
 T   32   Digital   Touch CST820                     - Touch CST820:	CTP_SCL
 T   33   Digital   Touch CST820                     - Touch CST820:	CTP_SDA
+
+Full pin reference.
+Source https://github.com/jtobinart/Micropython_CYDc_ESP32-2432S024C/blob/main/cydc.py
+
+IO Pins
+     0   Digital   Boot Button
+     1   Digital   Connector P1 & USB Chip          - TX
+     2   Digital   Display                          - TFT_RS / TFT_DC
+     3   Digital   Connector P1 & USB Chip          - RX
+     4   Digital   RGB LED                          - Red
+     5   Digital   SD Card                          - TF_CS [VSPI]
+     6   Digital   Not Connected
+     7   Digital   Not Connected
+     8   Digital   Not Connected
+     9   Digital   Not Connected
+    10   Digital   Not Connected
+    11   Digital   Not Connected
+    12   Digital   Display                          - TFT_SDO / TFT_MISO [HSPI]
+    13   Digital   Display                          - TFT_SDI / TFT_MOSI [HSPI]
+    14   Digital   Display                          - TFT_SCK [HSPI]
+    15   Digital   Display                          - TFT_CS [HSPI]
+    16   Digital   RGB LED                          - Green
+    17   Digital   RGB LED                          - Blue
+    18   Digital   SD Card                          - SCK [VSPI]
+    19   Digital   SD Card                          - MISO [VSPI]
+    21   Digital   Touch, Connector P3 & CN1        - CTP_INT / I2C SDA
+    22   Digital   Connector P3 & CN1               - I2C SCL
+    23   Digital   SD Card                          - MOSI [VSPI]
+    25   Digital   Touch CST920                     - CTP_RST
+    26   Analog    Speaker                          - !!!Speaker ONLY! Connected to Amp!!!
+    27   Digital   Display                          - TFT_BL (BackLight)
+    32   Digital   Touch CST820                     - CTP_SCL
+    33   Digital   Touch CST820                     - CTP_SDA
+    34   Analog    LDR Light Sensor                 - !!!Input ONLY!!!
+    35   Digital   P3 Connector                     - !!!Input ONLY w/ NO pull-ups!!!
+    36   Digital   Not Connected
+    39   Digital   Not Connected
 """
 
 from machine import Pin, SPI, SoftI2C

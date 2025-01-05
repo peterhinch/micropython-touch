@@ -82,6 +82,7 @@ class Listbox(Widget):
         self.ev = value  # Value change detection
         self.can_scroll = len(self.els) > self.dlines
         self.scroll = None  # Scroll task
+        self.scrolling = False  # Scrolling in progress
 
     def despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]
@@ -174,10 +175,14 @@ class Listbox(Widget):
                 self._vchange(v + 1)
 
     async def do_scroll(self, up):
-        await asyncio.sleep(1)
-        while True:
-            self.do_adj(up)
-            await asyncio.sleep_ms(600)
+        await asyncio.sleep(1)  # Scroll pending
+        self.scrolling = True  # Scrolling in progress
+        try:
+            while True:
+                self.do_adj(up)
+                await asyncio.sleep_ms(600)
+        except asyncio.CancelledError:
+            self.scrolling = False
 
     def _touched(self, rrow, _):
         self.ev = min(rrow // self.entry_height, len(self.els) - 1) + self.ntop
@@ -189,11 +194,14 @@ class Listbox(Widget):
                 self.scroll = asyncio.create_task(self.do_scroll(True))
 
     def _untouched(self):
-        if self.scroll is not None:
+        if self.scroll is not None:  # Cancel actual or pending scrolling.
             self.scroll.cancel()
             self.scroll = None
-        if self.ev is not None:
-            self._value = -1  # Force update on every touch
-            self.value(self.ev)
-            self.cb(self, *self.cb_args)
-            self.ev = None
+        # If scrolling was in progress when touch ends, scrolling is cancelled.
+        # If it was not in progress, register touch release as a value change.
+        if not self.scrolling:  # Srolling was impossible, not occurring or pending.
+            if self.ev is not None:
+                self._value = -1  # Force update on every touch
+                self.value(self.ev)
+                self.cb(self, *self.cb_args)
+                self.ev = None
