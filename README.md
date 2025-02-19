@@ -26,6 +26,15 @@ Raspberry Pico with an ILI9341 from eBay (XPT2046 touch controller).
 ![Image](./images/rp2_tsc2007.JPG)  
 Raspberry Pico with Adafruit 3.2" display and TSC2007 touch controller.
 
+![Image](./images/chess.JPG)  
+Chess game.
+
+![Image](./images/keyboard.JPG)  
+Keyboard demo.
+
+![Image](./images/calendar.JPG)  
+Calendar demo - a perpetual calendar.
+
 # Documents
 
 [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md).  
@@ -68,6 +77,11 @@ May 2024: Add support for round displays with CST816S touch controller.
 April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
 of larger displays.  
 March 2024: Port from micro-gui.
+
+# Before you started
+
+Please read [the quck start guide](./SETUP.md) which advises on hardware selection
+and configuration.
 
 # 0. Contents
 
@@ -411,6 +425,7 @@ Some of these require larger screens. Required sizes are specified as
  * `dropdown_var_tuple.py ` Dropdown with dynamically variable tuple elements.
  * `refresh_lock.py` Specialised demo of an application which controls refresh
  behaviour. See [Realtime applications](./README.md#8-realtime-applications).
+ * `chess_game.py` Does what it says on the tin (240x320). See [guide](./optional/chess/CHESS.md).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -867,6 +882,9 @@ borders are thus:
 height = no. of rows * (font height + 4)  
 width = sum(column width + 4)  
 Cells may be addressed as a 1 or 2-dimensional array.
+
+A `Grid` overlaid by a `Pad` enables the construction of touchable grids with
+differing characteristics. See the calendar, keyboard and chess demos.
 
 Constructor args:  
  1. `writer` The `Writer` instance (font and screen) to use.

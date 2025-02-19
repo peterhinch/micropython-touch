@@ -5,6 +5,8 @@
 
 # https://github.com/jacklinquan/micropython-sunfish
 # https://github.com/thomasahle/sunfish
+# Sunfish must be installed using
+# mpremote mip install github:jacklinquan/micropython-sunfish
 
 # touch_setup must be imported before other modules because of RAM use.
 import touch_setup  # Create a display instance
@@ -17,7 +19,7 @@ from gui.core.writer import CWriter
 import gui.fonts.font10 as font
 import gui.fonts.font14 as font1
 import optional.chess.chess_font as chess_font
-import optional.chess.sunfish as sf
+import sunfish as sf
 import asyncio
 
 from gui.core.colors import *
@@ -37,19 +39,21 @@ lut = {
 
 
 # Starting position when playing as Black.
-iblack = b'rnbqkbnrpppp ppp            p                   PPPPPPPPRNBQKBNR'
+iblack = b"rnbqkbnrpppp ppp            p                   PPPPPPPPRNBQKBNR"
 
 
 def get_bg(row, col):  # Return checkerboard color
     return BLACK if (col ^ row) & 1 else PALE_GREY
 
-def rc(p): # Convert a chess grid position (e.g. a1) to row, col
-    return 8 - int(p[1]), ord(p[0]) - ord('a')
+
+def rc(p):  # Convert a chess grid position (e.g. a1) to row, col
+    return 8 - int(p[1]), ord(p[0]) - ord("a")
+
 
 # Return state of each square in turn.
-def get(pos, invert):
+def get(board, invert):
     dic = {}
-    gen = sf.get_board(pos)  # Instantiate Sunfish generator
+    gen = sf.get_board(board)  # Instantiate Sunfish generator
     n = 0
     while True:
         r = next(gen)  # Get chesspiece character
@@ -58,7 +62,6 @@ def get(pos, invert):
         dic["bgcolor"] = BLACK if ((n ^ (n >> 3)) & 1) else PALE_GREY
         yield dic
         n += 1
-
 
 
 # Convert row-col to "a2a4" string
@@ -83,8 +86,12 @@ class GameScreen(Screen):
         cols = 8
         colwidth = 30  # Column width
         self.invert = invert
-        self.grid = Grid(wrichess, row, col, colwidth, rows, cols, fgcolor=WHITE, justify=Label.CENTRE)
-        self.moved = asyncio.ThreadSafeFlag()  # Event hit asyncio bug
+        self.grid = Grid(
+            wrichess, row, col, colwidth, rows, cols, fgcolor=WHITE, justify=Label.CENTRE
+        )
+        self.moved = (
+            asyncio.ThreadSafeFlag()
+        )  # Event hit bug https://github.com/micropython/micropython/issues/16569
         self.move = ""
         self.reg_task(self.play_game())
 
@@ -95,9 +102,9 @@ class GameScreen(Screen):
         self.pad = Pad(wrichess, row, col, height=gh, width=gw, callback=self.cb)
         CloseButton(wri)  # Quit the application
 
-    # Fill grid with current board position.
-    def populate(self, pos):
-        sq = get(pos, self.invert)  # Instantiate generator
+    # Fill grid with current board state.
+    def populate(self, board):
+        sq = get(board, self.invert)  # Instantiate generator
         for v in self.grid[0:]:
             v.value(**next(sq))
 
@@ -105,21 +112,22 @@ class GameScreen(Screen):
         game_over = False
         # Set up the board
         game = sf.game(iblack) if self.invert else sf.game()
-        pos, _ = next(game)  # Start generator, get initial position
+        board, _ = next(game)  # Start generator, get initial position
         while not game_over:
             try:
-                self.populate(pos)
+                self.populate(board)
                 await asyncio.sleep(0)
-                pos = None
-                while pos is None:  # Acquire valid move
+                board = None
+                while board is None:  # Acquire valid move
                     await self.moved.wait()  # Wat for player/GUI
-                    #self.moved.clear()
-                    pos = game.send(self.move)  # Get position after move
-                self.populate(pos)
+                    # self.moved.clear()
+                    board = game.send(self.move)  # Get position after move
+                self.populate(board)
+                self.lr = None  # Invalidate last cell touched.
                 await asyncio.sleep(1)  # Ensure refresh, allow time to view.
-                pos, mvblack = next(game)  # Sunfish calculates its move
-                self.flash(*rc(mvblack[:2]), WHITE)
-                self.flash(*rc(mvblack[2:]), WHITE)
+                board, mvengine = next(game)  # Sunfish calculates its move
+                self.flash(*rc(mvengine[:2]), WHITE)
+                self.flash(*rc(mvengine[2:]), WHITE)
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
             except StopIteration as e:
                 game_over = True
@@ -129,22 +137,24 @@ class GameScreen(Screen):
         g = self.grid
         cr = pad.rr // self.ch  # Get grid coordinates of current touch
         cc = pad.rc // self.cw
-        #self.flash(cr, cc, WHITE)  # TODO when playing black this changes the piece color
+        label = next(self.grid[cr, cc])
+        label.value(bgcolor=WHITE)
         if not (cc == self.lc and cr == self.lr) and self.lr is not None:
             self.move = move_string(self.lr, self.lc, cr, cc)  # Pass move to play_game task
             print(self.move)
             self.moved.set()
-
-        self.lr = cr
+        self.lr = cr  # Update last cell touched
         self.lc = cc
 
     def flash(self, r, c, color):
-        async def do_flash(g, r, c, color):
+        async def do_flash(r, c, color):
             label.value(bgcolor=color)
             await asyncio.sleep_ms(500)
             label.value(bgcolor=get_bg(r, c))
+
         label = next(self.grid[r, c])
-        asyncio.create_task(do_flash(label, r, c, color))
+        asyncio.create_task(do_flash(r, c, color))
+
 
 # Opening screen
 
@@ -161,7 +171,7 @@ class BaseScreen(Screen):
 
         super().__init__()
         wri = CWriter(ssd, font1)
-        Label(wri, 2, 2, "Chess game.")
+        Label(wri, 40, 30, "Play a game of chess!", fgcolor=YELLOW)
         fwdbutton(wri, 80, 100, GameScreen, "As white", False)
         fwdbutton(wri, 120, 100, GameScreen, "As black", True)
         CloseButton(wri)
