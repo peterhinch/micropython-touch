@@ -89,12 +89,12 @@ class GameScreen(Screen):
         self.grid = Grid(
             wrichess, row, col, colwidth, rows, cols, fgcolor=WHITE, justify=Label.CENTRE
         )
-        self.moved = (
-            asyncio.ThreadSafeFlag()
-        )  # Event hit bug https://github.com/micropython/micropython/issues/16569
+        # Event hit bug https://github.com/micropython/micropython/issues/16569
+        self.moved = asyncio.ThreadSafeFlag()
         self.move = ""
         self.reg_task(self.play_game())
 
+        self.fg = RED if invert else WHITE  # fgcolor of player's piece
         self.lr = None  # Last cell touched
         self.lc = None
         self.ch = round((gh := self.grid.height) / rows)  # Height & width of a cell
@@ -137,10 +137,13 @@ class GameScreen(Screen):
         g = self.grid
         cr = pad.rr // self.ch  # Get grid coordinates of current touch
         cc = pad.rc // self.cw
-        label = next(self.grid[cr, cc])
-        label.value(bgcolor=WHITE)
-        if not (cc == self.lc and cr == self.lr) and self.lr is not None:
-            self.move = move_string(self.lr, self.lc, cr, cc)  # Pass move to play_game task
+        lr = self.lr
+        lc = self.lc
+        if lr is not None:  # Restore normal background of previous touch
+            self.grid(lr, lc).value(bgcolor=get_bg(lr, lc), fgcolor=self.fg)
+        self.grid(cr, cc).value(bgcolor=WHITE, fgcolor=self.fg)
+        if not (cc == lc and cr == lr) and lr is not None:
+            self.move = move_string(lr, lc, cr, cc)  # Pass move to play_game task
             print(self.move)
             self.moved.set()
         self.lr = cr  # Update last cell touched
@@ -152,7 +155,7 @@ class GameScreen(Screen):
             await asyncio.sleep_ms(500)
             label.value(bgcolor=get_bg(r, c))
 
-        label = next(self.grid[r, c])
+        label = self.grid(r, c)
         asyncio.create_task(do_flash(r, c, color))
 
 

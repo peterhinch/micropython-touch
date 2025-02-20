@@ -909,7 +909,9 @@ Constructor args:
  British spelling). Justification can only occur if there is sufficient space
  in the `Label` as defined by `lwidth`.
 
-Method:  
+Methods:  
+ * `__call__(row, col=None)` Returns the `Label` instance at a single location.
+ If no `col` is provided 1D addressing is assumed.
  * `__getitem__` Returns an iterator enabling `Label` instances to be accessed.
  * `__setitem__` Assign a value to one or more labels. If multiple labels are
  specified and a single text value is passed, all labels will receive that
@@ -960,7 +962,10 @@ del d["fgcolor"]  # Revert to default
 d["invert"] = True
 self.grid[17] = d
 ```
-See the example [calendar.py](https://github.com/peterhinch/micropython-touch/blob/main/gui/demos/calendar.py).
+See examples [calendar.py](https://github.com/peterhinch/micropython-touch/blob/main/gui/demos/calendar.py),
+[keyboard.py](https://github.com/peterhinch/micropython-touch/blob/master/gui/demos/keyboard.py)
+and [chess_game.py](https://github.com/peterhinch/micropython-touch/blob/master/optional/chess/chess_game.py).
+In these samples a `Pad` overlays the `Grid` to produce a grid that responds to touch.
 
 ###### [Contents](./README.md#0-contents)
 

@@ -62,6 +62,9 @@ class Grid(Widget):
             r += self.cheight
             c = col
 
+    def __call__(self, row, col=None):  # Return a single Label
+        return self.cells[row if col is None else col + row * self.ncols]
+
     def __getitem__(self, *args):
         indices = do_args(args, self.nrows, self.ncols)
         for i in indices:
