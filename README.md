@@ -78,9 +78,9 @@ April 2024: Touch ABC simplified and bugs fixed. Demos updated to take advantage
 of larger displays.  
 March 2024: Port from micro-gui.
 
-# Before you started
+# Before you start
 
-Please read [the quck start guide](./SETUP.md) which advises on hardware selection
+Please read [the quick start guide](./SETUP.md) which advises on hardware selection
 and configuration.
 
 # 0. Contents
