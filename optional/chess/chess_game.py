@@ -12,7 +12,7 @@
 import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 
-from gui.widgets import Grid, CloseButton, Label, Button, Pad, Dropdown
+from gui.widgets import Grid, CloseButton, Label, Button, Pad, LED, Dropdown
 from gui.core.writer import CWriter
 
 # Font for CWriter
@@ -24,7 +24,11 @@ import asyncio
 
 from gui.core.colors import *
 
-PALE_GREY = create_color(12, 50, 50, 50)
+# Default color scheme
+SQ_WHITE = create_color(12, 50, 50, 50)
+SQ_BLACK = BLACK
+PC_BLACK = RED
+GRID = WHITE
 
 # Get Unicode chess symbol from ASCII
 lut = {
@@ -43,7 +47,7 @@ iblack = b"rnbqkbnrpppp ppp            p                   PPPPPPPPRNBQKBNR"
 
 
 def get_bg(row, col):  # Return checkerboard color
-    return BLACK if (col ^ row) & 1 else PALE_GREY
+    return SQ_BLACK if (col ^ row) & 1 else SQ_WHITE
 
 
 def rc(p):  # Convert a chess grid position (e.g. a1) to row, col
@@ -58,8 +62,8 @@ def get(board, invert):
     while True:
         r = next(gen)  # Get chesspiece character
         dic["text"] = lut[r.upper()]
-        dic["fgcolor"] = WHITE if (r.isupper() ^ invert) else RED
-        dic["bgcolor"] = BLACK if ((n ^ (n >> 3)) & 1) else PALE_GREY
+        dic["fgcolor"] = WHITE if (r.isupper() ^ invert) else PC_BLACK
+        dic["bgcolor"] = SQ_BLACK if ((n ^ (n >> 3)) & 1) else SQ_WHITE
         yield dic
         n += 1
 
@@ -78,28 +82,28 @@ class GameScreen(Screen):
     def __init__(self, invert):  # invert: user plays as Black
 
         super().__init__()
-        wrichess = CWriter(ssd, chess_font, verbose=False)  # CWriter: chess glyphs
-        wri = CWriter(ssd, font)
+        wric = CWriter(ssd, chess_font, verbose=False)  # CWriter: chess glyphs
+        wri = CWriter(ssd, font, verbose=False)
         col = 2
         row = 2
         rows = 8  # Grid dimensions in cells
         cols = 8
         colwidth = 30  # Column width
         self.invert = invert
-        self.grid = Grid(
-            wrichess, row, col, colwidth, rows, cols, fgcolor=WHITE, justify=Label.CENTRE
-        )
+        self.grid = Grid(wric, row, col, colwidth, rows, cols, fgcolor=GRID, justify=Label.CENTRE)
         # Event hit bug https://github.com/micropython/micropython/issues/16569
         self.moved = asyncio.ThreadSafeFlag()
         self.move = ""
         self.reg_task(self.play_game())
 
-        self.fg = RED if invert else WHITE  # fgcolor of player's piece
+        self.fg = PC_BLACK if invert else WHITE  # fgcolor of player's piece
         self.lr = None  # Last cell touched
         self.lc = None
         self.ch = round((gh := self.grid.height) / rows)  # Height & width of a cell
         self.cw = round((gw := self.grid.width) / cols)
-        self.pad = Pad(wrichess, row, col, height=gh, width=gw, callback=self.cb)
+        self.pad = Pad(wric, row, col, height=gh, width=gw, callback=self.cb)
+        self.led = LED(wri, 100, ssd.width - 32, bdcolor=YELLOW, color=GREEN)
+        self.led.value(True)
         CloseButton(wri)  # Quit the application
 
     # Fill grid with current board state.
@@ -123,12 +127,14 @@ class GameScreen(Screen):
                     # self.moved.clear()
                     board = game.send(self.move)  # Get position after move
                 self.populate(board)
+                self.led.color(RED)
                 self.lr = None  # Invalidate last cell touched.
                 await asyncio.sleep(1)  # Ensure refresh, allow time to view.
                 board, mvengine = next(game)  # Sunfish calculates its move
                 self.flash(*rc(mvengine[:2]), WHITE)
                 self.flash(*rc(mvengine[2:]), WHITE)
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
+                self.led.color(GREEN)
             except StopIteration as e:
                 game_over = True
                 print(f"Game over: you {'won' if (e ^ self.invert) else 'lost'}")
@@ -169,14 +175,35 @@ def fwdbutton(wri, row, col, cls_screen, text, arg):
     Button(wri, row, col, callback=fwd, text=text, height=35, width=80)
 
 
+def cb(dd, n):
+    global SQ_WHITE, SQ_BLACK, PC_BLACK, GRID
+    GRID = WHITE if n == 0 else create_color(14, 50, 50, 50)
+    PC_BLACK = RED if n == 0 else BLACK  # Black piece
+    if n == 0:
+        SQ_WHITE = create_color(12, 50, 50, 50)  # GREY
+        SQ_BLACK = BLACK
+    elif n == 1:
+        SQ_WHITE = create_color(12, 230, 240, 207)  # Greenish
+        SQ_BLACK = create_color(13, 113, 159, 92)
+    elif n == 2:
+        SQ_WHITE = create_color(12, 215, 177, 141)  # Cream
+        SQ_BLACK = create_color(13, 166, 123, 97)  # Brown
+
+
+els = (("Red on black", cb, (0,)), ("Black on green", cb, (1,)), ("Black on brown", cb, (2,)))
+
+
 class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
-        wri = CWriter(ssd, font1)
-        Label(wri, 40, 30, "Play a game of chess!", fgcolor=YELLOW)
-        fwdbutton(wri, 80, 100, GameScreen, "As white", False)
-        fwdbutton(wri, 120, 100, GameScreen, "As black", True)
+        wri = CWriter(ssd, font1, verbose=False)
+        wri1 = CWriter(ssd, font, WHITE, BLACK, verbose=False)
+        Label(wri, 20, 30, "Play a game of chess!", fgcolor=YELLOW)
+        fwdbutton(wri, 60, 100, GameScreen, "As white", False)
+        fwdbutton(wri, 100, 100, GameScreen, "As black", True)
+        Label(wri1, 160, 30, "Colors")
+        Dropdown(wri1, 160, 100, elements=els, bdcolor=YELLOW)
         CloseButton(wri)
 
 
