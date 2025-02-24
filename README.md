@@ -941,7 +941,18 @@ grid[1:3, 1:3] = (str(n) for n in range(2))  # Produces
 # 0 1
 # 1 1
 ```
-Read access:
+Read access:  
+It is important to note that array index notation always returns an iterator,
+even if only a single element is required. One way to access a single element is
+```python
+it = grid[0 : 0]
+label = next(it)
+```
+however function call syntax is more intuitive:
+```python
+label = grid(0, 0)
+```
+Accessing labels in a single row, by column:
 ```python
 for label in grid[2, 0:]:
     v = label.value()  # Access text of each label in row 2
