@@ -21,7 +21,7 @@ touch = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 3)
+__version__ = (0, 1, 4)
 
 
 async def _g():
@@ -160,6 +160,16 @@ class Screen:
     BACK = 0
     STACK = 1
     REPLACE = 2
+
+    _value = None
+
+    # Allow a Window to store an arbitrary object. Retrieval may be
+    # done by caller, after the Screen instance was closed
+    @classmethod
+    def value(cls, val=None):
+        if val is not None:
+            cls._value = val
+        return cls._value
 
     @classmethod
     def show(cls, force):
@@ -376,16 +386,6 @@ class Screen:
 # Very basic window class. Cuts a rectangular hole in a screen on which
 # content may be drawn.
 class Window(Screen):
-    _value = None
-
-    # Allow a Window to store an arbitrary object. Retrieval may be
-    # done by caller, after the Window instance was deleted
-    @classmethod
-    def value(cls, val=None):
-        if val is not None:
-            cls._value = val
-        return cls._value
-
     @staticmethod
     def close():  # More intuitive name for popup window
         Screen.back()
