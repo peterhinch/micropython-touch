@@ -256,7 +256,9 @@ class Screen:
             arb[0].init(baudrate=arb[1])
         if arfsh:
             h = ssd.height
-            split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
+            # split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
+            # Increase split to provide faster touch response (at possible cost in refresh rate)
+            split = max(y for y in range(1, 9) if not h % y)
             if split == 1:
                 arfsh = False
         while True:
