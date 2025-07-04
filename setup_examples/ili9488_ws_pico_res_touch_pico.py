@@ -1,7 +1,7 @@
 # ili9488_ws_pico_res_touch.py
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2024 Peter Hinch
+# Copyright (c) 2024-2025 Peter Hinch
 
 # Original source https://github.com/peterhinch/micropython-touch/issues/2
 # Contributor @beetlegigg.
@@ -12,6 +12,10 @@
 # Demo of initialisation procedure designed to minimise risk of memory fail
 # when instantiating the frame buffer. The aim is to do this as early as
 # possible before importing other modules.
+
+# NOTE: This uses the ILI9486 driver because the Waveshare board has an SPI to
+# parallel converter. The ILI9488 driver would be slower as the chip requires
+# 18 bit/pixel color on SPI, but can use 16 bit/pixel on its parallel interface.
 
 # WIRING for rpi pico/w
 
