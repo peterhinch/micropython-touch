@@ -27,7 +27,7 @@ from gui.core.colors import *
 # Default color scheme
 SQ_WHITE = create_color(12, 50, 50, 50)
 SQ_BLACK = BLACK
-PC_BLACK = RED
+PC_BLACK = RED  # fg color of black piece
 GRID = WHITE
 
 # Get Unicode chess symbol from ASCII
@@ -120,7 +120,7 @@ class GameScreen(Screen):
         while not game_over:
             try:
                 self.populate(board)
-                await asyncio.sleep(0)
+                await asyncio.sleep_ms(100)
                 board = None
                 while board is None:  # Acquire valid move
                     await self.moved.wait()  # Wat for player/GUI
@@ -131,13 +131,16 @@ class GameScreen(Screen):
                 self.lr = None  # Invalidate last cell touched.
                 await asyncio.sleep(1)  # Ensure refresh, allow time to view.
                 board, mvengine = next(game)  # Sunfish calculates its move
-                self.flash(*rc(mvengine[:2]), WHITE)
-                self.flash(*rc(mvengine[2:]), WHITE)
+                self.flash(*rc(mvengine[:2]))
+                self.flash(*rc(mvengine[2:]))
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
                 self.led.color(GREEN)
             except StopIteration as e:
                 game_over = True
-                print(f"Game over: you {'won' if (e ^ self.invert) else 'lost'}")
+                win = e.args[0] ^ self.invert
+        print(f"Game over: you {'won' if win else 'lost'}")
+        self.pad.greyed_out(True)
+        await self.flash_led(win)
 
     def cb(self, pad):
         g = self.grid
@@ -155,14 +158,23 @@ class GameScreen(Screen):
         self.lr = cr  # Update last cell touched
         self.lc = cc
 
-    def flash(self, r, c, color):
-        async def do_flash(r, c, color):
-            label.value(bgcolor=color)
-            await asyncio.sleep_ms(500)
-            label.value(bgcolor=get_bg(r, c))
+    def flash(self, r, c):  # Flash opponent's move
+        async def do_flash(r, c):
+            label.value(fgcolor=PC_BLACK, bgcolor=WHITE)
+            await asyncio.sleep_ms(800)
+            label.value(fgcolor=PC_BLACK, bgcolor=get_bg(r, c))
+            await asyncio.sleep_ms(100)
 
         label = self.grid(r, c)
-        asyncio.create_task(do_flash(r, c, color))
+        asyncio.create_task(do_flash(r, c))
+
+    async def flash_led(self, win):
+        self.led.color = GREEN if win else RED
+        v = True
+        while True:
+            self.led.value(v)
+            await asyncio.sleep_ms(200)
+            v = not v
 
 
 # Opening screen

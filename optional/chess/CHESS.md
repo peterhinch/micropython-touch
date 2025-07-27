@@ -29,6 +29,12 @@ The easy way to run the demo is from the PC. In a clone of this repo, move to th
 ```bash
 $ mpremote exec "import optional.chess.chess_game"
 ```
+# Author's note
+
+The quality of gameplay is variable and drops off in the endgame. It habitually
+misses obvious mate-in-one situations. I have no experience of chess coding; if
+you have, please submit changes
+[to the Sunfish fork](https://github.com/jacklinquan/micropython-sunfish).
 
 # Note for developers
 
