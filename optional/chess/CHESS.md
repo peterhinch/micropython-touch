@@ -6,6 +6,12 @@ adapted for MicroPython. It may be installed with
 ```bash
 $ mpremote mip install github:jacklinquan/micropython-sunfish
 ```
+Alternatively [my fork](https://github.com/peterhinch/micropython-sunfish)
+removes the RAM-saving adaptations of Quan Lin in the hope of a stronger game.
+It requires a board with SPIRAM. Install with
+```bash
+$ mpremote mip install github:peterhinch/micropython-sunfish
+```
 The chess engine is released under the GPL V3.0 licence.
 
 The demo requires a display with at least 320x240 pixels. The host should have
@@ -27,7 +33,7 @@ before it acknowledges its situation.
 The easy way to run the demo is from the PC. In a clone of this repo, move to the
 `micropython-touch` directory and issue
 ```bash
-$ mpremote exec "import optional.chess.chess_game"
+$ mpremote mount . exec "import optional.chess.chess_game"
 ```
 # Author's note
 

@@ -27,7 +27,7 @@ from gui.core.colors import *
 # Default color scheme
 SQ_WHITE = create_color(12, 50, 50, 50)
 SQ_BLACK = BLACK
-PC_BLACK = RED  # fg color of black piece
+PC_BLACK = RED  # fg color of black piece if dropdown not used
 GRID = WHITE
 
 # Get Unicode chess symbol from ASCII
@@ -159,10 +159,12 @@ class GameScreen(Screen):
         self.lc = cc
 
     def flash(self, r, c):  # Flash opponent's move
+        inv = self.invert
+
         async def do_flash(r, c):
-            label.value(fgcolor=PC_BLACK, bgcolor=WHITE)
+            label.value(fgcolor=WHITE if inv else PC_BLACK, bgcolor=WHITE)
             await asyncio.sleep_ms(800)
-            label.value(fgcolor=PC_BLACK, bgcolor=get_bg(r, c))
+            label.value(fgcolor=WHITE if inv else PC_BLACK, bgcolor=get_bg(r, c))
             await asyncio.sleep_ms(100)
 
         label = self.grid(r, c)
@@ -189,20 +191,27 @@ def fwdbutton(wri, row, col, cls_screen, text, arg):
 
 def cb(dd, n):
     global SQ_WHITE, SQ_BLACK, PC_BLACK, GRID
-    GRID = WHITE if n == 0 else create_color(14, 50, 50, 50)
-    PC_BLACK = RED if n == 0 else BLACK  # Black piece
-    if n == 0:
+    GRID = WHITE if n < 2 else create_color(14, 50, 50, 50)
+    if n < 2:
+        PC_BLACK = RED if n == 0 else YELLOW
         SQ_WHITE = create_color(12, 50, 50, 50)  # GREY
         SQ_BLACK = BLACK
-    elif n == 1:
+    elif n == 2:
         SQ_WHITE = create_color(12, 230, 240, 207)  # Greenish
         SQ_BLACK = create_color(13, 113, 159, 92)
-    elif n == 2:
+        PC_BLACK = BLACK
+    elif n == 3:
         SQ_WHITE = create_color(12, 215, 177, 141)  # Cream
         SQ_BLACK = create_color(13, 166, 123, 97)  # Brown
+        PC_BLACK = BLACK
 
 
-els = (("Red on black", cb, (0,)), ("Black on green", cb, (1,)), ("Black on brown", cb, (2,)))
+els = (
+    ("Red on black", cb, (0,)),
+    ("Yellow on black", cb, (1,)),
+    ("Black on green", cb, (2,)),
+    ("Black on brown", cb, (3,)),
+)
 
 
 class BaseScreen(Screen):
