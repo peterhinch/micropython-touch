@@ -18,6 +18,11 @@ The demo requires a display with at least 320x240 pixels. The host should have
 plenty of RAM: a Raspberry Pico 2 works well. To run on a version 1 pico would
 require the use of frozen bytecode. This option is untested.
 
+The `defaultdict` library module is required by the demo. Install with
+```bash
+$ mpremote mip install "collections-defaultdict"
+```
+
 Gameplay is by touching the piece to be moved, followed by a touch of the
 destination square. Illegal moves are ignored. Castling is done by moving the
 King: the Rook will move automatically. Pawn promotion to Queen is automatic.

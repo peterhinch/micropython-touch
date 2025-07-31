@@ -21,6 +21,7 @@ import gui.fonts.font14 as font1
 import optional.chess.chess_font as chess_font
 import sunfish as sf
 import asyncio
+from collections import defaultdict
 
 from gui.core.colors import *
 
@@ -41,6 +42,12 @@ lut = {
     "P": "\u2659",
 }
 
+values = defaultdict(int)
+values["Q"] = 8
+values["R"] = 5
+values["B"] = 3
+values["N"] = 3
+values["P"] = 1
 
 # Starting position when playing as Black.
 iblack = b"rnbqkbnrpppp ppp            p                   PPPPPPPPRNBQKBNR"
@@ -84,6 +91,7 @@ class GameScreen(Screen):
         super().__init__()
         wric = CWriter(ssd, chess_font, verbose=False)  # CWriter: chess glyphs
         wri = CWriter(ssd, font, verbose=False)
+        self.show_score = ssd.width >= 480
         col = 2
         row = 2
         rows = 8  # Grid dimensions in cells
@@ -104,6 +112,11 @@ class GameScreen(Screen):
         self.pad = Pad(wric, row, col, height=gh, width=gw, callback=self.cb)
         self.led = LED(wri, 100, ssd.width - 32, bdcolor=YELLOW, color=GREEN)
         self.led.value(True)
+        if self.show_score:
+            col = self.grid.mcol + 15
+            self.score = Grid(
+                wric, row, col, colwidth, nrows=6, ncols=4, fgcolor=GREY, justify=Label.CENTRE
+            )
         CloseButton(wri)  # Quit the application
 
     # Fill grid with current board state.
@@ -133,6 +146,8 @@ class GameScreen(Screen):
                 board, mvengine = next(game)  # Sunfish calculates its move
                 self.flash(*rc(mvengine[:2]))
                 self.flash(*rc(mvengine[2:]))
+                if self.show_score:
+                    self.summary(board)
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
                 self.led.color(GREEN)
             except StopIteration as e:
@@ -141,6 +156,31 @@ class GameScreen(Screen):
         print(f"Game over: you {'won' if win else 'lost'}")
         self.pad.greyed_out(True)
         await self.flash_led(win)
+
+    def summary(self, board):  # Called if has .score grid
+        d = defaultdict(int)
+        white = 0
+        black = 0
+
+        def strings(s):
+            for c in s:
+                yield lut[c.upper()]
+                yield str(d[c])
+
+        for c in board:
+            if self.invert:
+                c = c.upper() if c.islower() else c.lower()
+            d[c] += 1  # uppercase is now WHITE
+            if c.islower():
+                black += values[c.upper()]
+            else:
+                white += values[c]
+        self.score[0:5, 0:2] = strings("QRBNP")
+        self.score[0:5, 0:2] = {"fgcolor": WHITE}
+        self.score[0:5, 2:4] = strings("qrbnp")
+        self.score[0:5, 2:4] = {"fgcolor": RED}
+        self.score[5, 1] = {"text": str(white), "fgcolor": WHITE}
+        self.score[5, 3] = {"text": str(black), "fgcolor": RED}
 
     def cb(self, pad):
         g = self.grid
