@@ -1,6 +1,16 @@
 # The chess game demo
 
-This uses this fork of the
+# Hardware
+
+The demo is host and display agnostic, however the quantity of RAM is critical.
+The minimal spec is an ESP32 with 320x240 display. The ideal spec is an ESP32-S3
+with SPIRAM and a 480x320 screen: a larger amount of RAM enables a more powerful
+variant of the chess engine, and a bigger screen enables display of the current
+status in terms of the identities, quantity and value of remaining pieces.
+
+# Chess engine and gameplay
+
+The demo uses this fork of the
 [Sunfish chess engine](https://github.com/jacklinquan/micropython-sunfish)
 adapted for MicroPython. It may be installed with
 ```bash
@@ -44,7 +54,7 @@ $ mpremote mount . exec "import optional.chess.chess_game"
 
 The quality of gameplay is variable and drops off in the endgame. It habitually
 misses obvious mate-in-one situations. I have no experience of chess coding; if
-you have, please submit changes
+you have, please submit improvements
 [to the Sunfish fork](https://github.com/jacklinquan/micropython-sunfish).
 
 # Note for developers

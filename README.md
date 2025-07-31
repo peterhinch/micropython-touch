@@ -425,7 +425,7 @@ Some of these require larger screens. Required sizes are specified as
  * `dropdown_var_tuple.py ` Dropdown with dynamically variable tuple elements.
  * `refresh_lock.py` Specialised demo of an application which controls refresh
  behaviour. See [Realtime applications](./README.md#8-realtime-applications).
- * `chess_game.py` Does what it says on the tin (240x320). See [guide](./optional/chess/CHESS.md).
+ * `chess_game.py` Does what it says on the tin (240x320). See [guide](./optional/chess/README.md).
 
 ###### [Contents](./README.md#0-contents)
 
