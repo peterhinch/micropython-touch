@@ -5,7 +5,7 @@ a touch interface and with drivers subclassed from
 [framebuf](https://docs.micropython.org/en/latest/library/framebuf.html).
 Written in Python it runs under a standard MicroPython firmware build. Input is
 by touch. The design is intended to support a range of touch controllers.
-Initially the TSC2007, XPT2046 and FT6206 are supported.
+Currently the TSC2007, XPT2046, CST816S, CST820 and FT6206 are supported.
 
 It is larger and more complex than
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) owing to its
