@@ -777,6 +777,8 @@ Followed by keyword-only args
  * `bgcolor=None` Background color, default black.
  * `fgcolor=None` Foreground color, default white.
  * `writer=None` See Popups below.
+ * `closable=False` A Window is closable it a touch outside of its borders
+ causes it to close.
 
 ## 5.2 Class method
 

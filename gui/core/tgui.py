@@ -1,7 +1,7 @@
 # tgui.py Micropython touch GUI library
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2024 Peter Hinch
+# Copyright (c) 2024-2025 Peter Hinch
 
 
 import asyncio
@@ -21,7 +21,7 @@ touch = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 4)
+__version__ = (0, 1, 5)
 
 
 async def _g():
@@ -286,7 +286,8 @@ class Screen:
         while True:
             await asyncio.sleep_ms(0)
             async with cls.rfsh_lock:  # Honour user lock.
-                tl = cls.current_screen.lstactive  # Active (touchable) widgets
+                cs = cls.current_screen
+                tl = cs.lstactive  # Active (touchable) widgets
                 ids = id(cls.current_screen)
                 if arb is None:
                     t = touch.poll()
@@ -295,8 +296,10 @@ class Screen:
                     t = touch.poll()
                     spi.init(baudrate=arb[1])
                 if t:  # Display is touched.
+                    if cs.autoclose(trow := touch.row, tcol := touch.col):
+                        continue  # Window has closed. Loop again with new Screen
                     for obj in (a for a in tl if a.visible and not a.greyed_out()):
-                        if obj._trytouch(touch.row, touch.col):
+                        if obj._trytouch(trow, tcol):
                             # Run user "on press" callback if touched
                             break  # No need to check other objects
                         if ids != id(Screen.current_screen):  # cb may have changed screen
@@ -377,6 +380,9 @@ class Screen:
     def locn(self, row, col):
         return self.row + row, self.col + col
 
+    def autoclose(self, row, col):  # See Window subclass
+        return False
+
     # Housekeeping methods
     def reg_task(self, task, on_change=False):  # May be passed a coro or a Task
         if isinstance(task, type_coro):
@@ -403,6 +409,7 @@ class Window(Screen):
         bgcolor=None,
         fgcolor=None,
         writer=None,
+        closable=False,
     ):
         Screen.__init__(self)
         self.row = row
@@ -412,6 +419,7 @@ class Window(Screen):
         self.draw_border = draw_border
         self.fgcolor = fgcolor if fgcolor is not None else color_map[FG]
         self.bgcolor = bgcolor if bgcolor is not None else color_map[BG]
+        self.closable = closable
 
     def _do_open(self, old_screen):
         dev = display.usegrey(False)
@@ -427,6 +435,12 @@ class Window(Screen):
         x = self.col
         y = self.row
         return x, y, x + w, y + h, w, h
+
+    def autoclose(self, row, col):  # Check for touch outside Window
+        w = self.row <= row <= self.row + self.height and self.col <= col <= self.col + self.width
+        if res := (self.closable and not w):
+            Screen.back()
+        return res
 
 
 # Base class for all displayable objects

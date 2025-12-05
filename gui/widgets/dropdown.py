@@ -27,7 +27,7 @@ class _ListDialog(Window):
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
-        super().__init__(row, col, ap_height, ap_width, draw_border=False)
+        super().__init__(row, col, ap_height, ap_width, draw_border=False, closable=True)
         self.listbox = Listbox(
             writer,
             row + 3,
