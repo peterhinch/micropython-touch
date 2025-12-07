@@ -83,6 +83,7 @@ class Listbox(Widget):
         self.can_scroll = len(self.els) > self.dlines
         self.scroll = None  # Scroll task
         self.scrolling = False  # Scrolling in progress
+        self.can_drag = True
 
     def despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]
@@ -186,7 +187,8 @@ class Listbox(Widget):
 
     def _touched(self, rrow, _):
         self.ev = min(rrow // self.entry_height, len(self.els) - 1) + self.ntop
-        if self.can_scroll:  # Scrolling is possible
+        self.value(self.ev)
+        if self.can_scroll and self.scroll is None:  # Scrolling is possible, not in progress.
             # If touching top or bottom element, initiate scrolling
             if rrow > self.height - self.entry_height:
                 self.scroll = asyncio.create_task(self.do_scroll(False))
