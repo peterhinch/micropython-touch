@@ -1,8 +1,9 @@
 # listbox.py Extension to ugui providing the Listbox class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021-2024 Peter Hinch
+# Copyright (c) 2021-2025 Peter Hinch
 
+# 7 Dec 25 Improve operation, allow drag
 # 13 Sep 24 Support dynamic elements list.
 # 12 Sep 21 Support for scrolling.
 
