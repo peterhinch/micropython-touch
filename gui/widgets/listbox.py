@@ -15,7 +15,6 @@ dolittle = lambda *_: None
 
 
 class Listbox(Widget):
-    NOCB = 4  # When used in a dropdown, force passed callback.
 
     # This is used by dropdown.py and menu.py
     @staticmethod
@@ -48,14 +47,14 @@ class Listbox(Widget):
         select_color=DARKBLUE,
         callback=dolittle,
         args=[],
-        also=0
+        force_cb=False,
     ):
 
         self.els = elements
         # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
         self.simple = isinstance(self.els[0], str)
-        self.cb = callback if (self.simple or also == 4) else self.despatch
-        if not (self.simple or also == 4) and callback is not dolittle:
+        self.cb = callback if (self.simple or force_cb) else self.despatch
+        if not (self.simple or force_cb) and callback is not dolittle:
             raise ValueError("Cannot specify callback.")
         # Iterate text values
         q = (p for p in self.els) if self.simple else (p[0] for p in self.els)
@@ -67,7 +66,6 @@ class Listbox(Widget):
         if width is None:
             width = tw  # Text width
 
-        self.also = also  # Additioal callback events
         self.ntop = 0  # Top visible line
         if not isinstance(value, int):
             value = 0  # Or ValueError?
@@ -83,7 +81,7 @@ class Listbox(Widget):
         self.ev = value  # Value change detection
         self.can_scroll = len(self.els) > self.dlines
         self.scroll = None  # Scroll task
-        self.scrolling = False  # Scrolling in progress
+        self.spend = False  # Scroll pending
         self.can_drag = True
 
     def despatch(self, _):  # Run the callback specified in elements
@@ -178,33 +176,32 @@ class Listbox(Widget):
 
     async def do_scroll(self, up):
         await asyncio.sleep(1)  # Scroll pending
-        self.scrolling = True  # Scrolling in progress
-        try:
-            while True:
-                self.do_adj(up)
-                await asyncio.sleep_ms(600)
-        except asyncio.CancelledError:
-            self.scrolling = False
+        self.spend = False  # Scrolling in progress - no longer pending
+        while True:
+            self.do_adj(up)
+            await asyncio.sleep_ms(600)
 
     def _touched(self, rrow, _):
         self.ev = min(rrow // self.entry_height, len(self.els) - 1) + self.ntop
         self.value(self.ev)
         if self.can_scroll and self.scroll is None:  # Scrolling is possible, not in progress.
             # If touching top or bottom element, initiate scrolling
-            if rrow > self.height - self.entry_height:
-                self.scroll = asyncio.create_task(self.do_scroll(False))
-            elif rrow < self.entry_height:
-                self.scroll = asyncio.create_task(self.do_scroll(True))
+            if (up := rrow < self.entry_height) or rrow > self.height - self.entry_height:
+                self.spend = True  # Pending
+                self.scroll = asyncio.create_task(self.do_scroll(up))
 
+    # Behaviour when touch ends:
+    # If scrolling was pending or in progress, it is cancelled.
+    # If it was pending or not in progress, register value change.
     def _untouched(self):
-        if self.scroll is not None:  # Cancel actual or pending scrolling.
-            self.scroll.cancel()
-            self.scroll = None
-        # If scrolling was in progress when touch ends, scrolling is cancelled.
-        # If it was not in progress, register touch release as a value change.
-        if not self.scrolling:  # Srolling was impossible, not occurring or pending.
+        # Update if scroll not started or if pending.
+        if (s := self.scroll is None) or self.spend:
             if self.ev is not None:
                 self._value = -1  # Force update on every touch
                 self.value(self.ev)
                 self.cb(self, *self.cb_args)
                 self.ev = None
+        if not s:  # Cancel actual or pending scrolling.
+            self.scroll.cancel()
+            self.spend = False
+            self.scroll = None

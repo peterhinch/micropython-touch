@@ -42,7 +42,7 @@ class _ListDialog(Window):
             select_color=dd.select_color,
             value=dd.value(),
             callback=self.callback,
-            also=Listbox.NOCB,  # Force passed callback even if elements are tuples
+            force_cb=True,  # Force passed callback even if elements are tuples
         )
         self.dd = dd
 
