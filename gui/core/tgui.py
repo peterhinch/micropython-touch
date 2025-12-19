@@ -21,7 +21,7 @@ touch = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 5)
+__version__ = (0, 1, 6)
 
 
 async def _g():
@@ -29,6 +29,14 @@ async def _g():
 
 
 type_coro = type(_g())
+
+
+def asyncio_running():
+    try:
+        _ = asyncio.current_task()
+    except:
+        return False
+    return True
 
 
 def quiet():
@@ -178,14 +186,23 @@ class Screen:
                 if force or obj.draw:
                     obj.show()
 
+    #  Asyncio should be running before we change screen. It may be running before
+    # the GUI is started. In the normal case where it is not, .runner starts asyncio
+    # and runs the async .start. This causes .change to re-enter, and starts .monitor.
+    # If asyncio is already running, this is skipped and .monitor is explicitly launched.
+
+    # Shutdown is initiated when .back is called with nowhere to go. It sets .is_shutdown.
+    # .monitor waits on this, tidies up and quits. If .monitor was launched by .start
+    # asyncio terminates and .runner returns. The GUI then exits.
     @classmethod
     def change(cls, cls_new_screen, mode=1, *, args=[], kwargs={}):
+        if not (running := asyncio_running()):
+            # Start asyncio then cause .change to re-enter.
+            cls.runner(cls_new_screen, mode, args, kwargs)  # Returns when asyncio stops
+            sys.exit(0)  # All done when asyncio stops
+
         ins_old = cls.current_screen  # Current Screen instance
-        # If initialising ensure there is an event loop before instantiating the
-        # first Screen: it may create tasks in the constructor.
-        if ins_old is None:
-            loop = asyncio.get_event_loop()
-        else:  # Leaving an existing screen
+        if ins_old is not None:
             for entry in ins_old.tasks:
                 # Always cancel on back. Also on forward if requested.
                 if entry[1] or not mode:
@@ -209,20 +226,28 @@ class Screen:
         ins_new.on_open()  # Optional subclass method
         ins_new._do_open(ins_old)  # Clear and redraw
         ins_new.after_open()  # Optional subclass method
-        if ins_old is None:  # Initialising
-            loop.run_until_complete(cls.monitor())  # Starts and ends uasyncio
-            # asyncio is no longer running
-            # Possible future displays with a shutdown method
-            if hasattr(ssd, "shutdown"):
-                ssd.shutdown()  # An EPD with a special shutdown method.
-            else:
-                ssd.fill(0)
-                ssd.show()
-            cls.current_screen = None  # Ensure another demo can run
-            # Don't do asyncio.new_event_loop() as it prevents re-running
-            # the same app.
+        if ins_old is None and running:  # Initialising when asyncio already running
+            asyncio.create_task(cls.monitor())
 
-    # Create singleton tasks, await application termination, tidy up and quit.
+    # The .runner / .start logic ensures that .change only executes if asyncio is
+    # running. If asyncio is already running when the GUI is started, these don't run.
+    @classmethod
+    def runner(cls, ns, mode, args, kwargs):
+        try:
+            asyncio.run(cls.start(ns, mode, args, kwargs))
+            # Execution pauses until .start terminates
+        except:
+            print("interrupted")
+        finally:
+            asyncio.new_event_loop()  # Clear retained state
+
+    # reenter .change now asyncio is running.
+    @classmethod
+    async def start(cls, ns, mode, args, kwargs):
+        cls.change(ns, mode, args=args, kwargs=kwargs)
+        await cls.monitor()
+
+    # Create singleton tasks, await application termination, tidy up and quit asyncio.
     @classmethod
     async def monitor(cls):
         mt = []
@@ -233,7 +258,7 @@ class Screen:
         if _vb:
             mt.append(asyncio.create_task(cls.show_ram()))  # Ram reports
         await cls.is_shutdown.wait()  # and wait for termination.
-        cls.is_shutdown.clear()  # We're going down.
+        cls.is_shutdown.clear()
         # Task cancellation and shutdown
         for task in mt:
             task.cancel()
@@ -241,6 +266,12 @@ class Screen:
             # Screen instance will be discarded: no need to worry about .tasks
             entry[0].cancel()
         await asyncio.sleep_ms(0)  # Allow task cancellation to occur.
+        if hasattr(ssd, "shutdown"):
+            ssd.shutdown()  # An EPD with a special shutdown method.
+        else:
+            ssd.fill(0)
+            ssd.show()
+        cls.current_screen = None  # Ensure another demo can run (??)
 
     # If the display driver has an async refresh method, determine the split
     # value which must be a factor of the height. In the unlikely event of

@@ -70,6 +70,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Dec 2025: Usability improvements to Listbox, Dropdown and Menu widgets.
 Dec 2024: hardware_setup.py now renamed touch_setup.py (existing users please note).  
 Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
@@ -1454,7 +1455,9 @@ touched the callback is triggered, the list is closed and the control displays
 the newly selected entry. If the list contains more entries than can be shown,
 scrolling may be used. A short vertical line is visible in the top right if
 scrolling down is possible, likewise in the bottom right if the contents may be
-scrolled up. A long touch on the top or bottom entry initiates scrolling.
+scrolled up. A long touch on the top or bottom entry initiates scrolling. A
+touch elsewhere on the screen will close the dropdown list without triggering
+the callback.
 
 The callback's first argument is the dropdown instance followed by any args
 specified to the constructor. The current item may be retrieved by means of the
@@ -2276,10 +2279,11 @@ from gui.widgets import Menu  # File: menu.py
 The `Menu` class enables the creation of single or multiple level menus. The
 top level of the menu comprises a row of `Button` instances at the top of the
 physical screen. Each button can either call a callback or instantiate a
-dropdown menu comprising the second menu level.
+dropdown menu comprising the next menu level.
 
-Each item on a dropdown menu can invoke either a callback or a lower level
-menu.
+Each item on a dropdown menu can invoke either a callback or a lower level menu.
+When a dropdown is visible, a touch elsewhere on the screen will close it
+without triggering a callback.
 
 Constructor mandatory positional arg:  
  1. `writer` The `Writer` instance (defines font) to use.
