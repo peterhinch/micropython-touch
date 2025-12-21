@@ -199,7 +199,7 @@ class Screen:
         if not (running := asyncio_running()):
             # Start asyncio then cause .change to re-enter.
             cls.runner(cls_new_screen, mode, args, kwargs)  # Returns when asyncio stops
-            sys.exit(0)  # All done when asyncio stops
+            return  # All done when asyncio stops
 
         ins_old = cls.current_screen  # Current Screen instance
         if ins_old is not None:
