@@ -50,7 +50,7 @@ values["N"] = 3
 values["P"] = 1
 
 # Starting position when playing as Black.
-iblack = b"rnbqkbnrpppp ppp            p                   PPPPPPPPRNBQKBNR"
+iblack = b"rnbkqbnrpppp ppp            p                   PPPPPPPPRNBKQBNR"
 
 
 def get_bg(row, col):  # Return checkerboard color
