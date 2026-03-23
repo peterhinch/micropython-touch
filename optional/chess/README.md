@@ -29,6 +29,10 @@ It requires a board with SPIRAM. Install with
 ```bash
 $ mpremote mip install github:peterhinch/micropython-sunfish
 ```
+Please also see
+[fizban99's sunfish port](https://github.com/fizban99/micropython-usunfish)
+which offers a number of advantages.
+
 The chess engine is released under the GPL V3.0 licence.
 
 The demo requires a display with at least 320x240 pixels. The host should have
