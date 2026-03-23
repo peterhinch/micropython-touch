@@ -112,6 +112,23 @@ numeric args as scaling is not required.
 
 See `setup_examples/ili9341_ft6206_pico.py`.
 
+# CST328 Capacitive controller
+
+`CST328` class.  
+Constructor mandatory positional args:
+* `i2c` An initialised I2C bus. Baudrate should be 400_000 max.
+* `rst` A `Pin` instance initialised with `Pin.OUT, value=1`.
+* `pint` A `Pin` instance initialised with `Pin.IN`.
+* `ssd` Initialised display driver instance.
+
+Optional arg:
+* `addr=0x1A` I2C address of device.
+
+See `setup_examples/st7789_cst328_ws_esp32_2_8.py` for a `touch_setup.py`
+example. 
+
+Tested with [Waveshare ESP32-S3 2.8 inch touch LCD](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-2.8)
+
 # CST816S Capacitive controller
 
 `CST816S` class.  
