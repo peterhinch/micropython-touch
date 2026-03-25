@@ -3,10 +3,9 @@
 # Hardware
 
 The demo is host and display agnostic, however the quantity of RAM is critical.
-The minimal spec is an ESP32 with 320x240 display. The ideal spec is an ESP32-S3
-with SPIRAM and a 480x320 screen: a larger amount of RAM enables a more powerful
-variant of the chess engine, and a bigger screen enables display of the current
-status in terms of the identities, quantity and value of remaining pieces.
+The minimal spec is an ESP32 with 320x240 display. The ideal spec includes a
+480x320 screen: a bigger screen enables display of the current status in terms
+of the identities, quantity and value of remaining pieces.
 
 # Dependency
 
@@ -17,58 +16,58 @@ $ mpremote mip install "collections-defaultdict"
 
 # Chess engine and gameplay
 
-The demo uses this fork of the
-[Sunfish chess engine](https://github.com/jacklinquan/micropython-sunfish)
-adapted for MicroPython. It may be installed with
+The demo uses a port of the
+[Sunfish chess engine](https://github.com/thomasahle/sunfish)
+adapted for MicroPython, namely fizban99's sunfish port
+[micropython-usunfish](https://github.com/fizban99/micropython-usunfish).
+It may be installed with:
+```bash
+$ mpremote mip install github:fizban99/micropython-usunfish
+```
+This has been substantially optimised for MicroPython and is now the preferred
+engine.
+
+### Alternative chess engine
+
+The demo was originally developed to support Quan Lin's Sunfish port
+[micropython-sunfish](https://github.com/jacklinquan/micropython-sunfish).
+Quan Lin's Sunfish port may be installed with
 ```bash
 $ mpremote mip install github:jacklinquan/micropython-sunfish
 ```
-Alternatively [my fork](https://github.com/peterhinch/micropython-sunfish)
-removes the RAM-saving adaptations of Quan Lin in the hope of a stronger game.
-It requires a board with SPIRAM. Install with
-```bash
-$ mpremote mip install github:peterhinch/micropython-sunfish
-```
-Please also see
-[fizban99's sunfish port](https://github.com/fizban99/micropython-usunfish)
-which offers a number of advantages.
+### Notes
 
-The chess engine is released under the GPL V3.0 licence.
+Sunfish, and thus the ports, are released under the GPL V3.0 licence.
 
-The demo requires a display with at least 320x240 pixels. The host should have
-plenty of RAM: a Raspberry Pico 2 works well. To run on a version 1 pico would
-require the use of frozen bytecode. This option is untested.
-
+The demo requires a display with at least 320x240 pixels. A 480x320 screen will
+provide extra information such as current tallies of pieces held by each player.
+The host should have plenty of RAM: a Raspberry Pico 2 works well. To run on a
+version 1 pico (RP2040) would require the use of frozen bytecode. This option is
+untested.
 
 Gameplay is by touching the piece to be moved, followed by a touch of the
 destination square. Illegal moves are ignored. Castling is done by moving the
 King: the Rook will move automatically. Pawn promotion to Queen is automatic.
-_en passant_ works as expected.
+_en passant_ works as expected. You get no warning if it places you in check. It
+will ignore attempts to make moves which fail to deal with this, responding
+properly to the first legal move.
 
-The engine has limitations described in
-[its README file](https://github.com/jacklinquan/micropython-sunfish). Notably:
-* You get no warning if it places you in check. If you fail to deal with this, it
-will end the game on its next move declaring itself the winner.
-* It seems unaware of being in checkmate. You need actually to take its King
-before it acknowledges its situation.
+If it checkmates you there is no indication until you attempt to make a move
+when it reports the result.
 
-The easy way to run the demo is from the PC. In a clone of this repo, move to the
-`micropython-touch` directory and issue
+The easy way to run the demo is from the PC. Install the chess engine and
+`defaultdict`, then in a clone of this repo, move to the `micropython-touch`
+directory and issue
 ```bash
 $ mpremote mount . exec "import optional.chess.chess_game"
 ```
-# Author's note
-
-The quality of gameplay is variable and drops off in the endgame. It habitually
-misses obvious mate-in-one situations. I have no experience of chess coding; if
-you have, please submit improvements
-[to the Sunfish fork](https://github.com/jacklinquan/micropython-sunfish).
 
 # Note for developers
 
-The Sunfish engine has an API which is intended to be portable. If you have a
+The Sunfish ports have an API which is intended to be portable. If you have a
 chess engine which is an improvement on Sunfish it should be straightforward to
 bolt on the API, in which case `chess_game.py` would work. Similarly if you have
 a preferred GUI, coding against the API would enable engines to be interchanged.
 
-The API is documented in the Sunfish repo.
+The API is documented in the [micropython-sunfish]((https://github.com/jacklinquan/micropython-sunfish))
+repo.

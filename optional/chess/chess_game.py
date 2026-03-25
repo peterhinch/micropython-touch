@@ -51,6 +51,9 @@ values["P"] = 1
 
 # Starting position when playing as Black.
 iblack = b"rnbkqbnrpppp ppp            p                   PPPPPPPPRNBKQBNR"
+# Extreme tests
+# iblack = b"   k                        p                   PPPPPPPPRNBKQBNR"
+# iblack = b"rnbkqbnrpppp ppp            p                              K    "
 
 
 def get_bg(row, col):  # Return checkerboard color
@@ -71,7 +74,7 @@ def get(board, invert):
         dic["text"] = lut[r.upper()]
         dic["fgcolor"] = WHITE if (r.isupper() ^ invert) else PC_BLACK
         dic["bgcolor"] = SQ_BLACK if ((n ^ (n >> 3)) & 1) else SQ_WHITE
-        yield dic
+        yield dic, r
         n += 1
 
 
@@ -124,9 +127,16 @@ class GameScreen(Screen):
 
     # Fill grid with current board state.
     def populate(self, board):
+        d = defaultdict(int)
         sq = get(board, self.invert)  # Instantiate generator
         for v in self.grid[0:]:
-            v.value(**next(sq))
+            g, c = next(sq)
+            v.value(**g)
+            if self.invert:
+                c = c.upper() if c.islower() else c.lower()
+            # uppercase is now WHITE
+            d[c] += 1  # Count pieces
+        return d
 
     async def play_game(self):
         game_over = False
@@ -135,15 +145,16 @@ class GameScreen(Screen):
         board, _ = next(game)  # Start generator, get initial position
         while not game_over:
             try:
-                self.populate(board)
+                tot = self.populate(board)
+                self.summary(tot)
                 await asyncio.sleep_ms(100)
                 board = None
                 while board is None:  # Acquire valid move
                     await self.moved.wait()  # Wat for player/GUI
                     # self.moved.clear()
                     board = game.send(self.move)  # Get position after move
-                self.populate(board)
-                self.summary(board)
+                tot = self.populate(board)
+                self.summary(tot)
                 self.status("Thinking...")
                 self.led.color(RED)
                 self.lr = None  # Invalidate last cell touched.
@@ -151,39 +162,34 @@ class GameScreen(Screen):
                 board, mvengine = next(game)  # Sunfish calculates its move
                 self.flash(*rc(mvengine[:2]))
                 self.flash(*rc(mvengine[2:]))
-                self.summary(board)
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
                 self.led.color(GREEN)
                 self.status("Your move!")
             except StopIteration as e:
                 game_over = True
-                win = e.args[0] ^ self.invert
+                win = e.args[0]
         s = f"You {'won' if win else 'lost'}"
         self.status(s)
         print(s)
         self.pad.greyed_out(True)
         await self.flash_led(win)
 
-    def summary(self, board):  # Called if has .score grid
+    def summary(self, tot):  # Called if has .score grid
         if not self.show_score:  # Display too narrow
             return
-        d = defaultdict(int)
         white = 0
         black = 0
 
         def strings(s):
             for c in s:
                 yield lut[c.upper()]
-                yield str(d[c])
+                yield str(tot[c])
 
-        for c in board:
-            if self.invert:
-                c = c.upper() if c.islower() else c.lower()
-            d[c] += 1  # uppercase is now WHITE
-            if c.islower():
-                black += values[c.upper()]
-            else:
-                white += values[c]
+        for c in "qrbnp":
+            black += values[c.upper()] * tot[c]
+
+        for c in "QRBNP":
+            white += values[c] * tot[c]
         self.score[0:5, 0:2] = strings("QRBNP")
         self.score[0:5, 0:2] = {"fgcolor": WHITE}
         self.score[0:5, 2:4] = strings("qrbnp")
