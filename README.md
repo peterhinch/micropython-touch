@@ -70,7 +70,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Dec 2025: Usability improvements to Listbox, Dropdown and Menu widgets.
+Dec 2025: Usability improvements to Listbox, Dropdown and Menu widgets.  
 Dec 2024: hardware_setup.py now renamed touch_setup.py (existing users please note).  
 Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
