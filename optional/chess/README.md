@@ -41,9 +41,9 @@ Sunfish, and thus the ports, are released under the GPL V3.0 licence.
 
 The demo requires a display with at least 320x240 pixels. A 480x320 screen will
 provide extra information such as current tallies of pieces held by each player.
-The host should have plenty of RAM: a Raspberry Pico 2 works well. To run on a
-version 1 pico (RP2040) would require the use of frozen bytecode. This option is
-untested.
+The host should have plenty of RAM: development was on an ESP32-S3 with SPIRAM.
+Currently there is a
+[problem running on RP2350](https://github.com/fizban99/micropython-usunfish/issues/5).
 
 Gameplay is by touching the piece to be moved, followed by a touch of the
 destination square. Illegal moves are ignored. Castling is done by moving the
@@ -55,9 +55,12 @@ properly to the first legal move.
 If it checkmates you there is no indication until you attempt to make a move
 when it reports the result.
 
-The easy way to run the demo is from the PC. Install the chess engine and
-`defaultdict`, then in a clone of this repo, move to the `micropython-touch`
-directory and issue
+The "Level" dropdown determines the maximum thinking time allowed to the target:
+longer times equate to stronger play.
+
+The easy way to run the demo is from the PC via a USB connection to the
+hardware. Install the chess engine and `defaultdict`, then in a clone of this
+repo, move to the `micropython-touch` directory and issue
 ```bash
 $ mpremote mount . exec "import optional.chess.chess_game"
 ```

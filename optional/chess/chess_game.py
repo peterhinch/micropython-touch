@@ -21,6 +21,7 @@ import gui.fonts.font14 as font1
 import optional.chess.chess_font as chess_font
 import sunfish as sf
 import asyncio
+import gc
 from collections import defaultdict
 
 from gui.core.colors import *
@@ -28,7 +29,7 @@ from gui.core.colors import *
 # Default color scheme
 SQ_WHITE = create_color(12, 50, 50, 50)
 SQ_BLACK = BLACK
-PC_BLACK = RED  # fg color of black piece if dropdown not used
+PC_BLACK = YELLOW  # fg color of black piece if dropdown not used
 GRID = WHITE
 
 # Get Unicode chess symbol from ASCII
@@ -159,7 +160,9 @@ class GameScreen(Screen):
                 self.led.color(RED)
                 self.lr = None  # Invalidate last cell touched.
                 await asyncio.sleep(1)  # Ensure refresh, allow time to view.
+                gc.collect()
                 board, mvengine = next(game)  # Sunfish calculates its move
+                print("mc", mvengine)  # Machine's move
                 self.flash(*rc(mvengine[:2]))
                 self.flash(*rc(mvengine[2:]))
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
@@ -213,7 +216,7 @@ class GameScreen(Screen):
         self.grid(cr, cc).value(bgcolor=WHITE, fgcolor=self.fg)
         if not (cc == lc and cr == lr) and lr is not None:
             self.move = move_string(lr, lc, cr, cc)  # Pass move to play_game task
-            print(self.move)
+            print("hm", self.move)
             self.moved.set()
         self.lr = cr  # Update last cell touched
         self.lc = cc
@@ -253,7 +256,7 @@ def cb(dd, n):
     global SQ_WHITE, SQ_BLACK, PC_BLACK, GRID
     GRID = WHITE if n < 2 else create_color(14, 50, 50, 50)
     if n < 2:
-        PC_BLACK = RED if n == 0 else YELLOW
+        PC_BLACK = RED if n == 1 else YELLOW
         SQ_WHITE = create_color(12, 50, 50, 50)  # GREY
         SQ_BLACK = BLACK
     elif n == 2:
@@ -267,10 +270,24 @@ def cb(dd, n):
 
 
 els = (
-    ("Red on black", cb, (0,)),
-    ("Yellow on black", cb, (1,)),
+    ("Yellow on black", cb, (0,)),
+    ("Red on black", cb, (1,)),
     ("Black on green", cb, (2,)),
     ("Black on brown", cb, (3,)),
+)
+
+
+def cb1(dd, n):
+    sf.LEVEL = n
+
+
+ell = (
+    ("2 secs", cb1, (2,)),
+    ("4 secs", cb1, (3,)),
+    ("8 secs", cb1, (4,)),
+    ("16 secs", cb1, (5,)),
+    ("30 secs", cb1, (6,)),
+    ("1 min", cb1, (7,)),
 )
 
 
@@ -285,6 +302,10 @@ class BaseScreen(Screen):
         fwdbutton(wri, 100, 100, GameScreen, "As black", True)
         Label(wri1, 160, 30, "Colors")
         Dropdown(wri1, 160, 100, elements=els, bdcolor=YELLOW)
+        if hasattr(sf, "LEVEL"):  # @fizban99 port
+            Label(wri1, 60, 220, "Level")
+            Dropdown(wri1, 80, 220, elements=ell, bdcolor=YELLOW)
+
         CloseButton(wri)
 
 
