@@ -3,9 +3,10 @@
 # Hardware
 
 The demo is host and display agnostic, however the quantity of RAM is critical.
-The minimal spec is an ESP32 with 320x240 display. The ideal spec includes a
-480x320 screen: a bigger screen enables display of the current status in terms
-of the identities, quantity and value of remaining pieces.
+The minimal display size is 320x240. The ideal spec is a 480x320 screen: the
+bigger screen enables display of the current status in terms of the identities,
+quantity and value of remaining pieces. Tested hosts are RP2350 and ESP32-S3
+with SPIRAM.
 
 # Dependency
 
@@ -14,7 +15,7 @@ The `defaultdict` library module is required by the demo. Install with
 $ mpremote mip install "collections-defaultdict"
 ```
 
-# Chess engine and gameplay
+# Chess engine, installation and gameplay
 
 The demo uses a port of the
 [Sunfish chess engine](https://github.com/thomasahle/sunfish)
@@ -24,8 +25,8 @@ It may be installed with:
 ```bash
 $ mpremote mip install github:fizban99/micropython-usunfish
 ```
-This has been substantially optimised for MicroPython and is now the preferred
-engine.
+Please ensure that the latest version is installed. The code has been
+substantially optimised for MicroPython and is now the preferred engine.
 
 ### Alternative chess engine
 
@@ -41,9 +42,8 @@ Sunfish, and thus the ports, are released under the GPL V3.0 licence.
 
 The demo requires a display with at least 320x240 pixels. A 480x320 screen will
 provide extra information such as current tallies of pieces held by each player.
-The host should have plenty of RAM: development was on an ESP32-S3 with SPIRAM.
-Currently there is a
-[problem running on RP2350](https://github.com/fizban99/micropython-usunfish/issues/5).
+The host should have plenty of RAM: development was on an ESP32-S3 with SPIRAM;
+it also runs well in on-chip RAM of RP2350.
 
 Gameplay is by touching the piece to be moved, followed by a touch of the
 destination square. Illegal moves are ignored. Castling is done by moving the
