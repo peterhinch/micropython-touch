@@ -115,7 +115,13 @@ class GameScreen(Screen):
         self.ch = round((gh := self.grid.height) / rows)  # Height & width of a cell
         self.cw = round((gw := self.grid.width) / cols)
         self.pad = Pad(wric, row, col, height=gh, width=gw, callback=self.cb)
-        self.led = LED(wri, 100, ssd.width - 32, bdcolor=YELLOW, color=GREEN)
+        col = ssd.width - 40
+        if hasattr(sf, "LEVEL"):  # @fizban99 port
+            self.plus = Button(wri, 70, col, width=30, text="+", callback=self.bcb, args=(1,))
+            self.lbl = Label(wri, 100, col, 30, bdcolor=None)
+            self.minus = Button(wri, 130, col, width=30, text="-", callback=self.bcb, args=(-1,))
+            self.show_level()
+        self.led = LED(wri, 200, ssd.width - 32, bdcolor=YELLOW, color=GREEN)
         self.led.value(True)
         if self.show_status:
             self.lbl_status = Label(wri, self.grid.mrow + 5, col, 200)
@@ -125,6 +131,15 @@ class GameScreen(Screen):
                 wric, row, col, colwidth, nrows=6, ncols=4, fgcolor=GREY, justify=Label.CENTRE
             )
         CloseButton(wri)  # Quit the application
+
+    def bcb(self, _, x):  # Callback for +/- buttons
+        sf.LEVEL = a = max(min(sf.LEVEL + x, 7), 1)
+        self.plus.greyed_out(a == 7)
+        self.minus.greyed_out(a == 1)
+        self.show_level()
+
+    def show_level(self):
+        self.lbl.value(f"{2**(sf.LEVEL -1)}s")
 
     # Fill grid with current board state.
     def populate(self, board):
@@ -277,23 +292,8 @@ els = (
 )
 
 
-def cb1(dd, n):
-    sf.LEVEL = n
-
-
-ell = (
-    ("2 secs", cb1, (2,)),
-    ("4 secs", cb1, (3,)),
-    ("8 secs", cb1, (4,)),
-    ("16 secs", cb1, (5,)),
-    ("30 secs", cb1, (6,)),
-    ("1 min", cb1, (7,)),
-)
-
-
 class BaseScreen(Screen):
     def __init__(self):
-
         super().__init__()
         wri = CWriter(ssd, font1, verbose=False)
         wri1 = CWriter(ssd, font, WHITE, BLACK, verbose=False)
@@ -302,10 +302,6 @@ class BaseScreen(Screen):
         fwdbutton(wri, 100, 100, GameScreen, "As black", True)
         Label(wri1, 160, 30, "Colors")
         Dropdown(wri1, 160, 100, elements=els, bdcolor=YELLOW)
-        if hasattr(sf, "LEVEL"):  # @fizban99 port
-            Label(wri1, 60, 220, "Level")
-            Dropdown(wri1, 80, 220, elements=ell, bdcolor=YELLOW)
-
         CloseButton(wri)
 
 

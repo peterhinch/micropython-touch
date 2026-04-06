@@ -8,6 +8,9 @@ bigger screen enables display of the current status in terms of the identities,
 quantity and value of remaining pieces. Tested hosts are RP2350 and ESP32-S3
 with SPIRAM.
 
+A simple option is a Waveshare Pico-Res Touch-LCD 2.8 with a Raspberry Pico 2
+plugged in.
+
 # Dependency
 
 The `defaultdict` library module is required by the demo. Install with
@@ -55,8 +58,9 @@ properly to the first legal move.
 If it checkmates you there is no indication until you attempt to make a move
 when it reports the result.
 
-The "Level" dropdown determines the maximum thinking time allowed to the target:
-longer times equate to stronger play.
+The "Level" label determines the maximum thinking time allowed to the target:
+longer times equate to stronger play. Times range from 1 to 64s, defaulting to
+2 seconds.
 
 The easy way to run the demo is from the PC via a USB connection to the
 hardware. Install the chess engine and `defaultdict`, then in a clone of this

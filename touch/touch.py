@@ -83,9 +83,9 @@ class ABCTouch:
                 col = xpx
                 row = ypx
             if self._rr:  # Reflection
-                row = self._ypix - row
+                row = self._ypix - row - 1  # Iss #29
             if self._rc:
-                col = self._xpix - col
+                col = self._xpix - col - 1
             if self._trans:  # Transposition
                 self.col = row
                 self.row = col
