@@ -124,7 +124,7 @@ class GameScreen(Screen):
         self.led = LED(wri, 200, ssd.width - 32, bdcolor=YELLOW, color=GREEN)
         self.led.value(True)
         if self.show_status:
-            self.lbl_status = Label(wri, self.grid.mrow + 5, col, 200)
+            self.lbl_status = Label(wri, self.grid.mrow + 10, 10, gw - 10)
         if self.show_score:
             col = self.grid.mcol + 15
             self.score = Grid(

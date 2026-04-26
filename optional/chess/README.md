@@ -9,7 +9,7 @@ quantity and value of remaining pieces. Tested hosts are RP2350 and ESP32-S3
 with SPIRAM.
 
 A simple option is a Waveshare Pico-Res Touch-LCD 2.8 with a Raspberry Pico 2
-plugged in.
+plugged in. For a larger display use the Waveshare Pico-Res Touch-LCD-3.5.
 
 # Dependency
 
