@@ -1,5 +1,10 @@
 # The chess game demo
 
+![Image](../../images/chess_large.JPG)
+
+Depicted on a 480x320 screen. Note controls for setting the maximum machine
+"thinking" time and the tally of each side's pieces - White has lost a bishop.
+
 # Hardware
 
 The demo is host and display agnostic, however the quantity of RAM is critical.
@@ -8,8 +13,11 @@ bigger screen enables display of the current status in terms of the identities,
 quantity and value of remaining pieces. Tested hosts are RP2350 and ESP32-S3
 with SPIRAM.
 
-A simple option is a Waveshare Pico-Res Touch-LCD 2.8 with a Raspberry Pico 2
-plugged in. For a larger display use the Waveshare Pico-Res Touch-LCD-3.5.
+A simple option is a
+[Waveshare Pico-Res Touch-LCD 2.8](https://www.waveshare.com/Pico-ResTouch-LCD-2.8.htm)
+or, for a larger display, the
+[Waveshare Pico-Res Touch-LCD-3.5](https://www.waveshare.com/wiki/Pico-ResTouch-LCD-3.5).
+In either case a Raspberry Pico 2 may be plugged in.
 
 # Dependency
 
