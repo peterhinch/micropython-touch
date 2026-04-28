@@ -5,6 +5,10 @@
 Depicted on a 480x320 screen. Note controls for setting the maximum machine
 "thinking" time and the tally of each side's pieces - White has lost a bishop.
 
+![Image](../../images/chess.JPG)
+
+On a 320x240 screen.
+
 # Hardware
 
 The demo is host and display agnostic, however the quantity of RAM is critical.
