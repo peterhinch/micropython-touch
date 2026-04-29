@@ -23,6 +23,7 @@ import sunfish as sf
 import asyncio
 import gc
 from collections import defaultdict
+import sys
 
 from gui.core.colors import *
 
@@ -51,7 +52,7 @@ values["N"] = 3
 values["P"] = 1
 
 # Starting position when playing as Black.
-iblack = b"rnbkqbnrpppp ppp            p                   PPPPPPPPRNBKQBNR"
+iblack = b"rnbkqbnrppp pppp           p                    PPPPPPPPRNBKQBNR"
 # Extreme tests
 # iblack = b"   k                        p                   PPPPPPPPRNBKQBNR"
 # iblack = b"rnbkqbnrpppp ppp            p                              K    "
@@ -89,6 +90,10 @@ def move_string(rf, cf, rt, ct, ba=bytearray(4)):
     return ba.decode("utf8")
 
 
+def end(_):  # Close button callback
+    gprint and print("Close")
+
+
 # Screen on which game is played
 class GameScreen(Screen):
     def __init__(self, invert):  # invert: user plays as Black
@@ -105,8 +110,7 @@ class GameScreen(Screen):
         colwidth = 30  # Column width
         self.invert = invert
         self.grid = Grid(wric, row, col, colwidth, rows, cols, fgcolor=GRID, justify=Label.CENTRE)
-        # Event hit bug https://github.com/micropython/micropython/issues/16569
-        self.moved = asyncio.ThreadSafeFlag()
+        self.moved = asyncio.Event()
         self.move = ""
         self.reg_task(self.play_game())
 
@@ -132,7 +136,9 @@ class GameScreen(Screen):
             self.score = Grid(
                 wric, row, col, colwidth, nrows=6, ncols=4, fgcolor=GREY, justify=Label.CENTRE
             )
-        CloseButton(wri)  # Quit the application
+        gprint and print(f'Human (hm) plays {"black" if invert else "white"}')
+        invert and gprint and print("mc d7d5")
+        CloseButton(wri, callback=end)  # Quit the application
 
     def bcb(self, _, x):  # Callback for +/- buttons
         sf.LEVEL = a = max(min(sf.LEVEL + x, 7), 1)
@@ -169,7 +175,7 @@ class GameScreen(Screen):
                 board = None
                 while board is None:  # Acquire valid move
                     await self.moved.wait()  # Wat for player/GUI
-                    # self.moved.clear()
+                    self.moved.clear()
                     board = game.send(self.move)  # Get position after move
                 tot = self.populate(board)
                 self.summary(tot)
@@ -296,10 +302,9 @@ els = (
 )
 
 
-def cbcb(cb):
+def cbcb(cb):  # Checkbox callback
     global gprint
     gprint = cb.value()
-    print(gprint)
 
 
 class BaseScreen(Screen):
@@ -321,7 +326,10 @@ class BaseScreen(Screen):
 
 def test():
     print("Chess demo.")
-    Screen.change(BaseScreen)  # A class is passed here, not an instance.
+    if sys.implementation.version < (1, 26, 0):
+        print("Firmware must be V1.26 or later")
+    else:
+        Screen.change(BaseScreen)  # A class is passed here, not an instance.
 
 
 test()
