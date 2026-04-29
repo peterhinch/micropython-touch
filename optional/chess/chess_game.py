@@ -12,7 +12,7 @@
 import touch_setup  # Create a display instance
 from gui.core.tgui import Screen, ssd
 
-from gui.widgets import Grid, CloseButton, Label, Button, Pad, LED, Dropdown
+from gui.widgets import Grid, CloseButton, Label, Button, Pad, LED, Dropdown, Checkbox
 from gui.core.writer import CWriter
 
 # Font for CWriter
@@ -55,6 +55,7 @@ iblack = b"rnbkqbnrpppp ppp            p                   PPPPPPPPRNBKQBNR"
 # Extreme tests
 # iblack = b"   k                        p                   PPPPPPPPRNBKQBNR"
 # iblack = b"rnbkqbnrpppp ppp            p                              K    "
+gprint = False
 
 
 def get_bg(row, col):  # Return checkerboard color
@@ -112,6 +113,7 @@ class GameScreen(Screen):
         self.fg = PC_BLACK if invert else WHITE  # fgcolor of player's piece
         self.lr = None  # Last cell touched
         self.lc = None
+        self.lcolor = None
         self.ch = round((gh := self.grid.height) / rows)  # Height & width of a cell
         self.cw = round((gw := self.grid.width) / cols)
         self.pad = Pad(wric, row, col, height=gh, width=gw, callback=self.cb)
@@ -177,7 +179,7 @@ class GameScreen(Screen):
                 await asyncio.sleep(1)  # Ensure refresh, allow time to view.
                 gc.collect()
                 board, mvengine = next(game)  # Sunfish calculates its move
-                print("mc", mvengine)  # Machine's move
+                gprint and print("mc", mvengine)  # Machine's move
                 self.flash(*rc(mvengine[:2]))
                 self.flash(*rc(mvengine[2:]))
                 await asyncio.sleep_ms(700)  # Let user see forthcoming move
@@ -188,7 +190,7 @@ class GameScreen(Screen):
                 win = e.args[0]
         s = f"You {'won' if win else 'lost'}"
         self.status(s)
-        print(s)
+        gprint and print(s)
         self.pad.greyed_out(True)
         await self.flash_led(win)
 
@@ -224,14 +226,16 @@ class GameScreen(Screen):
         g = self.grid
         cr = pad.rr // self.ch  # Get grid coordinates of current touch
         cc = pad.rc // self.cw
-        lr = self.lr
+        lr = self.lr  # Previous touch
         lc = self.lc
         if lr is not None:  # Restore normal background of previous touch
-            self.grid(lr, lc).value(bgcolor=get_bg(lr, lc), fgcolor=self.fg)
-        self.grid(cr, cc).value(bgcolor=WHITE, fgcolor=self.fg)
+            self.grid(lr, lc).value(bgcolor=get_bg(lr, lc), fgcolor=self.lcolor)
+        lbl = self.grid(cr, cc)  # Current contents of touched square
+        self.lcolor = lbl.fgcolor  # Save fgcolor of touched square
+        lbl.value(bgcolor=WHITE, fgcolor=WHITE)  # Fill with white
         if not (cc == lc and cr == lr) and lr is not None:
             self.move = move_string(lr, lc, cr, cc)  # Pass move to play_game task
-            print("hm", self.move)
+            gprint and print("hm", self.move)
             self.moved.set()
         self.lr = cr  # Update last cell touched
         self.lc = cc
@@ -257,14 +261,14 @@ class GameScreen(Screen):
             v = not v
 
 
-# Opening screen
+# ***** Opening screen *****
 
 
 def fwdbutton(wri, row, col, cls_screen, text, arg):
     def fwd(button):
         Screen.change(cls_screen, args=[arg])  # Callback
 
-    Button(wri, row, col, callback=fwd, text=text, height=35, width=80)
+    Button(wri, row, col, callback=fwd, text=text, height=35, width=100)
 
 
 def cb(dd, n):
@@ -292,6 +296,12 @@ els = (
 )
 
 
+def cbcb(cb):
+    global gprint
+    gprint = cb.value()
+    print(gprint)
+
+
 class BaseScreen(Screen):
     def __init__(self):
         super().__init__()
@@ -300,8 +310,12 @@ class BaseScreen(Screen):
         Label(wri, 20, 30, "Play a game of chess!", fgcolor=YELLOW)
         fwdbutton(wri, 60, 100, GameScreen, "As white", False)
         fwdbutton(wri, 100, 100, GameScreen, "As black", True)
-        Label(wri1, 160, 30, "Colors")
-        Dropdown(wri1, 160, 100, elements=els, bdcolor=YELLOW)
+        Label(wri1, 150, 30, "Colors")
+        dd = Dropdown(wri1, 150, 102, elements=els, bdcolor=GREEN)
+        row = dd.mrow + 15
+        Label(wri1, row + 8, 30, "Report")
+        cb = Checkbox(wri1, row, 100, fgcolor=GREEN, callback=cbcb)
+        Label(wri1, row + 8, cb.mcol + 7, "list game on console")
         CloseButton(wri)
 
 
