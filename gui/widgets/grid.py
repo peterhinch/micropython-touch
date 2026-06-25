@@ -97,3 +97,5 @@ class Grid(Widget):
             for cw in self.cwidth[:-1]:
                 x += cw
                 display.vline(x, y, self.height + 4, color)
+        for cell in self.cells:  # Refresh cells
+            cell.show()
